@@ -1,0 +1,141 @@
+.configuracion-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.gestion-integrantes {
+  background: white;
+  border-radius: 10px;
+  padding: 20px;
+  margin-top: 30px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.agregar-integrante {
+  display: flex;
+  gap: 10px;
+  margin: 20px 0;
+  flex-wrap: wrap;
+}
+
+.input-email {
+  flex: 1;
+  min-width: 200px;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+}
+
+.select-rol {
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+}
+
+.btn-agregar {
+  padding: 10px 20px;
+  background: #28a745;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.btn-agregar:hover {
+  background: #218838;
+}
+
+.lista-integrantes {
+  margin-top: 20px;
+}
+
+.integrante-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 15px;
+  border-bottom: 1px solid #eee;
+  transition: background 0.2s;
+}
+
+.integrante-item:hover {
+  background: #f8f9fa;
+}
+
+.integrante-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+}
+
+.avatar {
+  font-size: 24px;
+}
+
+.nombre {
+  font-weight: 500;
+  color: #333;
+}
+
+.email {
+  font-size: 12px;
+  color: #666;
+}
+
+.rol-badge {
+  background: #e9ecef;
+  padding: 5px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  color: #495057;
+}
+
+.rol-badge.admin {
+  background: #007bff;
+  color: white;
+}
+
+.btn-eliminar {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 5px 10px;
+  border-radius: 5px;
+  transition: background 0.2s;
+  font-size: 18px;
+}
+
+.btn-eliminar:hover {
+  background: #dc3545;
+  color: white;
+}
+
+.success-message {
+  background: #d4edda;
+  color: #155724;
+  padding: 10px;
+  border-radius: 5px;
+  margin: 10px 0;
+}
+
+.error-message {
+  background: #f8d7da;
+  color: #721c24;
+  padding: 10px;
+  border-radius: 5px;
+  margin: 10px 0;
+}
+
+.loading {
+  text-align: center;
+  color: #666;
+  padding: 20px;
+}
+
+.sin-integrantes {
+  text-align: center;
+  color: #999;
+  padding: 30px;
+}

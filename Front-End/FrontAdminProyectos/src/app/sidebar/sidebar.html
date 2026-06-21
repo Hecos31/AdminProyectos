@@ -1,0 +1,39 @@
+<div class="sidebar">
+  <!-- Logo -->
+  <div class="sidebar-header">
+    <div class="logo">
+      <span class="logo-icon">🚀</span>
+      <span class="logo-text">AdminProyectos</span>
+    </div>
+  </div>
+
+  <!-- Menú -->
+  <nav class="sidebar-nav">
+    <ul class="nav-list">
+      <li *ngFor="let item of menuItems" class="nav-item">
+        <a 
+          [routerLink]="item.ruta"
+          class="nav-link"
+          [class.active]="estaActivo(item.ruta)"
+        >
+          <span class="nav-icon">{{ item.icono }}</span>
+          <span class="nav-text">{{ item.nombre }}</span>
+        </a>
+      </li>
+    </ul>
+  </nav>
+
+  <!-- Footer -->
+  <div class="sidebar-footer">
+    <div class="user-info">
+      <div class="user-avatar">👤</div>
+      <div class="user-details">
+        <div class="user-name">{{ usuario?.nombre || 'Usuario' }}</div>
+        <div class="user-email">{{ usuario?.email || 'usuario@email.com' }}</div>
+      </div>
+    </div>
+    <button (click)="cerrarSesion()" class="btn-logout" title="Cerrar sesión">
+      🚪
+    </button>
+  </div>
+</div>

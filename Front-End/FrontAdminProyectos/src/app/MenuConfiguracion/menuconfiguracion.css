@@ -1,0 +1,61 @@
+.menu-configuracion {
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.proyecto-nombre {
+  color: #666;
+  font-size: 16px;
+  margin-bottom: 30px;
+}
+
+.opciones-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.opcion-card {
+  background: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 10px;
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.opcion-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+  border-color: #007bff;
+}
+
+.opcion-card.peligroso:hover {
+  border-color: #dc3545;
+  box-shadow: 0 5px 15px rgba(220, 53, 69, 0.2);
+}
+
+.opcion-icono {
+  font-size: 30px;
+  min-width: 50px;
+  text-align: center;
+}
+
+.opcion-info h3 {
+  margin: 0 0 5px 0;
+  font-size: 18px;
+}
+
+.opcion-info p {
+  margin: 0;
+  color: #666;
+  font-size: 14px;
+}
+
+.opcion-card.peligroso .opcion-info h3 {
+  color: #dc3545;
+}

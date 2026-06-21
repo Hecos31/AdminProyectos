@@ -1,0 +1,79 @@
+<div class="calendario-container">
+  <h2>📅 Calendario de Actividades</h2>
+
+  <!-- Formulario nueva actividad -->
+  <div class="form-actividad">
+    <h3>Nueva Actividad</h3>
+    <div class="form-grid">
+      <input 
+        type="text" 
+        [(ngModel)]="nuevaActividad.titulo" 
+        placeholder="Título de la actividad"
+        class="input-titulo"
+      >
+      <textarea 
+        [(ngModel)]="nuevaActividad.descripcion" 
+        placeholder="Descripción (opcional)"
+        class="input-descripcion"
+      ></textarea>
+      <input 
+        type="date" 
+        [(ngModel)]="nuevaActividad.fecha"
+        class="input-fecha"
+      >
+      <input 
+        type="time" 
+        [(ngModel)]="nuevaActividad.hora"
+        class="input-hora"
+      >
+      <select [(ngModel)]="nuevaActividad.prioridad" class="select-prioridad">
+        <option value="alta">🔴 Alta</option>
+        <option value="media">🟡 Media</option>
+        <option value="baja">🟢 Baja</option>
+      </select>
+      <button (click)="crearActividad()" class="btn-crear">
+        Crear Actividad
+      </button>
+    </div>
+  </div>
+
+  <!-- Mensajes -->
+  <div *ngIf="successMessage" class="success-message">
+    ✅ {{ successMessage }}
+  </div>
+  <div *ngIf="errorMessage" class="error-message">
+    ❌ {{ errorMessage }}
+  </div>
+
+  <!-- Lista de actividades -->
+  <div *ngIf="cargando" class="loading">
+    Cargando actividades...
+  </div>
+
+  <div *ngIf="!cargando" class="lista-actividades">
+    <div *ngFor="let actividad of actividades" class="actividad-card">
+      <div class="actividad-header">
+        <h4>{{ actividad.titulo }}</h4>
+        <span class="prioridad-badge" [style.background]="getPrioridadColor(actividad.prioridad)">
+          {{ actividad.prioridad }}
+        </span>
+      </div>
+      
+      <p class="actividad-descripcion">{{ actividad.descripcion }}</p>
+      
+      <div class="actividad-footer">
+        <span class="actividad-fecha">
+          📅 {{ actividad.fecha | date }}
+          <span *ngIf="actividad.hora">⏰ {{ actividad.hora }}</span>
+        </span>
+        <button (click)="eliminarActividad(actividad._id)" class="btn-eliminar">
+          🗑️ Eliminar
+        </button>
+      </div>
+    </div>
+
+    <div *ngIf="actividades.length === 0" class="sin-actividades">
+      No hay actividades programadas
+    </div>
+  </div>
+</div>

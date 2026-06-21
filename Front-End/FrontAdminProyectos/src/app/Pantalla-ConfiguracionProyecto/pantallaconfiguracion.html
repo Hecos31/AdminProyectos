@@ -1,0 +1,73 @@
+<div class="configuracion-container">
+  <!-- Menú de Configuración -->
+  <app-menu-configuracion 
+    [proyectoId]="proyectoId" 
+    [proyectoNombre]="proyecto?.nombre || ''">
+  </app-menu-configuracion>
+
+  <!-- Gestión de Integrantes (estilo GitHub) -->
+  <div class="gestion-integrantes">
+    <h3>👥 Integrantes del Proyecto</h3>
+    
+    <!-- Agregar integrante -->
+    <div class="agregar-integrante">
+      <input 
+        type="email" 
+        [(ngModel)]="nuevoIntegrante.email" 
+        placeholder="Email del integrante"
+        class="input-email"
+      >
+      <select [(ngModel)]="nuevoIntegrante.rol" class="select-rol">
+        <option value="colaborador">Colaborador</option>
+        <option value="editor">Editor</option>
+        <option value="admin">Administrador</option>
+      </select>
+      <button (click)="agregarIntegrante()" class="btn-agregar">
+        Agregar
+      </button>
+    </div>
+
+    <!-- Mensajes -->
+    <div *ngIf="successMessage" class="success-message">
+      ✅ {{ successMessage }}
+    </div>
+    <div *ngIf="errorMessage" class="error-message">
+      ❌ {{ errorMessage }}
+    </div>
+
+    <!-- Lista de integrantes -->
+    <div *ngIf="cargando" class="loading">
+      Cargando integrantes...
+    </div>
+
+    <div *ngIf="!cargando" class="lista-integrantes">
+      <div *ngFor="let integrante of integrantes" class="integrante-item">
+        <div class="integrante-info">
+          <span class="avatar">👤</span>
+          <div>
+            <div class="nombre">{{ integrante.nombre || integrante.email }}</div>
+            <div class="email">{{ integrante.email }}</div>
+          </div>
+        </div>
+        <div class="integrante-rol">
+          <span class="rol-badge" [class.admin]="integrante.rol === 'admin'">
+            {{ integrante.rol }}
+          </span>
+        </div>
+        <div class="integrante-acciones">
+          <button 
+            (click)="eliminarIntegrante(integrante._id)" 
+            class="btn-eliminar"
+            title="Eliminar integrante"
+          >
+            🗑️
+          </button>
+        </div>
+      </div>
+
+      <div *ngIf="integrantes.length === 0" class="sin-integrantes">
+        No hay integrantes en este proyecto
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,42 @@
+<div class="login-container">
+  <div class="login-card">
+    <h2>🔐 Iniciar Sesión</h2>
+    <p class="subtitle">Accede a tu cuenta de administración</p>
+    
+    <form (ngSubmit)="onSubmit()">
+      <div class="form-group">
+        <label>Email</label>
+        <input 
+          type="email" 
+          [(ngModel)]="credentials.email" 
+          name="email"
+          required
+          placeholder="tu@email.com"
+        >
+      </div>
+
+      <div class="form-group">
+        <label>Contraseña</label>
+        <input 
+          type="password" 
+          [(ngModel)]="credentials.password" 
+          name="password"
+          required
+          placeholder="••••••••"
+        >
+      </div>
+
+      <div *ngIf="errorMessage" class="error-message">
+        ❌ {{ errorMessage }}
+      </div>
+
+      <button type="submit" [disabled]="cargando">
+        {{ cargando ? '⏳ Iniciando...' : 'Iniciar Sesión' }}
+      </button>
+    </form>
+
+    <p class="register-link">
+      ¿No tienes cuenta? <a routerLink="/registro">Regístrate aquí</a>
+    </p>
+  </div>
+</div>

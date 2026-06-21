@@ -1,0 +1,127 @@
+<div class="principal-container">
+  <!-- Header -->
+  <header class="proyecto-header">
+    <div class="header-left">
+      <button (click)="volverAInicio()" class="btn-volver">← Volver</button>
+      <h1>{{ proyecto?.nombre || 'Proyecto' }}</h1>
+    </div>
+    <div class="header-right">
+      <button (click)="irAIntegrantes()" class="btn-integrantes">
+        👥 {{ integrantes.length }} integrantes
+      </button>
+      <button (click)="irACalendario()" class="btn-calendario">
+        📅 Calendario
+      </button>
+      <button (click)="irAConfiguracion()" class="btn-configuracion">
+        ⚙️ Configurar
+      </button>
+    </div>
+  </header>
+
+  <!-- COMMAND CENTER -->
+  <div class="command-center">
+    <h2 class="command-title">🎯 Command Center</h2>
+
+    <!-- Resumen del Proyecto -->
+    <div class="resumen-section">
+      <h3>📊 Resumen del Proyecto</h3>
+      <div class="resumen-grid">
+        <div class="resumen-card">
+          <div class="resumen-icono">📋</div>
+          <div class="resumen-info">
+            <span class="resumen-valor">{{ totalActividades }}</span>
+            <span class="resumen-label">Total Actividades</span>
+          </div>
+        </div>
+        <div class="resumen-card">
+          <div class="resumen-icono">✅</div>
+          <div class="resumen-info">
+            <span class="resumen-valor">{{ cumplimiento }}%</span>
+            <span class="resumen-label">Cumplimiento</span>
+          </div>
+        </div>
+        <div class="resumen-card">
+          <div class="resumen-icono">📈</div>
+          <div class="resumen-info">
+            <span class="resumen-valor">{{ progreso }}%</span>
+            <span class="resumen-label">Progreso</span>
+          </div>
+        </div>
+        <div class="resumen-card">
+          <div class="resumen-icono">⏳</div>
+          <div class="resumen-info">
+            <span class="resumen-valor">{{ actividadesPendientes }}</span>
+            <span class="resumen-label">Pendientes</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Grid de 2 columnas -->
+    <div class="dashboard-grid">
+      <!-- Columna Izquierda -->
+      <div class="dashboard-col">
+        <!-- Tareas Pendientes -->
+        <div class="tareas-pendientes">
+          <h3>⚠️ Tareas Pendientes Críticas</h3>
+          <div *ngIf="cargando" class="loading">Cargando tareas...</div>
+          <ul *ngIf="!cargando" class="tareas-lista">
+            <li *ngFor="let tarea of tareasPendientes; let i = index" class="tarea-item">
+              <span class="tarea-numero">{{ i + 1 }}</span>
+              <span class="tarea-nombre">{{ tarea.titulo || 'Tarea sin título' }}</span>
+              <span class="tarea-prioridad" [style.background]="getPrioridadColor(tarea.prioridad)">
+                {{ tarea.prioridad || 'media' }}
+              </span>
+            </li>
+            <li *ngIf="tareasPendientes.length === 0" class="tarea-vacio">
+              ✅ ¡No hay tareas pendientes!
+            </li>
+          </ul>
+        </div>
+
+        <!-- Actividad Reciente -->
+        <div class="actividad-reciente">
+          <h3>🔄 Actividad Reciente del Equipo</h3>
+          <div *ngIf="actividadReciente.length === 0" class="sin-actividad">
+            No hay actividad reciente
+          </div>
+          <div class="actividad-lista">
+            <div *ngFor="let act of actividadReciente" class="actividad-item-reciente">
+              <div class="actividad-avatar">👤</div>
+              <div class="actividad-contenido">
+                <div class="actividad-nombre">{{ act.nombre || act.usuario || 'Usuario' }}</div>
+                <div class="actividad-accion">{{ act.accion || act.tipo || 'Actualización' }}</div>
+                <div class="actividad-detalle">{{ act.detalle || act.descripcion || '' }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Columna Derecha: Hitos -->
+      <div class="dashboard-col">
+        <div class="hitos-proximos">
+          <h3>🏆 Hitos Próximos</h3>
+          <div *ngIf="hitos.length === 0" class="sin-hitos">
+            No hay hitos programados
+          </div>
+          <div class="hitos-lista">
+            <div *ngFor="let hito of hitos" class="hito-item">
+              <div class="hito-fecha">{{ hito.fecha | date:'dd/MM/yyyy' }}</div>
+              <div class="hito-evento">{{ hito.evento || hito.nombre || hito.titulo }}</div>
+              <span class="hito-prioridad" [class.alta]="hito.prioridad === 'alta'" 
+                                        [class.media]="hito.prioridad === 'media'">
+                {{ hito.prioridad || 'media' }}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Error -->
+    <div *ngIf="errorMessage" class="error-message">
+      ❌ {{ errorMessage }}
+    </div>
+  </div>
+</div>
