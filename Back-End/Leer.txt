@@ -1,0 +1,5 @@
+Instalaciones de FastApi
+
+# 20/06/2026 9:15 pm
+pip install fastapi uvicorn sqlalchemy psycopg2-binary passlib[bcrypt] pyjwt pydantic[email] 
+
