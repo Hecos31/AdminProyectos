@@ -186,6 +186,19 @@ class ColaboradorCreate(BaseModel):
     id_rol: int  # Por ejemplo: 1 (Admin), 2 (Colaborador regular), etc.
 
 
+# --- ESQUEMAS PARA EDITAR Y ELIMINAR PROYECTOS ---
+class ProyectoUpdate(BaseModel):
+    id_proyecto: int  
+    nombre: Optional[str] = None
+    descripcion: Optional[str] = None
+    fecha_inicio: Optional[datetime] = None
+    fecha_fin: Optional[datetime] = None
+    estado: Optional[str] = None
+
+class ProyectoDelete(BaseModel):
+    id_proyecto: int 
+
+
 # --- Seguridad y Autenticación ---
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 
@@ -459,3 +472,85 @@ def agregar_colaborador(
 
     return {"mensaje": f"Usuario {usuario_nuevo.correo} agregado exitosamente con el rol {colaborador_in.id_rol}."}
 
+# --- ENDPOINT PARA EDITAR UN PROYECTO (ID en JSON) ---
+
+@app.put("/proyectos", response_model=ProyectoResponse, status_code=status.HTTP_200_OK)
+def editar_proyecto(
+    proyecto_in: ProyectoUpdate,
+    db: Session = Depends(get_db),
+    id_usuario_actual: int = Depends(obtener_usuario_actual)
+):
+    # 1. 🔒 VALIDACIÓN: Solo el admin puede editar
+    id_rol = obtener_rol_en_proyecto(proyecto_in.id_proyecto, id_usuario_actual, db)
+    if id_rol != 1:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Solo los administradores pueden editar este proyecto."
+        )
+
+    # 2. Buscar el proyecto
+    proyecto = db.query(ProyectoDB).filter(ProyectoDB.id_proyecto == proyecto_in.id_proyecto).first()
+    if not proyecto:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="El proyecto no existe."
+        )
+
+    # 3. Actualizar solo los campos enviados en el JSON (ignorando el id_proyecto y los nulos)
+    update_data = proyecto_in.dict(exclude_unset=True)
+    update_data.pop("id_proyecto", None)  # Evitamos intentar actualizar la llave primaria
+
+    for key, value in update_data.items():
+        setattr(proyecto, key, value)
+
+    try:
+        db.commit()
+        db.refresh(proyecto)
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Error interno al actualizar el proyecto."
+        )
+
+    return proyecto
+
+
+# --- ENDPOINT PARA ELIMINAR UN PROYECTO (ID en JSON) ---
+
+@app.delete("/proyectos", status_code=status.HTTP_200_OK)
+def eliminar_proyecto(
+    proyecto_del: ProyectoDelete,
+    db: Session = Depends(get_db),
+    id_usuario_actual: int = Depends(obtener_usuario_actual)
+):
+    # 1. 🔒 VALIDACIÓN: Solo el admin puede eliminar
+    id_rol = obtener_rol_en_proyecto(proyecto_del.id_proyecto, id_usuario_actual, db)
+    if id_rol != 1:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Solo los administradores pueden eliminar este proyecto."
+        )
+
+    # 2. Buscar el proyecto
+    proyecto = db.query(ProyectoDB).filter(ProyectoDB.id_proyecto == proyecto_del.id_proyecto).first()
+    if not proyecto:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="El proyecto no existe."
+        )
+
+    # 3. Eliminar registros en cascada
+    try:
+        db.query(TareaDB).filter(TareaDB.id_proyecto == proyecto_del.id_proyecto).delete()
+        db.query(ProyectoUsuarioDB).filter(ProyectoUsuarioDB.id_proyecto == proyecto_del.id_proyecto).delete()
+        db.delete(proyecto)
+        db.commit()
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Error interno al eliminar el proyecto y sus dependencias."
+        )
+
+    return {"mensaje": f"El proyecto {proyecto_del.id_proyecto} y todos sus datos relacionados fueron eliminados correctamente."}
