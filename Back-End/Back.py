@@ -194,7 +194,12 @@ class ColaboradorCreate(BaseModel):
     correo_colaborador: EmailStr
     id_rol: int  # Por ejemplo: 1 (Admin), 2 (Colaborador regular), etc.
 
-
+# --- ESQUEMA PARA ELIMINAR COLABORADORES ---
+class ColaboradorDelete(BaseModel):
+    id_proyecto: int
+    id_usuario: int
+    
+    
 # --- ESQUEMAS PARA EDITAR Y ELIMINAR PROYECTOS ---
 class ProyectoUpdate(BaseModel):
     id_proyecto: int  
@@ -520,6 +525,66 @@ def agregar_colaborador(
         )
 
     return {"mensaje": f"Usuario {usuario_nuevo.correo} agregado exitosamente con el rol {colaborador_in.id_rol}."}
+
+# --- ENDPOINT PARA ELIMINAR COLABORADORES DEL PROYECTO ---
+
+@app.delete("/proyectos/colaboradores", status_code=status.HTTP_200_OK)
+def eliminar_colaborador(
+    colaborador_del: ColaboradorDelete,
+    db: Session = Depends(get_db),
+    id_usuario_actual: int = Depends(obtener_usuario_actual)
+):
+    # 1. 🔒 VALIDACIÓN: Verificar que quien hace la petición es Administrador
+    id_rol_admin = obtener_rol_en_proyecto(colaborador_del.id_proyecto, id_usuario_actual, db)
+    if id_rol_admin != 1:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Solo los administradores pueden eliminar colaboradores de este proyecto."
+        )
+
+    # 2. VALIDACIÓN: Evitar que el administrador se elimine a sí mismo
+    if id_usuario_actual == colaborador_del.id_usuario:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="No puedes eliminarte a ti mismo del proyecto."
+        )
+
+    # 3. Verificar que el colaborador a eliminar realmente pertenezca al proyecto
+    rol_colaborador = obtener_rol_en_proyecto(colaborador_del.id_proyecto, colaborador_del.id_usuario, db)
+    if rol_colaborador is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="El usuario especificado no pertenece a este proyecto."
+        )
+
+    # 4. Eliminar dependencias y al colaborador
+    try:
+        # A) Encontrar todas las tareas que pertenecen a este proyecto
+        tareas_del_proyecto = db.query(TareaDB.id_tarea).filter(TareaDB.id_proyecto == colaborador_del.id_proyecto).subquery()
+        
+        # B) Borrar las asignaciones de ESTE usuario, pero SOLO en las tareas de ESTE proyecto
+        db.query(TareaAsignadaDB).filter(
+            TareaAsignadaDB.id_usuario == colaborador_del.id_usuario,
+            TareaAsignadaDB.id_tarea.in_(tareas_del_proyecto)
+        ).delete(synchronize_session=False)
+
+        # C) Eliminar al usuario de la tabla intermedia del proyecto
+        db.query(ProyectoUsuarioDB).filter(
+            ProyectoUsuarioDB.id_proyecto == colaborador_del.id_proyecto,
+            ProyectoUsuarioDB.id_usuario == colaborador_del.id_usuario
+        ).delete()
+
+        db.commit()
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Error interno al eliminar al colaborador del proyecto."
+        )
+
+    return {"mensaje": f"El usuario {colaborador_del.id_usuario} fue removido del proyecto {colaborador_del.id_proyecto} exitosamente."}
+
+
 
 # --- ENDPOINT PARA EDITAR UN PROYECTO ---
 
