@@ -109,11 +109,18 @@ class TareaDB(Base):
     id_tarea = Column(Integer, primary_key=True, index=True, autoincrement=True)
     id_proyecto = Column(Integer, ForeignKey("proyectos.id_proyecto"), nullable=False)
     titulo = Column(String(200), nullable=False)
-    descripcion = Column(String)  # Mapea tu tipo 'text'
+    descripcion = Column(String) 
     prioridad = Column(String(20))
     estado = Column(String(30), default=EstadoTarea.PENDIENTE.value)
     fecha_inicio = Column(TIMESTAMP, nullable=True)
     fecha_limite = Column(TIMESTAMP, nullable=True)
+
+class TareaAsignadaDB(Base):
+    __tablename__ = "tarea_asignada"
+
+    id_tarea = Column(Integer, ForeignKey("tareas.id_tarea"), primary_key=True)
+    id_usuario = Column(Integer, ForeignKey("usuarios.id_usuario"), primary_key=True)
+
 
 # --- ESQUEMAS PARA CREACIÓN DE TAREAS ---
 class TareaCreate(BaseModel):
@@ -124,7 +131,9 @@ class TareaCreate(BaseModel):
     estado: EstadoTarea = EstadoTarea.PENDIENTE 
     fecha_inicio: Optional[datetime] = None
     fecha_limite: Optional[datetime] = None
-
+    id_usuario_asignado: Optional[int] = None  
+    
+    
 class TareaResponse(BaseModel):
     id_tarea: int
     id_proyecto: int
@@ -197,6 +206,22 @@ class ProyectoUpdate(BaseModel):
 
 class ProyectoDelete(BaseModel):
     id_proyecto: int 
+
+
+# --- ESQUEMAS PARA EDITAR Y ELIMINAR TAREAS ---
+class TareaUpdate(BaseModel):
+    id_tarea: int 
+    titulo: Optional[str] = None
+    descripcion: Optional[str] = None
+    prioridad: Optional[PrioridadTarea] = None
+    estado: Optional[EstadoTarea] = None
+    fecha_inicio: Optional[datetime] = None
+    fecha_limite: Optional[datetime] = None
+
+class TareaDelete(BaseModel):
+    id_tarea: int 
+
+
 
 
 # --- Seguridad y Autenticación ---
@@ -376,17 +401,15 @@ def crear_tarea(
     db: Session = Depends(get_db),
     id_usuario_actual: int = Depends(obtener_usuario_actual)
 ):
-    # 1. VALIDACIÓN DE ROL 
+    # 1. VALIDACIÓN DE ROL: El creador debe ser Administrador
     id_rol = obtener_rol_en_proyecto(tarea_in.id_proyecto, id_usuario_actual, db)
-    
-    # Asumiendo que id_rol = 1 es el Administrador
     if id_rol != 1:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="No tienes permisos de Administrador en este proyecto para crear tareas."
         )
 
-    # 2. Validar que el proyecto exista en la BD antes de intentar crear la tarea
+    # 2. Validar que el proyecto exista
     proyecto_existe = db.execute(
         sqlalchemy.text("SELECT 1 FROM proyectos WHERE id_proyecto = :id"), {"id": tarea_in.id_proyecto}
     ).first()
@@ -396,7 +419,22 @@ def crear_tarea(
             detail=f"El proyecto con id {tarea_in.id_proyecto} no existe."
         )
 
-    # 3. Registrar la tarea
+    # 3. VALIDACIÓN DE ASIGNACIÓN 
+    # Si se mandó un usuario para asignar, verificamos que realmente pertenezca a este proyecto
+    if tarea_in.id_usuario_asignado:
+        rol_asignado = obtener_rol_en_proyecto(tarea_in.id_proyecto, tarea_in.id_usuario_asignado, db)
+        if rol_asignado is None:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="El usuario al que intentas asignar la tarea no es colaborador de este proyecto."
+            )
+        # Forzamos el estado a "Asignada"
+        tarea_in.estado = EstadoTarea.ASIGNADA
+    else:
+        # Si no hay usuario, forzamos a "Pendiente"
+        tarea_in.estado = EstadoTarea.PENDIENTE
+
+    # 4. Registrar la tarea principal
     nueva_tarea = TareaDB(
         id_proyecto=tarea_in.id_proyecto,
         titulo=tarea_in.titulo,
@@ -409,6 +447,18 @@ def crear_tarea(
 
     try:
         db.add(nueva_tarea)
+        # 5. Utilizamos flush() para que Postgres genere el id_tarea sin cerrar la transacción
+        db.flush()
+
+        # 6. Si venía un usuario asignado, lo insertamos en la tabla intermedia
+        if tarea_in.id_usuario_asignado:
+            nueva_asignacion = TareaAsignadaDB(
+                id_tarea=nueva_tarea.id_tarea,
+                id_usuario=tarea_in.id_usuario_asignado
+            )
+            db.add(nueva_asignacion)
+
+        # 7. Guardamos todo junto de forma segura
         db.commit()
         db.refresh(nueva_tarea)
     except Exception as e:
@@ -419,7 +469,6 @@ def crear_tarea(
         )
 
     return nueva_tarea
-
 
 # --- ENDPOINT PARA AGREGAR COLABORADORES AL PROYECTO ---
 
@@ -472,7 +521,7 @@ def agregar_colaborador(
 
     return {"mensaje": f"Usuario {usuario_nuevo.correo} agregado exitosamente con el rol {colaborador_in.id_rol}."}
 
-# --- ENDPOINT PARA EDITAR UN PROYECTO (ID en JSON) ---
+# --- ENDPOINT PARA EDITAR UN PROYECTO ---
 
 @app.put("/proyectos", response_model=ProyectoResponse, status_code=status.HTTP_200_OK)
 def editar_proyecto(
@@ -516,7 +565,7 @@ def editar_proyecto(
     return proyecto
 
 
-# --- ENDPOINT PARA ELIMINAR UN PROYECTO (ID en JSON) ---
+# --- ENDPOINT PARA ELIMINAR UN PROYECTO ---
 
 @app.delete("/proyectos", status_code=status.HTTP_200_OK)
 def eliminar_proyecto(
@@ -554,3 +603,91 @@ def eliminar_proyecto(
         )
 
     return {"mensaje": f"El proyecto {proyecto_del.id_proyecto} y todos sus datos relacionados fueron eliminados correctamente."}
+
+
+# --- ENDPOINT PARA EDITAR UNA TAREA ---
+
+@app.put("/tareas", response_model=TareaResponse, status_code=status.HTTP_200_OK)
+def editar_tarea(
+    tarea_in: TareaUpdate,
+    db: Session = Depends(get_db),
+    id_usuario_actual: int = Depends(obtener_usuario_actual)
+):
+    # 1. Buscar la tarea en la base de datos
+    tarea = db.query(TareaDB).filter(TareaDB.id_tarea == tarea_in.id_tarea).first()
+    if not tarea:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="La tarea no existe."
+        )
+
+    # 2. VALIDACIÓN: Verificar que el usuario sea Admin en el proyecto de esta tarea
+    id_rol = obtener_rol_en_proyecto(tarea.id_proyecto, id_usuario_actual, db)
+    if id_rol != 1: 
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Solo los administradores pueden editar tareas en este proyecto."
+        )
+
+    # 3. Actualizar solo los campos enviados en el JSON
+    update_data = tarea_in.dict(exclude_unset=True)
+    update_data.pop("id_tarea", None)  # Evitamos modificar el ID
+
+    for key, value in update_data.items():
+        # Si el valor es un Enum (como estado o prioridad), extraemos su string
+        if isinstance(value, Enum):
+            setattr(tarea, key, value.value)
+        else:
+            setattr(tarea, key, value)
+
+    try:
+        db.commit()
+        db.refresh(tarea)
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Error interno al actualizar la tarea."
+        )
+
+    return tarea
+
+
+# --- ENDPOINT PARA ELIMINAR UNA TAREA ---
+
+@app.delete("/tareas", status_code=status.HTTP_200_OK)
+def eliminar_tarea(
+    tarea_del: TareaDelete,
+    db: Session = Depends(get_db),
+    id_usuario_actual: int = Depends(obtener_usuario_actual)
+):
+    # 1. Buscar la tarea
+    tarea = db.query(TareaDB).filter(TareaDB.id_tarea == tarea_del.id_tarea).first()
+    if not tarea:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="La tarea no existe."
+        )
+
+    # 2. VALIDACIÓN: Verificar que el usuario sea Admin en el proyecto de esta tarea
+    id_rol = obtener_rol_en_proyecto(tarea.id_proyecto, id_usuario_actual, db)
+    if id_rol != 1:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Solo los administradores pueden eliminar tareas."
+        )
+
+    # 3. Eliminar la tarea
+    try:
+        # 💡 NOTA PARA EL FUTURO: Si más adelante mapeas tu tabla 'tarea_asignada' en Python, 
+        # deberás borrar los registros de esa tabla aquí antes de borrar la tarea principal.
+        db.delete(tarea)
+        db.commit()
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Error interno al eliminar la tarea."
+        )
+
+    return {"mensaje": f"La tarea con ID {tarea_del.id_tarea} fue eliminada correctamente."}
