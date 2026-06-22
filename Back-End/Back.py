@@ -198,7 +198,12 @@ class ColaboradorCreate(BaseModel):
 class ColaboradorDelete(BaseModel):
     id_proyecto: int
     id_usuario: int
-    
+
+# --- ESQUEMA PARA ACTUALIZAR ROL DE COLABORADOR ---
+class ColaboradorUpdate(BaseModel):
+    id_proyecto: int
+    id_usuario: int
+    id_rol_nuevo: int  
     
 # --- ESQUEMAS PARA EDITAR Y ELIMINAR PROYECTOS ---
 class ProyectoUpdate(BaseModel):
@@ -534,7 +539,7 @@ def eliminar_colaborador(
     db: Session = Depends(get_db),
     id_usuario_actual: int = Depends(obtener_usuario_actual)
 ):
-    # 1. 🔒 VALIDACIÓN: Verificar que quien hace la petición es Administrador
+    # 1. VALIDACIÓN: Verificar que quien hace la petición es Administrador
     id_rol_admin = obtener_rol_en_proyecto(colaborador_del.id_proyecto, id_usuario_actual, db)
     if id_rol_admin != 1:
         raise HTTPException(
@@ -585,6 +590,54 @@ def eliminar_colaborador(
     return {"mensaje": f"El usuario {colaborador_del.id_usuario} fue removido del proyecto {colaborador_del.id_proyecto} exitosamente."}
 
 
+# --- ENDPOINT PARA CAMBIAR EL ROL DE UN COLABORADOR ---
+
+@app.put("/proyectos/colaboradores", status_code=status.HTTP_200_OK)
+def cambiar_rol_colaborador(
+    colaborador_update: ColaboradorUpdate,
+    db: Session = Depends(get_db),
+    id_usuario_actual: int = Depends(obtener_usuario_actual)
+):
+    # 1. VALIDACIÓN: Verificar que quien hace la petición es Administrador
+    id_rol_admin = obtener_rol_en_proyecto(colaborador_update.id_proyecto, id_usuario_actual, db)
+    if id_rol_admin != 1:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Solo los administradores pueden cambiar los roles en este proyecto."
+        )
+
+    # 2. VALIDACIÓN: Evitar que el administrador se quite sus propios permisos
+    if id_usuario_actual == colaborador_update.id_usuario:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="No puedes cambiar tu propio rol. Pídele a otro administrador que lo haga si es necesario."
+        )
+
+    # 3. Buscar el registro exacto del usuario en ese proyecto
+    vinculo_proyecto = db.query(ProyectoUsuarioDB).filter(
+        ProyectoUsuarioDB.id_proyecto == colaborador_update.id_proyecto,
+        ProyectoUsuarioDB.id_usuario == colaborador_update.id_usuario
+    ).first()
+
+    if not vinculo_proyecto:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="El usuario especificado no pertenece a este proyecto."
+        )
+
+    # 4. Actualizar el rol y guardar en la base de datos
+    vinculo_proyecto.id_rol = colaborador_update.id_rol_nuevo
+
+    try:
+        db.commit()
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Error interno al actualizar el rol del colaborador."
+        )
+
+    return {"mensaje": f"El rol del usuario {colaborador_update.id_usuario} ha sido actualizado al rol {colaborador_update.id_rol_nuevo} exitosamente."}
 
 # --- ENDPOINT PARA EDITAR UN PROYECTO ---
 
