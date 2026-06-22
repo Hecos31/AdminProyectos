@@ -480,7 +480,7 @@ def editar_proyecto(
     db: Session = Depends(get_db),
     id_usuario_actual: int = Depends(obtener_usuario_actual)
 ):
-    # 1. 🔒 VALIDACIÓN: Solo el admin puede editar
+    # 1. VALIDACIÓN: Solo el admin puede editar
     id_rol = obtener_rol_en_proyecto(proyecto_in.id_proyecto, id_usuario_actual, db)
     if id_rol != 1:
         raise HTTPException(
@@ -524,7 +524,7 @@ def eliminar_proyecto(
     db: Session = Depends(get_db),
     id_usuario_actual: int = Depends(obtener_usuario_actual)
 ):
-    # 1. 🔒 VALIDACIÓN: Solo el admin puede eliminar
+    # 1. VALIDACIÓN: Solo el admin puede eliminar
     id_rol = obtener_rol_en_proyecto(proyecto_del.id_proyecto, id_usuario_actual, db)
     if id_rol != 1:
         raise HTTPException(
