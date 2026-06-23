@@ -2,27 +2,49 @@
 
   <main class="main-content">
     <header class="header">
-      <h1>🚀 Mis Proyectos</h1>
+      <div class="header-title">
+        <h1>Mis Proyectos</h1>
+        <p class="subtitle">Selecciona un entorno de trabajo o crea uno nuevo</p>
+      </div>
+      
       <div class="user-info">
-        <span>👋 {{ usuario?.nombre || 'Usuario' }}</span>
+        <div class="user-avatar">
+          {{ (usuario?.nombre | slice:0:1) || 'U' }}
+        </div>
+        <span class="user-name">Hola, {{ usuario?.nombre || 'Fabián' }}</span>
         <button (click)="cerrarSesion()" class="btn-logout">Cerrar Sesión</button>
       </div>
     </header>
 
-    <div *ngIf="cargando" class="loading">Cargando proyectos...</div>
+    <div *ngIf="cargando" class="loading">
+      <div class="spinner"></div>
+      <p>Cargando tus proyectos...</p>
+    </div>
 
     <div *ngIf="!cargando" class="proyectos-grid">
+      
+      <div class="proyecto-card nuevo" (click)="cargarProyectos()">
+        <div class="proyecto-icono-nuevo">+</div>
+        <h3>Nuevo Proyecto</h3>
+        <p>Configurar un nuevo entorno</p>
+      </div>
+
       <div *ngFor="let proyecto of proyectos" class="proyecto-card" (click)="irAProyecto(proyecto.id_proyecto)">
-        <div class="proyecto-icono">📁</div>
         <div class="proyecto-info">
           <h3>{{ proyecto.nombre }}</h3>
-          <p>{{ proyecto.descripcion || 'Sin descripción' }}</p>
+          <p>{{ proyecto.descripcion || 'Sin descripción general establecida para este proyecto.' }}</p>
+          
           <div class="proyecto-meta">
-            <span>📅 {{ proyecto.fecha_creacion | date:'dd/MM/yyyy' }}</span>
-            <span>📌 {{ proyecto.estado || 'Activo' }}</span>
+            <span class="meta-item date">
+              Creado: {{ proyecto.fecha_creacion | date:'dd/MM/yyyy' }}
+            </span>
+            <span class="meta-item status" [ngClass]="proyecto.estado | lowercase">
+              {{ proyecto.estado || 'Activo' }}
+            </span>
           </div>
         </div>
       </div>
+
     </div>
   </main>
 </div>

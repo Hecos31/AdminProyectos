@@ -16,8 +16,8 @@ import bcrypt
 import sqlalchemy
 
 # --- CONFIGURACIÓN DE LAS VARIABLES DE ENTORNO  (NO OLVIDAR CONFIGURAR EN SU ENTORNO) ---
-password = urllib.parse.quote_plus("1234") # Cambia esto por tu contraseña de PostgreSQL
-DATABASE_URL = f"postgresql://postgres:{password}@localhost:5432/AdminProyectosBD"  # Cambia esto por tu URL de conexión a PostgreSQL
+password = urllib.parse.quote_plus("s0p0rt3") # Cambia esto por tu contraseña de PostgreSQL
+DATABASE_URL = f"postgresql://postgres:{password}@localhost:5432/ProdAdmin"  # Cambia esto por tu URL de conexión a PostgreSQL
 SECRET_KEY = "tu_clave_secreta_para_los_tokens_2026Pruebas"  # Clave para evitar firmas inválidas en JWT
 ALGORITHM = "HS256" # Algoritmo de encriptación para JWT y db
 ACCESS_TOKEN_EXPIRE_MINUTES = 60 # Tiempo de expiración del token en minutos
