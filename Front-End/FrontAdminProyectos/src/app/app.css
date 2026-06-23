@@ -6,14 +6,17 @@
 
 .main-content {
   flex: 1;
-  margin-left: 260px;
   padding: 20px;
   min-height: 100vh;
   transition: margin-left 0.3s ease;
 }
 
+.main-content.with-sidebar {
+  margin-left: 260px;
+}
+
 @media (max-width: 768px) {
-  .main-content {
+  .main-content.with-sidebar {
     margin-left: 70px;
     padding: 15px;
   }

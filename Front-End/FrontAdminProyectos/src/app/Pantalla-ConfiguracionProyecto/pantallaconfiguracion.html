@@ -1,28 +1,27 @@
 <div class="configuracion-container">
-  <!-- Menú de Configuración -->
-  <app-menu-configuracion 
-    [proyectoId]="proyectoId" 
-    [proyectoNombre]="proyecto?.nombre || ''">
-  </app-menu-configuracion>
+  <!-- Botón volver -->
+  <div class="header-actions">
+    <button (click)="volverAlProyecto()" class="btn-volver">← Volver al Proyecto</button>
+  </div>
 
-  <!-- Gestión de Integrantes (estilo GitHub) -->
+  <!-- Gestión de Colaboradores -->
   <div class="gestion-integrantes">
-    <h3>👥 Integrantes del Proyecto</h3>
+    <h3>👥 Colaboradores del Proyecto</h3>
     
-    <!-- Agregar integrante -->
+    <!-- Agregar colaborador -->
     <div class="agregar-integrante">
       <input 
         type="email" 
-        [(ngModel)]="nuevoIntegrante.email" 
-        placeholder="Email del integrante"
+        [(ngModel)]="nuevoColaborador.correo" 
+        placeholder="Email del colaborador"
         class="input-email"
       >
-      <select [(ngModel)]="nuevoIntegrante.rol" class="select-rol">
-        <option value="colaborador">Colaborador</option>
-        <option value="editor">Editor</option>
+      <select [(ngModel)]="nuevoColaborador.rol" class="select-rol">
         <option value="admin">Administrador</option>
+        <option value="editor">Editor</option>
+        <option value="colaborador">Colaborador</option>
       </select>
-      <button (click)="agregarIntegrante()" class="btn-agregar">
+      <button (click)="agregarColaborador()" class="btn-agregar">
         Agregar
       </button>
     </div>
@@ -35,38 +34,44 @@
       ❌ {{ errorMessage }}
     </div>
 
-    <!-- Lista de integrantes -->
+    <!-- Lista de colaboradores -->
     <div *ngIf="cargando" class="loading">
-      Cargando integrantes...
+      Cargando colaboradores...
     </div>
 
     <div *ngIf="!cargando" class="lista-integrantes">
-      <div *ngFor="let integrante of integrantes" class="integrante-item">
+      <div *ngFor="let colaborador of colaboradores" class="integrante-item">
         <div class="integrante-info">
           <span class="avatar">👤</span>
           <div>
-            <div class="nombre">{{ integrante.nombre || integrante.email }}</div>
-            <div class="email">{{ integrante.email }}</div>
+            <div class="nombre">{{ colaborador.nombre || colaborador.correo }}</div>
+            <div class="email">{{ colaborador.correo }}</div>
           </div>
         </div>
         <div class="integrante-rol">
-          <span class="rol-badge" [class.admin]="integrante.rol === 'admin'">
-            {{ integrante.rol }}
-          </span>
+          <select 
+            [value]="colaborador.rol_nombre || 'colaborador'"
+            (change)="cambiarRol(colaborador.id_usuario, $any($event.target).value)"
+            class="select-rol-mini"
+          >
+            <option value="admin">Administrador</option>
+            <option value="editor">Editor</option>
+            <option value="colaborador">Colaborador</option>
+          </select>
         </div>
         <div class="integrante-acciones">
           <button 
-            (click)="eliminarIntegrante(integrante._id)" 
+            (click)="eliminarColaborador(colaborador.id_usuario)" 
             class="btn-eliminar"
-            title="Eliminar integrante"
+            title="Eliminar colaborador"
           >
             🗑️
           </button>
         </div>
       </div>
 
-      <div *ngIf="integrantes.length === 0" class="sin-integrantes">
-        No hay integrantes en este proyecto
+      <div *ngIf="colaboradores.length === 0" class="sin-integrantes">
+        No hay colaboradores en este proyecto
       </div>
     </div>
   </div>

@@ -1,5 +1,4 @@
 <div class="sidebar">
-  <!-- Logo -->
   <div class="sidebar-header">
     <div class="logo">
       <span class="logo-icon">🚀</span>
@@ -7,33 +6,43 @@
     </div>
   </div>
 
-  <!-- Menú -->
   <nav class="sidebar-nav">
     <ul class="nav-list">
-      <li *ngFor="let item of menuItems" class="nav-item">
-        <a 
-          [routerLink]="item.ruta"
-          class="nav-link"
-          [class.active]="estaActivo(item.ruta)"
-        >
-          <span class="nav-icon">{{ item.icono }}</span>
-          <span class="nav-text">{{ item.nombre }}</span>
+      <li class="nav-item">
+        <a routerLink="/inicio" class="nav-link" routerLinkActive="active">
+          <span class="nav-icon">🏠</span>
+          <span class="nav-text">Inicio</span>
         </a>
+      </li>
+      <li class="nav-item">
+        <button (click)="irAIntegrantes()" class="nav-link">
+          <span class="nav-icon">👥</span>
+          <span class="nav-text">Integrantes</span>
+        </button>
+      </li>
+      <li class="nav-item">
+        <button (click)="irACalendario()" class="nav-link">
+          <span class="nav-icon">📅</span>
+          <span class="nav-text">Calendario</span>
+        </button>
+      </li>
+      <li class="nav-item">
+        <button (click)="irAConfiguracion()" class="nav-link">
+          <span class="nav-icon">⚙️</span>
+          <span class="nav-text">Configuración</span>
+        </button>
       </li>
     </ul>
   </nav>
 
-  <!-- Footer -->
   <div class="sidebar-footer">
     <div class="user-info">
       <div class="user-avatar">👤</div>
       <div class="user-details">
         <div class="user-name">{{ usuario?.nombre || 'Usuario' }}</div>
-        <div class="user-email">{{ usuario?.email || 'usuario@email.com' }}</div>
+        <div class="user-email">{{ usuario?.correo || 'usuario@email.com' }}</div>
       </div>
     </div>
-    <button (click)="cerrarSesion()" class="btn-logout" title="Cerrar sesión">
-      🚪
-    </button>
+    <button (click)="cerrarSesion()" class="btn-logout">🚪</button>
   </div>
 </div>

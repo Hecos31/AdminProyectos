@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { ApiServicio } from '../Servicios/api.servicio';
 
 @Component({
   selector: 'app-sidebar',
@@ -11,43 +12,57 @@ import { CommonModule } from '@angular/common';
 })
 export class SidebarComponente implements OnInit {
   usuario: any = null;
-  
-  menuItems = [
-    { 
-      icono: '🏠', 
-      nombre: 'Inicio', 
-      ruta: '/inicio'
-    },
-    { 
-      icono: '📋', 
-      nombre: 'Proyectos', 
-      ruta: '/inicio'
-    },
-    { 
-      icono: '👥', 
-      nombre: 'Integrantes', 
-      ruta: '/integrantes'
-    },
-    { 
-      icono: '📅', 
-      nombre: 'Calendario', 
-      ruta: '/calendario'
-    },
-    { 
-      icono: '⚙️', 
-      nombre: 'Configuración', 
-      ruta: '/configuracion'
-    }
-  ];
+  proyectoId: number | null = null;
 
-  constructor(private router: Router) {}
+  constructor(
+    private router: Router,
+    private apiService: ApiServicio
+  ) {}
 
   ngOnInit() {
     const usuarioStr = localStorage.getItem('usuario');
     if (usuarioStr) {
       this.usuario = JSON.parse(usuarioStr);
     } else {
-      this.usuario = { nombre: 'Usuario', email: 'usuario@email.com' };
+      this.usuario = { nombre: 'Usuario', correo: 'usuario@email.com' };
+    }
+
+    // Obtener proyectos para saber qué ID usar
+    this.apiService.obtenerProyectos().subscribe({
+      next: (data) => {
+        console.log('📦 Proyectos para sidebar:', data);
+        if (data && data.length > 0) {
+          this.proyectoId = data[0].id_proyecto;
+          console.log('📌 Proyecto ID para sidebar:', this.proyectoId);
+        }
+      },
+      error: (error) => {
+        console.error('❌ Error obteniendo proyectos:', error);
+      }
+    });
+  }
+
+  irAIntegrantes() {
+    if (this.proyectoId) {
+      this.router.navigate(['/proyecto', this.proyectoId, 'configuracion', 'opcion']);
+    } else {
+      console.error('❌ No hay proyecto ID disponible');
+    }
+  }
+
+  irACalendario() {
+    if (this.proyectoId) {
+      this.router.navigate(['/proyecto', this.proyectoId, 'calendario']);
+    } else {
+      console.error('❌ No hay proyecto ID disponible');
+    }
+  }
+
+  irAConfiguracion() {
+    if (this.proyectoId) {
+      this.router.navigate(['/proyecto', this.proyectoId, 'configuracion', 'opcion']);
+    } else {
+      console.error('❌ No hay proyecto ID disponible');
     }
   }
 
@@ -56,9 +71,5 @@ export class SidebarComponente implements OnInit {
       localStorage.clear();
       this.router.navigate(['/login']);
     }
-  }
-
-  estaActivo(ruta: string): boolean {
-    return this.router.url === ruta;
   }
 }

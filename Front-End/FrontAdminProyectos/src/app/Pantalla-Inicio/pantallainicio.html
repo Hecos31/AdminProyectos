@@ -1,52 +1,28 @@
 <div class="inicio-container">
-  <!-- Header -->
-  <header class="header">
-    <div class="header-left">
+
+  <main class="main-content">
+    <header class="header">
       <h1>🚀 Mis Proyectos</h1>
-    </div>
-    <div class="header-right">
-      <span class="usuario-info">👋 {{ usuario?.nombre || 'Usuario' }}</span>
-      <button (click)="cerrarSesion()" class="btn-logout">Cerrar Sesión</button>
-    </div>
-  </header>
+      <div class="user-info">
+        <span>👋 {{ usuario?.nombre || 'Usuario' }}</span>
+        <button (click)="cerrarSesion()" class="btn-logout">Cerrar Sesión</button>
+      </div>
+    </header>
 
-  <!-- Loading -->
-  <div *ngIf="cargando" class="loading">
-    <div class="spinner"></div>
-    <p>Cargando proyectos...</p>
-  </div>
+    <div *ngIf="cargando" class="loading">Cargando proyectos...</div>
 
-  <!-- Grid de proyectos -->
-  <div *ngIf="!cargando" class="proyectos-grid">
-    <div *ngFor="let proyecto of proyectos" class="proyecto-card" (click)="irAProyecto(proyecto._id || proyecto.id)">
-      <div class="proyecto-icono">📁</div>
-      <div class="proyecto-info">
-        <h3>{{ proyecto.nombre }}</h3>
-        <p>{{ proyecto.descripcion || 'Sin descripción' }}</p>
-        <div class="proyecto-meta">
-          <span class="fecha">📅 {{ proyecto.fechaCreacion || proyecto.fecha | date }}</span>
-          <span class="integrantes">👥 {{ proyecto.integrantes?.length || 0 }} integrantes</span>
-        </div>
-        <div class="progreso-mini" *ngIf="proyecto.progreso !== undefined">
-          <div class="barra-mini" [style.width.%]="proyecto.progreso"></div>
-          <span>{{ proyecto.progreso }}%</span>
+    <div *ngIf="!cargando" class="proyectos-grid">
+      <div *ngFor="let proyecto of proyectos" class="proyecto-card" (click)="irAProyecto(proyecto.id_proyecto)">
+        <div class="proyecto-icono">📁</div>
+        <div class="proyecto-info">
+          <h3>{{ proyecto.nombre }}</h3>
+          <p>{{ proyecto.descripcion || 'Sin descripción' }}</p>
+          <div class="proyecto-meta">
+            <span>📅 {{ proyecto.fecha_creacion | date:'dd/MM/yyyy' }}</span>
+            <span>📌 {{ proyecto.estado || 'Activo' }}</span>
+          </div>
         </div>
       </div>
     </div>
-
-    <!-- Card para crear nuevo proyecto -->
-    <div class="proyecto-card nuevo" (click)="crearNuevoProyecto()">
-      <div class="proyecto-icono">➕</div>
-      <div class="proyecto-info">
-        <h3>Nuevo Proyecto</h3>
-        <p>Crear un nuevo proyecto desde cero</p>
-      </div>
-    </div>
-
-    <!-- Mensaje si no hay proyectos -->
-    <div *ngIf="proyectos.length === 0" class="sin-proyectos">
-      <p>No tienes proyectos aún</p>
-      <button (click)="crearNuevoProyecto()" class="btn-crear-proyecto">+ Crear tu primer proyecto</button>
-    </div>
-  </div>
+  </main>
 </div>

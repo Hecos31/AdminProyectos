@@ -4,6 +4,24 @@
   padding: 20px;
 }
 
+.header-actions {
+  margin-bottom: 20px;
+}
+
+.btn-volver {
+  padding: 8px 16px;
+  background: #6c757d;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.btn-volver:hover {
+  background: #5a6268;
+}
+
 .gestion-integrantes {
   background: white;
   border-radius: 10px;
@@ -40,10 +58,18 @@
   border: none;
   border-radius: 5px;
   cursor: pointer;
+  transition: background 0.3s;
 }
 
 .btn-agregar:hover {
   background: #218838;
+}
+
+.select-rol-mini {
+  padding: 5px 10px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  font-size: 12px;
 }
 
 .lista-integrantes {
@@ -54,9 +80,11 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 15px;
+  padding: 12px 15px;
   border-bottom: 1px solid #eee;
   transition: background 0.2s;
+  flex-wrap: wrap;
+  gap: 10px;
 }
 
 .integrante-item:hover {
@@ -68,6 +96,7 @@
   align-items: center;
   gap: 10px;
   flex: 1;
+  min-width: 150px;
 }
 
 .avatar {
@@ -84,17 +113,12 @@
   color: #666;
 }
 
-.rol-badge {
-  background: #e9ecef;
-  padding: 5px 10px;
-  border-radius: 20px;
-  font-size: 12px;
-  color: #495057;
+.integrante-rol {
+  min-width: 120px;
 }
 
-.rol-badge.admin {
-  background: #007bff;
-  color: white;
+.integrante-acciones {
+  min-width: 50px;
 }
 
 .btn-eliminar {
@@ -138,4 +162,23 @@
   text-align: center;
   color: #999;
   padding: 30px;
+}
+
+@media (max-width: 768px) {
+  .agregar-integrante {
+    flex-direction: column;
+  }
+  
+  .integrante-item {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .integrante-info {
+    min-width: auto;
+  }
+  
+  .integrante-rol {
+    min-width: auto;
+  }
 }

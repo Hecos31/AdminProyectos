@@ -29,31 +29,21 @@ export class PantallaInicioComponente implements OnInit {
   }
 
   cargarProyectos() {
+    this.cargando = true;
     this.apiService.obtenerProyectos().subscribe({
       next: (data) => {
-        this.proyectos = data;
+        this.proyectos = Array.isArray(data) ? data : [];
         this.cargando = false;
       },
       error: (error) => {
-        console.error('Error cargando proyectos:', error);
+        console.error('Error:', error);
         this.cargando = false;
       }
     });
   }
 
-  irAProyecto(id: string) {
+  irAProyecto(id: number) {
     this.router.navigate(['/proyecto', id]);
-  }
-
-  // ✅ NUEVO MÉTODO
-  crearNuevoProyecto() {
-    // Opción 1: Redirigir a una página de creación
-    this.router.navigate(['/proyecto/nuevo']);
-    
-    // Opción 2: Si no tienes la ruta, muestra un mensaje
-    // alert('Funcionalidad en desarrollo - Crear nuevo proyecto');
-    
-    // Opción 3: Abrir un modal (requiere más configuración)
   }
 
   cerrarSesion() {

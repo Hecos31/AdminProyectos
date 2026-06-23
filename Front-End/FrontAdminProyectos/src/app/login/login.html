@@ -1,34 +1,20 @@
 <div class="login-container">
   <div class="login-card">
     <h2>🔐 Iniciar Sesión</h2>
-    <p class="subtitle">Accede a tu cuenta de administración</p>
+    <p class="subtitle">Accede a tu cuenta</p>
     
     <form (ngSubmit)="onSubmit()">
       <div class="form-group">
-        <label>Email</label>
-        <input 
-          type="email" 
-          [(ngModel)]="credentials.email" 
-          name="email"
-          required
-          placeholder="tu@email.com"
-        >
+        <label>Correo Electrónico</label>
+        <input type="email" [(ngModel)]="credentials.correo" name="correo" required placeholder="tu@email.com">
       </div>
 
       <div class="form-group">
         <label>Contraseña</label>
-        <input 
-          type="password" 
-          [(ngModel)]="credentials.password" 
-          name="password"
-          required
-          placeholder="••••••••"
-        >
+        <input type="password" [(ngModel)]="credentials.password" name="password" required placeholder="••••••••">
       </div>
 
-      <div *ngIf="errorMessage" class="error-message">
-        ❌ {{ errorMessage }}
-      </div>
+      <div *ngIf="errorMessage" class="error-message">❌ {{ errorMessage }}</div>
 
       <button type="submit" [disabled]="cargando">
         {{ cargando ? '⏳ Iniciando...' : 'Iniciar Sesión' }}

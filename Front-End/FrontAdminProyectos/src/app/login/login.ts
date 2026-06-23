@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { ApiServicio } from '../Servicios/api.servicio';
@@ -7,13 +7,13 @@ import { ApiServicio } from '../Servicios/api.servicio';
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [FormsModule, CommonModule],
+  imports: [FormsModule, CommonModule, RouterLink],
   templateUrl: './login.html',
   styleUrls: ['./login.css']
 })
 export class LoginComponente {
   credentials = {
-    email: '',
+    correo: '',
     password: ''
   };
   errorMessage = '';
@@ -28,14 +28,24 @@ export class LoginComponente {
     this.cargando = true;
     this.errorMessage = '';
 
+    console.log('📤 Enviando login:', this.credentials);
+
     this.apiService.login(this.credentials).subscribe({
       next: (response) => {
-        localStorage.setItem('token', response.token);
-        localStorage.setItem('usuario', JSON.stringify(response.usuario));
+        console.log('✅ Login exitoso:', response);
+        // ✅ GUARDAR TOKEN
+        localStorage.setItem('token', response.access_token);
+        console.log('🔑 Token guardado:', response.access_token);
+        
+        localStorage.setItem('usuario', JSON.stringify({
+          correo: this.credentials.correo,
+          nombre: this.credentials.correo.split('@')[0]
+        }));
         this.router.navigate(['/inicio']);
       },
       error: (error) => {
-        this.errorMessage = error.error?.mensaje || 'Error al iniciar sesión';
+        console.error('❌ Error login:', error);
+        this.errorMessage = error.error?.detail || 'Error al iniciar sesión';
         this.cargando = false;
       }
     });
