@@ -8,7 +8,7 @@ import { ApiServicio } from '../Servicios/api.servicio';
   standalone: true,
   imports: [CommonModule],
   templateUrl: './pantallainicio.html',
-  styleUrls: ['./pantallainicio.css']
+  styleUrls: ['./pantallainicio.css'] // Asegúrate de tener aquí el CSS que armamos antes
 })
 export class PantallaInicioComponente implements OnInit {
   proyectos: any[] = [];
@@ -40,6 +40,11 @@ export class PantallaInicioComponente implements OnInit {
         this.cargando = false;
       }
     });
+  }
+
+  // Método añadido para la navegación
+  crearProyecto() {
+    this.router.navigate(['/CrearProyecto']);
   }
 
   irAProyecto(id: number) {

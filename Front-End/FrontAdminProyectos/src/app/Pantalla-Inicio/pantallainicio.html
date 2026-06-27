@@ -1,6 +1,6 @@
 <div class="inicio-container">
-
   <main class="main-content">
+    
     <header class="header">
       <div class="header-title">
         <h1>Mis Proyectos</h1>
@@ -9,7 +9,7 @@
       
       <div class="user-info">
         <div class="user-avatar">
-          {{ (usuario?.nombre | slice:0:1) || 'U' }}
+          {{ (usuario?.nombre | slice:0:1) || 'F' }}
         </div>
         <span class="user-name">Hola, {{ usuario?.nombre || 'Fabián' }}</span>
         <button (click)="cerrarSesion()" class="btn-logout">Cerrar Sesión</button>
@@ -23,7 +23,7 @@
 
     <div *ngIf="!cargando" class="proyectos-grid">
       
-      <div class="proyecto-card nuevo" (click)="cargarProyectos()">
+      <div class="proyecto-card nuevo" (click)="crearProyecto()">
         <div class="proyecto-icono-nuevo">+</div>
         <h3>Nuevo Proyecto</h3>
         <p>Configurar un nuevo entorno</p>
@@ -43,6 +43,10 @@
             </span>
           </div>
         </div>
+      </div>
+
+      <div *ngIf="proyectos.length === 0" class="empty-state">
+        <p>Aún no tienes proyectos. ¡Anímate a crear el primero!</p>
       </div>
 
     </div>

@@ -32,8 +32,7 @@ export class LoginComponente {
 
     this.apiService.login(this.credentials).subscribe({
       next: (response) => {
-        console.log('✅ Login exitoso:', response);
-        // ✅ GUARDAR TOKEN
+        console.log('Login exitoso:', response);
         localStorage.setItem('token', response.access_token);
         console.log('🔑 Token guardado:', response.access_token);
         
@@ -42,9 +41,10 @@ export class LoginComponente {
           nombre: this.credentials.correo.split('@')[0]
         }));
         this.router.navigate(['/inicio']);
+        this.cargando = false;
       },
       error: (error) => {
-        console.error('❌ Error login:', error);
+        console.error('Error login:', error);
         this.errorMessage = error.error?.detail || 'Error al iniciar sesión';
         this.cargando = false;
       }
