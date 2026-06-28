@@ -44,7 +44,7 @@ export class PantallaInicioComponente implements OnInit {
 
   // Método añadido para la navegación
   crearProyecto() {
-    this.router.navigate(['/CrearProyecto']);
+    this.router.navigate(['/crear-proyecto']);
   }
 
   irAProyecto(id: number) {

@@ -4,7 +4,7 @@
     <header class="header">
       <div class="header-title">
         <h1>Mis Proyectos</h1>
-        <p class="subtitle">Selecciona un entorno de trabajo o crea uno nuevo</p>
+        <p class="subtitle">Gestiona tus entornos de trabajo</p>
       </div>
       
       <div class="user-info">
@@ -32,23 +32,18 @@
       <div *ngFor="let proyecto of proyectos" class="proyecto-card" (click)="irAProyecto(proyecto.id_proyecto)">
         <div class="proyecto-info">
           <h3>{{ proyecto.nombre }}</h3>
-          <p>{{ proyecto.descripcion || 'Sin descripción general establecida para este proyecto.' }}</p>
+          <p>{{ proyecto.descripcion || 'Sin descripción establecida.' }}</p>
           
           <div class="proyecto-meta">
             <span class="meta-item date">
-              Creado: {{ proyecto.fecha_creacion | date:'dd/MM/yyyy' }}
+              {{ proyecto.fecha_creacion | date:'dd/MM/yyyy' }}
             </span>
             <span class="meta-item status" [ngClass]="proyecto.estado | lowercase">
-              {{ proyecto.estado || 'Activo' }}
+              {{ proyecto.estado }}
             </span>
           </div>
         </div>
       </div>
-
-      <div *ngIf="proyectos.length === 0" class="empty-state">
-        <p>Aún no tienes proyectos. ¡Anímate a crear el primero!</p>
-      </div>
-
     </div>
   </main>
 </div>

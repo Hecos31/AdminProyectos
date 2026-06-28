@@ -55,7 +55,7 @@ export class CrearProyectoComponente {
       proyectoData.fecha_fin = this.proyecto.fecha_fin;
     }
 
-    console.log('📤 Enviando proyecto:', proyectoData);
+    console.log('Enviando proyecto:', proyectoData);
 
     this.apiService.crearProyecto(proyectoData).subscribe({
       next: (response) => {
