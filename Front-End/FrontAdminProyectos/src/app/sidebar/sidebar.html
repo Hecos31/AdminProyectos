@@ -1,48 +1,60 @@
 <div class="sidebar">
   <div class="sidebar-header">
-    <div class="logo">
-      <span class="logo-icon">🚀</span>
-      <span class="logo-text">AdminProyectos</span>
-    </div>
+    <div class="logo-mark">O</div>
+    <span class="logo-text">Orbita</span>
   </div>
 
   <nav class="sidebar-nav">
     <ul class="nav-list">
       <li class="nav-item">
         <a routerLink="/inicio" class="nav-link" routerLinkActive="active">
-          <span class="nav-icon">🏠</span>
-          <span class="nav-text">Inicio</span>
+          <i class="fa-solid fa-border-all nav-icon"></i>
+          <span class="nav-text">Dashboard</span>
         </a>
       </li>
+
       <li class="nav-item">
-        <button (click)="irAIntegrantes()" class="nav-link">
-          <span class="nav-icon">👥</span>
-          <span class="nav-text">Integrantes</span>
-        </button>
+        <a routerLink="/tareas" class="nav-link" routerLinkActive="active">
+          <i class="fa-solid fa-list-check nav-icon"></i>
+          <span class="nav-text">Tareas</span>
+        </a>
       </li>
+
+      <li class="nav-item">
+        <a routerLink="/chats" class="nav-link" routerLinkActive="active">
+          <i class="fa-regular fa-comment-dots nav-icon"></i>
+          <span class="nav-text">Chats</span>
+        </a>
+      </li>
+
+      <li class="nav-item">
+        <a routerLink="/documentos" class="nav-link" routerLinkActive="active">
+          <i class="fa-solid fa-chart-line nav-icon"></i>
+          <span class="nav-text">Reportes</span>
+        </a>
+      </li>
+
       <li class="nav-item">
         <button (click)="irACalendario()" class="nav-link">
-          <span class="nav-icon">📅</span>
+          <i class="fa-regular fa-calendar nav-icon"></i>
           <span class="nav-text">Calendario</span>
-        </button>
-      </li>
-      <li class="nav-item">
-        <button (click)="irAConfiguracion()" class="nav-link">
-          <span class="nav-icon">⚙️</span>
-          <span class="nav-text">Configuración</span>
         </button>
       </li>
     </ul>
   </nav>
 
   <div class="sidebar-footer">
-    <div class="user-info">
-      <div class="user-avatar">👤</div>
-      <div class="user-details">
-        <div class="user-name">{{ usuario?.nombre || 'Usuario' }}</div>
-        <div class="user-email">{{ usuario?.correo || 'usuario@email.com' }}</div>
-      </div>
+    <div class="user-avatar" title="{{ usuario?.nombre || 'Fabián' }}">
+      {{ (usuario?.nombre | slice:0:1) || 'F' }}
     </div>
-    <button (click)="cerrarSesion()" class="btn-logout">🚪</button>
+    
+    <div class="footer-actions">
+        <button (click)="irAConfiguracion()" class="btn-icon" title="Configuración">
+            <i class="fa-solid fa-gear"></i>
+        </button>
+        <button (click)="cerrarSesion()" class="btn-icon" title="Cerrar Sesión">
+            <i class="fa-solid fa-arrow-right-from-bracket"></i>
+        </button>
+    </div>
   </div>
 </div>

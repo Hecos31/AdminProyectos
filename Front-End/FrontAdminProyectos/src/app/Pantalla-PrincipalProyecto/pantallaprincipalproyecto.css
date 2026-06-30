@@ -1,104 +1,203 @@
+/* Contenedor principal alineado con el fondo base de la app */
 .principal-container {
   display: flex;
   min-height: 100vh;
-  background: #f0f2f5;
+  background-color: #f7f6f4; /* Gris cálido / off-white */
+  font-family: 'Inter', sans-serif;
 }
 
 .main-content {
   flex: 1;
-  margin-left: 260px;
-  padding: 20px;
+  margin-left: 120px; /* Margen adaptado para el menú vertical estrecho */
+  padding: 40px;
 }
 
+/* Cabecera del Proyecto - Limpia y estructurada */
 .proyecto-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   flex-wrap: wrap;
-  gap: 15px;
-  padding: 15px 25px;
-  background: white;
-  border-radius: 12px;
-  margin-bottom: 20px;
+  gap: 16px;
+  padding: 24px 32px;
+  background: #ffffff;
+  border-radius: 16px;
+  margin-bottom: 32px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.01); /* Sombra casi invisible */
+  border: 1px solid #f0eee9; /* Borde suave Orbita */
 }
 
 .header-left {
   display: flex;
   align-items: center;
-  gap: 15px;
+  gap: 24px;
 }
 
+.title-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.title-group h1 {
+  margin: 0;
+  font-size: 26px;
+  color: #3b3530; /* Charcoal */
+  font-family: 'Outfit', sans-serif;
+  font-weight: 700;
+}
+
+/* Botón de retroceso minimalista */
 .btn-volver {
-  background: none;
-  border: none;
-  font-size: 16px;
-  color: #007bff;
+  background: transparent;
+  border: 1px solid #e3e0da;
+  color: #8c857f;
+  font-size: 14px;
+  font-weight: 500;
   cursor: pointer;
-  padding: 5px 10px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s ease;
 }
 
 .btn-volver:hover {
-  background: #e9ecef;
-  border-radius: 5px;
-}
-
-.header-left h1 {
-  margin: 0;
-  font-size: 24px;
-  color: #333;
+  background: #fdfdfc;
+  color: #3b3530;
+  border-color: #c4b5a5;
 }
 
 .header-right {
   display: flex;
+  gap: 12px;
+}
+
+/* Botones secundarios (Calendario, Configuración) */
+.btn-secundario {
+  padding: 10px 16px;
+  border: 1px solid #e3e0da;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #5c5550;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+}
+
+.btn-secundario:hover {
+  background: #fdfdfc;
+  border-color: #bfaea0;
+  color: #3b3530;
+}
+
+/* Etiqueta de Estado (Pill) */
+.status-badge {
+  background: #f4f1ed;
+  color: #7a6e65;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* Estados de carga y error */
+.loading-state {
+  text-align: center;
+  padding: 80px 20px;
+  color: #8c857f;
+  font-size: 15px;
+}
+
+.alert {
+  padding: 16px;
+  border-radius: 8px;
+  margin-bottom: 24px;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
   gap: 10px;
 }
 
-.btn-calendario,
-.btn-configuracion {
-  padding: 8px 16px;
-  border: 1px solid #ddd;
-  border-radius: 5px;
-  background: white;
-  cursor: pointer;
+.error-message {
+  background: #fdf5f5;
+  color: #c95252;
+  border: 1px solid #fae3e3;
 }
 
-.btn-calendario:hover {
-  background: #fff3cd;
-  border-color: #ffc107;
-}
-
-.btn-configuracion:hover {
-  background: #f8d7da;
-  border-color: #dc3545;
-}
-
-.loading {
-  text-align: center;
-  padding: 60px 20px;
-  color: #666;
-}
-
+/* Tarjeta de Detalles del Proyecto */
 .proyecto-detalles {
-  margin-top: 20px;
+  margin-top: 24px;
 }
 
 .detalle-card {
-  background: white;
-  padding: 25px;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  background: #ffffff;
+  padding: 32px;
+  border-radius: 16px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.01);
+  border: 1px solid #f0eee9;
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #f0eee9;
+}
+
+.header-icon {
+  color: #bfaea0; /* Acento Orbita */
+  font-size: 20px;
 }
 
 .detalle-card h3 {
-  margin: 0 0 20px 0;
-  color: #1a1a2e;
+  margin: 0;
+  color: #3b3530;
+  font-size: 18px;
+  font-weight: 600;
 }
 
-.detalle-card p {
-  margin: 10px 0;
-  color: #333;
+/* Grid para organizar la información simulando un Dashboard */
+.detalles-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 24px 32px;
 }
 
-.detalle-card strong {
-  color: #666;
+.detalle-item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* La descripción ocupa todo el ancho disponible */
+.detalle-item.full-width {
+  grid-column: 1 / -1; 
+}
+
+.detalle-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #8c857f;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.detalle-valor {
+  font-size: 15px;
+  color: #3b3530;
+  font-weight: 500;
+}
+
+.detalle-valor.descripcion {
+  color: #5c5550;
+  line-height: 1.6;
+  font-weight: 400;
 }

@@ -1,28 +1,80 @@
 <div class="principal-container">
-  <header class="proyecto-header">
-    <div class="header-left">
-      <button (click)="volverAInicio()" class="btn-volver">← Volver</button>
-      <h1>{{ proyecto?.nombre || 'Cargando...' }}</h1>
-    </div>
-    <div class="header-right">
-      <button (click)="irACalendario()" class="btn-calendario">📅 Calendario</button>
-      <button (click)="irAConfiguracion()" class="btn-configuracion">⚙️ Configurar</button>
-    </div>
-  </header>
+  
+  <!-- El sidebar (Floating Vertical Rail) va fuera de este contenedor o paralelo a main-content -->
+  <main class="main-content">
+    
+    <header class="proyecto-header">
+      <div class="header-left">
+        <button (click)="volverAInicio()" class="btn-volver">
+          <i class="fa-solid fa-arrow-left"></i> Volver
+        </button>
+        <div class="title-group">
+          <h1>{{ proyecto?.nombre || 'Cargando información...' }}</h1>
+          <!-- Agregamos un indicador visual (pill) para el estado del proyecto -->
+          <span class="status-badge" *ngIf="proyecto" [ngClass]="proyecto.estado | lowercase">
+            {{ proyecto.estado }}
+          </span>
+        </div>
+      </div>
+      
+      <div class="header-right">
+        <button (click)="irACalendario()" class="btn-secundario">
+          <i class="fa-regular fa-calendar"></i> Calendario
+        </button>
+        <button (click)="irAConfiguracion()" class="btn-secundario">
+          <i class="fa-solid fa-gear"></i> Configurar
+        </button>
+      </div>
+    </header>
 
-  <div *ngIf="cargando" class="loading">Cargando proyecto...</div>
-
-  <div *ngIf="errorMessage" class="error-message">❌ {{ errorMessage }}</div>
-
-  <div *ngIf="!cargando && proyecto" class="proyecto-detalles">
-    <div class="detalle-card">
-      <h3>📋 Información del Proyecto</h3>
-      <p><strong>Nombre:</strong> {{ proyecto.nombre }}</p>
-      <p><strong>Descripción:</strong> {{ proyecto.descripcion || 'Sin descripción' }}</p>
-      <p><strong>Estado:</strong> {{ proyecto.estado }}</p>
-      <p><strong>Fecha Inicio:</strong> {{ proyecto.fecha_inicio | date:'dd/MM/yyyy' }}</p>
-      <p><strong>Fecha Fin:</strong> {{ proyecto.fecha_fin | date:'dd/MM/yyyy' }}</p>
-      <p><strong>Fecha Creación:</strong> {{ proyecto.fecha_creacion | date:'dd/MM/yyyy HH:mm' }}</p>
+    <div *ngIf="cargando" class="loading-state">
+      <p>Cargando información del proyecto...</p>
     </div>
-  </div>
+
+    <div *ngIf="errorMessage" class="alert error-message">
+      <i class="fa-solid fa-circle-exclamation"></i> {{ errorMessage }}
+    </div>
+
+    <div *ngIf="!cargando && proyecto" class="proyecto-detalles">
+      <div class="detalle-card">
+        
+        <div class="card-header">
+          <i class="fa-solid fa-circle-info header-icon"></i>
+          <h3>Información General</h3>
+        </div>
+        
+        <!-- Reemplazamos los párrafos sueltos por un Grid estructurado -->
+        <div class="detalles-grid">
+          <div class="detalle-item">
+            <span class="detalle-label">Nombre del Proyecto</span>
+            <span class="detalle-valor">{{ proyecto.nombre }}</span>
+          </div>
+          
+          <div class="detalle-item">
+            <span class="detalle-label">Fecha de Creación</span>
+            <span class="detalle-valor">{{ proyecto.fecha_creacion | date:'dd/MM/yyyy HH:mm' }}</span>
+          </div>
+
+          <div class="detalle-item full-width">
+            <span class="detalle-label">Descripción</span>
+            <span class="detalle-valor descripcion">
+              {{ proyecto.descripcion || 'Sin descripción general establecida para este proyecto.' }}
+            </span>
+          </div>
+          
+          <div class="detalle-item">
+            <span class="detalle-label">Fecha de Inicio</span>
+            <span class="detalle-valor">{{ proyecto.fecha_inicio | date:'dd/MM/yyyy' }}</span>
+          </div>
+          
+          <div class="detalle-item">
+            <span class="detalle-label">Fecha de Fin</span>
+            <span class="detalle-valor">{{ proyecto.fecha_fin | date:'dd/MM/yyyy' }}</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+    
+  </main>
 </div>
