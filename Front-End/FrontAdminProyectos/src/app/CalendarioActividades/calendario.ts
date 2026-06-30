@@ -136,16 +136,20 @@ export class CalendarioActividadesComponente implements OnInit {
   }
 
   getPrioridadColor(prioridad: string): string {
-    const colores: any = { 'Alta': '#dc3545', 'Media': '#ffc107', 'Baja': '#28a745' };
-    return colores[prioridad] || '#6c757d';
+    const colores: any = { 
+      'Alta': '#d97373',   // Rojo suave
+      'Media': '#d9a773',  // Beige/Café cálido
+      'Baja': '#73d9a7'    // Verde suave
+    };
+    return colores[prioridad] || '#a89586';
   }
 
   getEstadoColor(estado: string): string {
     const colores: any = {
-      'Concluida': '#28a745',
-      'Asignada': '#007bff',
-      'Pendiente por asignar': '#ffc107'
+      'Concluida': '#a89586',
+      'Asignada': '#bfaea0',
+      'Pendiente por asignar': '#e3e0da'
     };
-    return colores[estado] || '#6c757d';
+    return colores[estado] || '#f0eee9';
   }
 }

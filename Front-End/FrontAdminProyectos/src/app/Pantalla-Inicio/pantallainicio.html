@@ -9,7 +9,7 @@
       
       <div class="user-info">
         <div class="user-avatar">
-          {{ (usuario?.nombre | slice:0:1) || 'F' }}
+          {{ (usuario?.nombre | slice:0:1) || 'U' }}
         </div>
         <span class="user-name">Hola, {{ usuario?.nombre || 'Fabián' }}</span>
         <button (click)="cerrarSesion()" class="btn-logout">Cerrar Sesión</button>

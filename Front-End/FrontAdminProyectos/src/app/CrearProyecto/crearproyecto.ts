@@ -38,21 +38,22 @@ export class CrearProyectoComponente {
     this.errorMessage = '';
     this.successMessage = '';
 
-    // Construir el objeto para enviar al backend
+    // Construir el objeto base para enviar al backend
     const proyectoData: any = {
       nombre: this.proyecto.nombre,
       estado: this.proyecto.estado
     };
 
-    // Solo agregar si tienen valor
+    // Agregar la descripción si existe
     if (this.proyecto.descripcion) {
       proyectoData.descripcion = this.proyecto.descripcion;
     }
     if (this.proyecto.fecha_inicio) {
-      proyectoData.fecha_inicio = this.proyecto.fecha_inicio;
+      proyectoData.fecha_inicio = `${this.proyecto.fecha_inicio}T00:00:00Z`;
     }
+    
     if (this.proyecto.fecha_fin) {
-      proyectoData.fecha_fin = this.proyecto.fecha_fin;
+      proyectoData.fecha_fin = `${this.proyecto.fecha_fin}T00:00:00Z`;
     }
 
     console.log('Enviando proyecto:', proyectoData);

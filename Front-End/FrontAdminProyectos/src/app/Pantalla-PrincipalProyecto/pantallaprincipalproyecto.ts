@@ -33,13 +33,13 @@ export class PantallaPrincipalProyectoComponente implements OnInit {
     this.cargando = true;
     this.apiService.obtenerProyecto(this.proyectoId).subscribe({
       next: (data) => {
-        console.log('📦 Proyecto:', data);
+        console.log('Proyecto:', data);
         this.proyecto = data;
         this.cargando = false;
         this.cdr.detectChanges();
       },
       error: (error) => {
-        console.error('❌ Error:', error);
+        console.error('Error:', error);
         this.errorMessage = 'Error al cargar el proyecto';
         this.cargando = false;
         this.cdr.detectChanges();
