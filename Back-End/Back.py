@@ -1097,3 +1097,41 @@ async def obtener_lista_conversaciones(
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+    
+@app.get("/mensajes/historial/conversaciones/{id_conversacion}")
+async def obtener_historial_conversacion(
+    db_sql: Session = Depends(get_db),
+    id_usuario_actual: int = Depends(obtener_usuario_actual)
+):
+    try:
+        # 1. Buscar en MongoDB todos los mensajes de la conversación específica
+        cursor = db.messages.find({
+            "id_conversacion": id_conversacion
+        })
+        messages = await cursor.to_list(length=100) # Límite de 100 para no saturar
+        
+        resultado = []
+        
+        for msg in messages:
+            # 2. Resolver el nombre del remitente desde PostgreSQL
+            remitente = db_sql.query(UsuarioDB).filter(UsuarioDB.id_usuario == msg["id_usuario_remitente"]).first()
+            nombre_remitente = f"{remitente.nombre} {remitente.apellido}" if remitente else "Usuario Desconocido"
+            
+            # 3. Construir el objeto de mensaje
+            mensaje_obj = {
+                "id": str(msg["_id"]),
+                "contenido": msg["contenido"],
+                "fecha_envio": msg["fecha_envio"].isoformat(),
+                "remitente": {
+                    "id_usuario": msg["id_usuario_remitente"],
+                    "nombre": nombre_remitente
+                }
+            }
+            resultado.append(mensaje_obj)
+        
+        resultado.sort(key=lambda x: x["fecha_envio"])  # Ordenar cronológicamente
+        
+        return resultado
+    
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
