@@ -809,3 +809,73 @@ def eliminar_tarea(
         )
 
     return {"mensaje": f"La tarea con ID {tarea_del.id_tarea} fue eliminada correctamente."}
+
+# --- ENDPOINT PARA LISTAR PROYECTOS DISPONIBLES ---
+
+@app.get("/proyectos", response_model=list[ProyectoResponse], status_code=status.HTTP_200_OK)
+def listar_proyectos(
+    db: Session = Depends(get_db),
+    id_usuario_actual: int = Depends(obtener_usuario_actual)
+):
+    """
+    Obtiene la lista de todos los proyectos en los que el usuario autenticado 
+    está registrado como colaborador (ya sea como Administrador o miembro).
+    """
+    proyectos = (
+        db.query(ProyectoDB)
+        .join(ProyectoUsuarioDB, ProyectoDB.id_proyecto == ProyectoUsuarioDB.id_proyecto)
+        .filter(ProyectoUsuarioDB.id_usuario == id_usuario_actual)
+        .all()
+    )
+    return proyectos
+
+
+# --- ENDPOINT PARA LISTAR TAREAS ASIGNADAS AL USUARIO ---
+
+@app.get("/tareas/asignadas", response_model=list[TareaResponse], status_code=status.HTTP_200_OK)
+def listar_tareas_asignadas(
+    db: Session = Depends(get_db),
+    id_usuario_actual: int = Depends(obtener_usuario_actual)
+):
+    """
+    Obtiene la lista completa de tareas asignadas directamente al usuario autenticado
+    a través de la tabla de vinculación 'tarea_asignada'.
+    """
+    tareas_asignadas = (
+        db.query(TareaDB)
+        .join(TareaAsignadaDB, TareaDB.id_tarea == TareaAsignadaDB.id_tarea)
+        .filter(TareaAsignadaDB.id_usuario == id_usuario_actual)
+        .all()
+    )
+    return tareas_asignadas
+
+# --- ENDPOINT PARA LISTAR USUARIOS DENTRO DE UN PROYECTO ---
+
+@app.get("/proyectos/{id_proyecto}/colaboradores", response_model=list[UsuarioResponse], status_code=status.HTTP_200_OK)
+def listar_colaboradores_proyecto(
+    id_proyecto: int,
+    db: Session = Depends(get_db),
+    id_usuario_actual: int = Depends(obtener_usuario_actual)
+):
+    """
+    Obtiene la lista de todos los usuarios (colaboradores y administradores) 
+    que pertenecen a un proyecto específico.
+    """
+    # 1. Validar que el usuario que hace la petición pertenezca al proyecto
+    rol_usuario = obtener_rol_en_proyecto(id_proyecto, id_usuario_actual, db)
+    if rol_usuario is None:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="No tienes acceso a este proyecto para ver a sus colaboradores."
+        )
+
+    # 2. Consultar los usuarios haciendo un JOIN con la tabla intermedia 'proyecto_usuarios'
+    # para traer únicamente los datos de los usuarios asignados a ese proyecto
+    colaboradores = (
+        db.query(UsuarioDB)
+        .join(ProyectoUsuarioDB, UsuarioDB.id_usuario == ProyectoUsuarioDB.id_usuario)
+        .filter(ProyectoUsuarioDB.id_proyecto == id_proyecto)
+        .all()
+    )
+    
+    return colaboradores
