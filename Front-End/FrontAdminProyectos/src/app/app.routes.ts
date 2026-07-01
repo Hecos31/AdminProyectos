@@ -27,7 +27,7 @@ export const routes: Routes = [
   { path: 'configuracion', component: MenuConfiguracionComponente },
   {path: 'chatglobalproyecto', component: ChatGlobalProyectoComponente},
   {path: 'chatactividades', component: ChatActividadComponente},
-  {path: 'chatpersonal', component:ChatPersonalComponente},
+  {path: 'chatpersonal/:id', component:ChatPersonalComponente},
   {path: 'listaschat', component:ListaChatComponente}
 
 ];

@@ -14,12 +14,12 @@ export class ChatService {
   constructor(private http: HttpClient) {}
 
   conectarWebSocket() {
-    const token = localStorage.getItem('access_token'); 
+    const token = localStorage.getItem('token'); 
+    
     if (!token) {
-      console.error('No hay token disponible');
+      console.error('No hay token disponible para el WebSocket');
       return;
     }
-
     this.socket = new WebSocket(`ws://localhost:8000/ws?token=${token}`);
 
     this.socket.onmessage = (event) => {
@@ -38,13 +38,33 @@ export class ChatService {
     }
   }
 
-  enviarMensaje(destinatarioId: number, contenido: string) {
-    const token = localStorage.getItem('access_token');
-    const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
+  enviarMensajeEnSala(idConversacion: string, contenido: string) {
+    const token = localStorage.getItem('token');
+    const headers = new HttpHeaders({ 'Authorization': `Bearer ${token}` });
 
-    return this.http.post(`${this.apiUrl}/mensajes/privado`, {
-      destinatario_id: destinatarioId,
+    return this.http.post(`${this.apiUrl}/mensajes/conversacion`, {
+      id_conversacion: idConversacion,
       contenido: contenido
     }, { headers });
+  }
+
+  obtenerContactos(idProyecto: number) {
+    const token = localStorage.getItem('access_token');
+    const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
+    
+    // Usamos el endpoint que ya tienes en FastAPI
+    return this.http.get<any[]>(`${this.apiUrl}/proyectos/${idProyecto}/colaboradores`, { headers });
+  }
+
+
+  obtenerConversaciones() {
+    // CAMBIO AQUÍ: Buscar 'token'
+    const token = localStorage.getItem('token'); 
+    
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${token}`
+    });
+    
+    return this.http.get<any[]>(`${this.apiUrl}/mensajes/conversaciones`, { headers: headers });
   }
 }

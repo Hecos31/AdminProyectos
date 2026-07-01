@@ -16,9 +16,9 @@ import jwt
 import urllib.parse
 import bcrypt  
 import sqlalchemy
-
-
-
+from typing import List
+from bson.errors import InvalidId
+from bson import ObjectId
 
 # --- CONFIGURACIÓN DE LAS VARIABLES DE ENTORNO  (NO OLVIDAR CONFIGURAR EN SU ENTORNO) ---
 password = urllib.parse.quote_plus("H3cos31!") # Cambia esto por tu contraseña de PostgreSQL
@@ -98,6 +98,11 @@ class UsuarioDB(Base):
     correo = Column(String(150), unique=True, index=True)
     password = Column(String(255))
     fecha_registro = Column(TIMESTAMP, default=datetime.utcnow)
+
+
+class MensajeConversacionRequest(BaseModel):
+    id_conversacion: str
+    contenido: str
 
 
 # --- ESQUEMAS PARA CREACIÓN DE USUARIOS ---
@@ -506,7 +511,7 @@ def obtener_proyecto(
 
 
 
-from typing import List
+
 
 @app.get("/proyectos/{id_proyecto}/tareas", response_model=List[TareaResponse])
 def obtener_tareas_proyecto(
@@ -969,62 +974,48 @@ def eliminar_tarea(
 
 
 
-@app.post("/mensajes/privado")
-async def enviar_mensaje_privado(
-    req: MensajePrivadoRequest, 
+@app.post("/mensajes/conversacion")
+async def enviar_mensaje_conversacion(
+    req: MensajeConversacionRequest,
     id_usuario_actual: int = Depends(obtener_usuario_actual)
 ):
     try:
-        # 1. Buscar si ya existe el chat privado entre estos dos usuarios
-        chat_existente = await db.conversations.find_one({
-            "tipo": "privado",
-            "participantes.id_usuario": { "$all": [id_usuario_actual, req.destinatario_id] }
-        })
+        # Validación de formato del ID
+        try:
+            conv_id = ObjectId(req.id_conversacion)
+        except InvalidId:
+            raise HTTPException(status_code=400, detail="ID de conversación inválido")
 
-        if chat_existente:
-            id_conversacion = chat_existente["_id"]
-        else:
-            # 2. Si no existe, creamos la conversación automáticamente
-            nueva_conversacion = {
-                "tipo": "privado",
-                "id_proyecto": None,
-                "nombre": None,
-                "creado_en": datetime.now(timezone.utc),
-                "participantes": [
-                    {"id_usuario": id_usuario_actual, "rol": "miembro", "fecha_ingreso": datetime.now(timezone.utc)},
-                    {"id_usuario": req.destinatario_id, "rol": "miembro", "fecha_ingreso": datetime.now(timezone.utc)}
-                ]
-            }
-            resultado_insert = await db.conversations.insert_one(nueva_conversacion)
-            id_conversacion = resultado_insert.inserted_id
-
-        # 3. Insertar el mensaje vinculado a esa conversación
+        # 1. Guardar mensaje
         nuevo_mensaje = {
-            "id_conversacion": id_conversacion,
+            "id_conversacion": conv_id,
             "id_usuario_remitente": id_usuario_actual,
             "contenido": req.contenido,
             "fecha_envio": datetime.now(timezone.utc)
         }
-        
         await db.messages.insert_one(nuevo_mensaje)
 
-        # 4. Disparar el mensaje por el túnel WebSocket del destinatario
-        nuevo_mensaje_dict = {
-            "id_conversacion": str(id_conversacion),
-            "id_usuario_remitente": id_usuario_actual,
-            "contenido": req.contenido,
-            "fecha_envio": nuevo_mensaje["fecha_envio"].isoformat()
-        }
+        # 2. Buscar participantes
+        chat = await db.conversations.find_one({"_id": conv_id})
         
-        await manager.enviar_mensaje_en_vivo(nuevo_mensaje_dict, req.destinatario_id)
+        if chat:
+            # 3. Preparar datos para WebSocket
+            nuevo_mensaje_dict = {
+                "id_conversacion": req.id_conversacion,
+                "id_usuario_remitente": id_usuario_actual,
+                "contenido": req.contenido,
+                "fecha_envio": nuevo_mensaje["fecha_envio"].isoformat()
+            }
+            
+            # Enviar a todos los participantes
+            for participante in chat.get("participantes", []):
+                p_id = participante["id_usuario"]
+                await manager.enviar_mensaje_en_vivo(nuevo_mensaje_dict, p_id)
 
-        return {
-            "status": "success", 
-            "message": "Mensaje enviado",
-            "id_conversacion": str(id_conversacion)
-        }
+        return {"status": "success"}
 
     except Exception as e:
+        print(f"ERROR FATAL: {str(e)}") 
         raise HTTPException(status_code=500, detail=str(e))
     
 @app.websocket("/ws")
@@ -1046,3 +1037,63 @@ async def websocket_endpoint(websocket: WebSocket, token: str = Query(...)):
             await websocket.receive_text()
     except WebSocketDisconnect:
         manager.disconnect(user_id)
+        
+        
+@app.get("/mensajes/conversaciones")
+async def obtener_lista_conversaciones(
+    db_sql: Session = Depends(get_db),
+    id_usuario_actual: int = Depends(obtener_usuario_actual)
+):
+    try:
+        # 1. Buscar en MongoDB todas las conversaciones donde el usuario actual es participante
+        cursor = db.conversations.find({
+            "participantes.id_usuario": id_usuario_actual
+        })
+        conversaciones = await cursor.to_list(length=100) # Límite de 100 para no saturar
+
+        resultado = []
+
+        for conv in conversaciones:
+            # 2. Buscar el último mensaje de esta conversación
+            ultimo_mensaje = await db.messages.find_one(
+                {"id_conversacion": conv["_id"]},
+                sort=[("fecha_envio", -1)] # Orden descendente para traer el más reciente
+            )
+
+            # 3. Resolver el nombre del chat
+            nombre_chat = conv.get("nombre")
+            
+            # Si es privado, buscamos el nombre del OTRO usuario en PostgreSQL
+            if conv["tipo"] == "privado":
+                # Encontrar el ID del participante que NO soy yo
+                otro_id = next((p["id_usuario"] for p in conv["participantes"] if p["id_usuario"] != id_usuario_actual), None)
+                
+                if otro_id:
+                    otro_usuario = db_sql.query(UsuarioDB).filter(UsuarioDB.id_usuario == otro_id).first()
+                    if otro_usuario:
+                        nombre_chat = f"{otro_usuario.nombre} {otro_usuario.apellido}"
+                    else:
+                        nombre_chat = "Usuario Desconocido"
+
+            # 4. Construir el objeto exactamente como lo espera el frontend
+            chat_preview = {
+                "id": str(conv["_id"]),
+                "nombre": nombre_chat or "Chat sin nombre",
+                "enLinea": False, # Esto requeriría lógica avanzada con WebSockets para saber si está conectado
+                "tipo": conv["tipo"],
+                "participantes": len(conv.get("participantes", [])),
+                "noLeidos": 0, # Placeholder (requiere tabla de leídos para calcularse)
+                "ultimoMensaje": {
+                    "contenido": ultimo_mensaje["contenido"] if ultimo_mensaje else "Sin mensajes",
+                    "fecha": ultimo_mensaje["fecha_envio"].isoformat() if ultimo_mensaje else conv["creado_en"].isoformat()
+                }
+            }
+            resultado.append(chat_preview)
+
+        # 5. Ordenar toda la lista para que los chats con mensajes más recientes salgan arriba
+        resultado.sort(key=lambda x: x["ultimoMensaje"]["fecha"], reverse=True)
+
+        return resultado
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { jwtDecode } from 'jwt-decode';
 import { Subscription } from 'rxjs';
 import { ChatService } from '../Servicios/chats';
+import { ActivatedRoute, Router } from '@angular/router'
 
 @Component({
   selector: 'app-chat-personal',
@@ -18,23 +19,33 @@ export class ChatPersonalComponente {
   mensajes: any[] = [];
   nuevoMensaje: string = '';
   usuarioId!: number;
-  nombreContacto: string = 'Cargando...';
   contactoEnLinea: boolean = false; 
   cargando: boolean = false;
-
-  destinatarioId: number = 2; 
-
+  destinatarioId!: number;
+  nombreContacto: string = '';
+  idConversacionActual: string = '';
   private chatSub!: Subscription;
 
-  constructor(private chatService: ChatService) {}
+  constructor(
+    private chatService: ChatService,
+    private route: ActivatedRoute,
+    private router: Router 
+  ) {}
 
   ngOnInit() {
-    const token = localStorage.getItem('access_token');
+    const idParam = this.route.snapshot.paramMap.get('id');
+    if (idParam) {
+      this.idConversacionActual = idParam;
+    }
+
+    this.nombreContacto = this.route.snapshot.queryParamMap.get('nombre') || 'Contacto';
+
+    const token = localStorage.getItem('token');
     if (token) {
       const decodificado: any = jwtDecode(token);
       this.usuarioId = Number(decodificado.sub); 
     }
-
+    
     this.chatService.conectarWebSocket();
 
     this.chatSub = this.chatService.mensajesNuevos$.subscribe((msg) => {
@@ -64,8 +75,9 @@ export class ChatPersonalComponente {
     if (!this.nuevoMensaje.trim()) return;
 
     const textoMensaje = this.nuevoMensaje;
-    this.nuevoMensaje = '';
+    this.nuevoMensaje = ''; 
 
+    // Agregarlo visualmente para ti al instante
     const miNuevoMensaje = {
       id_usuario_remitente: this.usuarioId,
       contenido: textoMensaje,
@@ -74,14 +86,12 @@ export class ChatPersonalComponente {
     };
     this.mensajes.push(miNuevoMensaje);
 
-    this.chatService.enviarMensaje(this.destinatarioId, textoMensaje).subscribe({
-      next: (res) => console.log('Mensaje guardado en Mongo', res),
-      error: (err) => {
-        console.error('Error al enviar el mensaje', err);
-      }
-    });
+    // Enviar al backend usando el idConversacionActual (que es un string)
+    this.chatService.enviarMensajeEnSala(this.idConversacionActual, textoMensaje)
+      .subscribe({
+        error: (err) => console.error('Error al enviar el mensaje:', err)
+      });
   }
-
   cargarHistorial() {
     this.cargando = true;
     setTimeout(() => {
