@@ -9,8 +9,7 @@
 /* Ajuste para el menú lateral estrecho (Floating Vertical Rail) */
 .main-content {
   flex: 1;
-  margin-left: 120px; /* Reducido de 260px para encajar con el menú estrecho de Orbita */
-  padding: 40px;
+  padding: 20px;
 }
 
 /* Cabecera limpia y minimalista */
@@ -24,6 +23,7 @@
   margin-bottom: 32px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.02);
   border: 1px solid #f0eee9;
+  height: 30px;
 }
 
 .header-title h1 {

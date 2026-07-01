@@ -55,19 +55,19 @@ export class CrearProyectoComponente {
       proyectoData.fecha_fin = this.proyecto.fecha_fin;
     }
 
-    console.log('📤 Enviando proyecto:', proyectoData);
+    console.log('Enviando proyecto:', proyectoData);
 
     this.apiService.crearProyecto(proyectoData).subscribe({
       next: (response) => {
-        console.log('✅ Proyecto creado:', response);
-        this.successMessage = '✅ Proyecto creado exitosamente';
+        console.log('Proyecto creado:', response);
+        this.successMessage = 'Proyecto creado exitosamente';
         this.cargando = false;
         setTimeout(() => {
           this.router.navigate(['/inicio']);
         }, 1500);
       },
       error: (error) => {
-        console.error('❌ Error:', error);
+        console.error('Error:', error);
         this.errorMessage = error.error?.detail || 'Error al crear proyecto';
         this.cargando = false;
       }

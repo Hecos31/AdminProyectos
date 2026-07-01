@@ -34,6 +34,7 @@ export class LoginComponente {
         localStorage.setItem('token', response.access_token);
 
         this.router.navigate(['/inicio']);
+        this.cargando = false;
       },
       error: (error) => {
         this.errorMessage = error.error?.detail || 'Error al iniciar sesión';

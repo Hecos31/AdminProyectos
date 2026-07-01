@@ -1,15 +1,15 @@
 <div class="inicio-container">
-
   <main class="main-content">
+    
     <header class="header">
       <div class="header-title">
         <h1>Mis Proyectos</h1>
-        <p class="subtitle">Selecciona un entorno de trabajo o crea uno nuevo</p>
+        <p class="subtitle">Gestiona tus entornos de trabajo</p>
       </div>
       
       <div class="user-info">
         <div class="user-avatar">
-          {{ (usuario?.nombre | slice:0:1) || 'U' }}
+          {{ (usuario?.nombre | slice:0:1) || 'F' }}
         </div>
         <span class="user-name">Hola, {{ usuario?.nombre || 'Fabián' }}</span>
         <button (click)="cerrarSesion()" class="btn-logout">Cerrar Sesión</button>
@@ -23,7 +23,7 @@
 
     <div *ngIf="!cargando" class="proyectos-grid">
       
-      <div class="proyecto-card nuevo" (click)="cargarProyectos()">
+      <div class="proyecto-card nuevo" (click)="crearProyecto()">
         <div class="proyecto-icono-nuevo">+</div>
         <h3>Nuevo Proyecto</h3>
         <p>Configurar un nuevo entorno</p>
@@ -32,19 +32,18 @@
       <div *ngFor="let proyecto of proyectos" class="proyecto-card" (click)="irAProyecto(proyecto.id_proyecto)">
         <div class="proyecto-info">
           <h3>{{ proyecto.nombre }}</h3>
-          <p>{{ proyecto.descripcion || 'Sin descripción general establecida para este proyecto.' }}</p>
+          <p>{{ proyecto.descripcion || 'Sin descripción establecida.' }}</p>
           
           <div class="proyecto-meta">
             <span class="meta-item date">
-              Creado: {{ proyecto.fecha_creacion | date:'dd/MM/yyyy' }}
+              {{ proyecto.fecha_creacion | date:'dd/MM/yyyy' }}
             </span>
             <span class="meta-item status" [ngClass]="proyecto.estado | lowercase">
-              {{ proyecto.estado || 'Activo' }}
+              {{ proyecto.estado }}
             </span>
           </div>
         </div>
       </div>
-
     </div>
   </main>
 </div>

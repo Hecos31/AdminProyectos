@@ -14,27 +14,25 @@
       <!-- Agrupación en dos columnas para Nombre y Apellido -->
       <div class="form-row">
         <div class="form-group half-width">
-          <label for="nombre">Nombre</label>
+          <label for="nombre">Nombre(s)</label>
           <input 
             type="text" 
             id="nombre" 
             [(ngModel)]="usuario.nombre" 
             name="nombre" 
             required 
-            autocomplete="given-name" 
-            placeholder="Fabián">
+            autocomplete="given-name">
         </div>
 
         <div class="form-group half-width">
-          <label for="apellido">Apellido</label>
+          <label for="apellido">Apellidos</label>
           <input 
             type="text" 
             id="apellido" 
             [(ngModel)]="usuario.apellido" 
             name="apellido" 
             required 
-            autocomplete="family-name" 
-            placeholder="García">
+            autocomplete="family-name">
         </div>
       </div>
 
@@ -46,8 +44,7 @@
           [(ngModel)]="usuario.correo" 
           name="correo" 
           required 
-          autocomplete="email" 
-          placeholder="nombre@empresa.com">
+          autocomplete="email">
       </div>
 
       <div class="form-group">

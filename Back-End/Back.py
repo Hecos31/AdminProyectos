@@ -1,6 +1,6 @@
-from datetime import datetime, timedelta
-from typing import Optional
-from fastapi import FastAPI, HTTPException, Depends, status
+from datetime import datetime, timedelta, timezone
+from typing import Optional, Dict
+from fastapi import FastAPI, HTTPException, Depends, status, WebSocket, WebSocketDisconnect, Query
 from fastapi.security import OAuth2PasswordBearer
 from pydantic import BaseModel, EmailStr
 from sqlalchemy import create_engine, Column, Integer, String, Boolean, TIMESTAMP
@@ -10,10 +10,15 @@ from fastapi.middleware.cors import CORSMiddleware
 from enum import Enum
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import relationship
+from motor.motor_asyncio import AsyncIOMotorClient
+from jose import jwt, JWTError
 import jwt
 import urllib.parse
 import bcrypt  
 import sqlalchemy
+
+
+
 
 # --- CONFIGURACIÓN DE LAS VARIABLES DE ENTORNO  (NO OLVIDAR CONFIGURAR EN SU ENTORNO) ---
 password = urllib.parse.quote_plus("H3cos31!") # Cambia esto por tu contraseña de PostgreSQL
@@ -21,6 +26,13 @@ DATABASE_URL = f"postgresql://postgres:{password}@localhost:5432/ProdAdmin"  # C
 SECRET_KEY = "tu_clave_secreta_para_los_tokens_2026Pruebas"  # Clave para evitar firmas inválidas en JWT
 ALGORITHM = "HS256" # Algoritmo de encriptación para JWT y db
 ACCESS_TOKEN_EXPIRE_MINUTES = 60 # Tiempo de expiración del token en minutos
+
+
+# Configuración de MongoDB
+MONGO_URL = "mongodb://localhost:27017"
+client = AsyncIOMotorClient(MONGO_URL)
+db = client.chat_db
+
 
 # --- CONFIGURACIÓN DE LA BASE DE DATOS ---
 engine = create_engine(DATABASE_URL)
@@ -48,6 +60,34 @@ def get_db():
         yield db
     finally:
         db.close()
+
+class MensajePrivadoRequest(BaseModel):
+    destinatario_id: int
+    contenido: str
+
+class ConnectionManager:
+    def __init__(self):
+        # Diccionario para mapear id_usuario -> WebSocket activo
+        self.active_connections: Dict[int, WebSocket] = {}
+
+    async def connect(self, websocket: WebSocket, user_id: int):
+        await websocket.accept()
+        self.active_connections[user_id] = websocket
+
+    def disconnect(self, user_id: int):
+        if user_id in self.active_connections:
+            del self.active_connections[user_id]
+
+    async def enviar_mensaje_en_vivo(self, mensaje: dict, destinatario_id: int):
+        # Si el destinatario tiene la app abierta, le enviamos el JSON instantáneamente
+        if destinatario_id in self.active_connections:
+            websocket = self.active_connections[destinatario_id]
+            await websocket.send_json(mensaje)
+
+# ¡Instancia global necesaria para los WebSockets!
+manager = ConnectionManager()
+
+
 
 class UsuarioDB(Base):
     __tablename__ = "usuarios"
@@ -241,6 +281,21 @@ class TareaDelete(BaseModel):
 
 # --- Seguridad y Autenticación ---
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
+
+# Función auxiliar para validar el token
+async def validar_token_ws(token: str):
+    try:
+        # Decodificamos el token
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        # Extraemos el ID del usuario (usualmente guardado en 'sub' o 'id')
+        user_id = payload.get("sub") 
+        
+        if user_id is None:
+            return None
+        return int(user_id)
+    except JWTError:
+        # El token expiró o es inválido
+        return None
 
 def verificar_password(plain_password: str, hashed_password: str) -> bool:
     # Convertimos los strings a bytes para la validación nativa de bcrypt
@@ -911,3 +966,83 @@ def eliminar_tarea(
         )
 
     return {"mensaje": f"La tarea con ID {tarea_del.id_tarea} fue eliminada correctamente."}
+
+
+
+@app.post("/mensajes/privado")
+async def enviar_mensaje_privado(
+    req: MensajePrivadoRequest, 
+    id_usuario_actual: int = Depends(obtener_usuario_actual)
+):
+    try:
+        # 1. Buscar si ya existe el chat privado entre estos dos usuarios
+        chat_existente = await db.conversations.find_one({
+            "tipo": "privado",
+            "participantes.id_usuario": { "$all": [id_usuario_actual, req.destinatario_id] }
+        })
+
+        if chat_existente:
+            id_conversacion = chat_existente["_id"]
+        else:
+            # 2. Si no existe, creamos la conversación automáticamente
+            nueva_conversacion = {
+                "tipo": "privado",
+                "id_proyecto": None,
+                "nombre": None,
+                "creado_en": datetime.now(timezone.utc),
+                "participantes": [
+                    {"id_usuario": id_usuario_actual, "rol": "miembro", "fecha_ingreso": datetime.now(timezone.utc)},
+                    {"id_usuario": req.destinatario_id, "rol": "miembro", "fecha_ingreso": datetime.now(timezone.utc)}
+                ]
+            }
+            resultado_insert = await db.conversations.insert_one(nueva_conversacion)
+            id_conversacion = resultado_insert.inserted_id
+
+        # 3. Insertar el mensaje vinculado a esa conversación
+        nuevo_mensaje = {
+            "id_conversacion": id_conversacion,
+            "id_usuario_remitente": id_usuario_actual,
+            "contenido": req.contenido,
+            "fecha_envio": datetime.now(timezone.utc)
+        }
+        
+        await db.messages.insert_one(nuevo_mensaje)
+
+        # 4. Disparar el mensaje por el túnel WebSocket del destinatario
+        nuevo_mensaje_dict = {
+            "id_conversacion": str(id_conversacion),
+            "id_usuario_remitente": id_usuario_actual,
+            "contenido": req.contenido,
+            "fecha_envio": nuevo_mensaje["fecha_envio"].isoformat()
+        }
+        
+        await manager.enviar_mensaje_en_vivo(nuevo_mensaje_dict, req.destinatario_id)
+
+        return {
+            "status": "success", 
+            "message": "Mensaje enviado",
+            "id_conversacion": str(id_conversacion)
+        }
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    
+@app.websocket("/ws")
+async def websocket_endpoint(websocket: WebSocket, token: str = Query(...)):
+    # 1. Validar identidad antes de aceptar la conexión
+    user_id = await validar_token_ws(token)
+    
+    if user_id is None:
+        # Cerramos la conexión inmediatamente con código 1008 (Policy Violation)
+        await websocket.close(code=1008)
+        return
+
+    # 2. Si el token es válido, aceptamos la conexión
+    await manager.connect(websocket, user_id)
+    
+    try:
+        while True:
+            # Mantenemos viva la conexión esperando eventos
+            await websocket.receive_text()
+    except WebSocketDisconnect:
+        manager.disconnect(user_id)

@@ -44,8 +44,8 @@
   </nav>
 
   <div class="sidebar-footer">
-    <div class="user-avatar" title="{{ usuario?.nombre || 'Fabián' }}">
-      {{ (usuario?.nombre | slice:0:1) || 'F' }}
+    <div class="user-avatar">
+      {{ (usuario?.nombre | slice:0:1) }}
     </div>
     
     <div class="footer-actions">

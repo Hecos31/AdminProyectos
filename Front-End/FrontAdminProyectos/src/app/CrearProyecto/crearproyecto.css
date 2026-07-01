@@ -1,38 +1,108 @@
+/* Contenedor adaptado para convivir con el menú lateral */
 .crear-proyecto-container {
   display: flex;
-  justify-content: center;
-  align-items: center;
   min-height: 100vh;
-  background: #f0f2f5;
-  padding: 20px;
+  background-color: #f7f6f4;
+  font-family: 'Inter', sans-serif;
 }
 
-.crear-proyecto-card {
-  background: white;
+.main-content {
+  flex: 1;
   padding: 40px;
-  border-radius: 16px;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* Centra el contenido horizontalmente */
+}
+
+/* Cabecera simple fuera de la tarjeta */
+.header-simple {
   width: 100%;
-  max-width: 600px;
+  max-width: 650px;
+  margin-bottom: 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 16px;
 }
 
-.crear-proyecto-card h2 {
-  text-align: center;
-  color: #1a1a2e;
-  margin: 0 0 30px 0;
-  font-size: 28px;
+.header-simple h1 {
+  margin: 0;
+  font-size: 26px;
+  color: #3b3530;
+  font-family: 'Outfit', sans-serif;
+  font-weight: 700;
 }
 
+.btn-volver {
+  background: transparent;
+  border: 1px solid #f13434;
+  color: #f13434;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 8px 16px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+}
+
+.btn-volver:hover {
+  background: #fdfdfc;
+  color: #ff0000;
+  border-color: #f13434;
+}
+
+/* Tarjeta principal del formulario */
+.crear-proyecto-card {
+  background: #ffffff;
+  padding: 32px;
+  border-radius: 16px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.01);
+  border: 1px solid #f0eee9;
+  width: 100%;
+  max-width: 650px;
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #f0eee9;
+}
+
+.header-icon {
+  color: #bfaea0;
+  font-size: 20px;
+}
+
+.card-header h3 {
+  margin: 0;
+  color: #3b3530;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+/* Estilos de formulario consistentes con Orbita */
 .form-group {
-  margin-bottom: 20px;
+  margin-bottom: 24px;
 }
 
 .form-group label {
   display: block;
-  font-weight: 500;
-  color: #333;
-  margin-bottom: 6px;
-  font-size: 14px;
+  font-weight: 600;
+  color: #5c5550;
+  margin-bottom: 8px;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.required {
+  color: #c95252;
 }
 
 .form-group input,
@@ -40,20 +110,31 @@
 .form-group select {
   width: 100%;
   padding: 12px 14px;
-  border: 1px solid #ddd;
+  background-color: #fcfcfb;
+  border: 1px solid #e3e0da;
   border-radius: 8px;
   font-size: 14px;
-  transition: border-color 0.3s;
+  color: #333;
   box-sizing: border-box;
-  font-family: inherit;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  font-family: 'Inter', sans-serif;
+}
+
+.form-group textarea {
+  resize: vertical;
 }
 
 .form-group input:focus,
 .form-group textarea:focus,
 .form-group select:focus {
   outline: none;
-  border-color: #667eea;
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  border-color: #c4b5a5;
+  box-shadow: 0 0 0 3px rgba(196, 181, 165, 0.2);
+}
+
+/* Envoltorio para personalizar ligeramente el select */
+.select-wrapper {
+  position: relative;
 }
 
 .form-row {
@@ -62,81 +143,84 @@
   gap: 20px;
 }
 
-.error-message {
-  background: #f8d7da;
-  color: #721c24;
-  padding: 10px 14px;
+/* Alertas estilo Orbita */
+.alert {
+  padding: 14px;
   border-radius: 8px;
-  margin-bottom: 15px;
+  margin-bottom: 24px;
   font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.error-message {
+  background: #fdf5f5;
+  color: #c95252;
+  border: 1px solid #fae3e3;
 }
 
 .success-message {
-  background: #d4edda;
-  color: #155724;
-  padding: 10px 14px;
-  border-radius: 8px;
-  margin-bottom: 15px;
-  font-size: 14px;
+  background: #f2fbf5;
+  color: #3b8755;
+  border: 1px solid #e1f5e8;
 }
 
+/* Botones de acción alineados a la derecha */
 .form-actions {
   display: flex;
-  gap: 10px;
-  margin-top: 10px;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 1px solid #f0eee9;
 }
 
-.btn-cancelar {
-  flex: 1;
-  padding: 12px;
-  background: #e9ecef;
-  color: #333;
+.btn-secundario {
+  padding: 10px 20px;
+  border: 1px solid #e3e0da;
+  border-radius: 8px;
+  background: transparent;
+  color: #5c5550;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-secundario:hover {
+  background: #fdfdfc;
+  border-color: #bfaea0;
+}
+
+.btn-primario {
+  padding: 10px 24px;
+  background: #bfaea0; /* Café claro/Beige oscuro */
+  color: #ffffff;
   border: none;
   border-radius: 8px;
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: background-color 0.3s ease;
 }
 
-.btn-cancelar:hover {
-  background: #dee2e6;
+.btn-primario:hover:not(:disabled) {
+  background: #a89586;
 }
 
-.btn-crear {
-  flex: 2;
-  padding: 12px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  border: none;
-  border-radius: 8px;
-  font-size: 16px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.2s;
-}
-
-.btn-crear:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
-}
-
-.btn-crear:disabled {
-  opacity: 0.7;
+.btn-primario:disabled {
+  opacity: 0.6;
   cursor: not-allowed;
-  transform: none;
 }
 
 @media (max-width: 768px) {
-  .form-row {
-    grid-template-columns: 1fr;
-  }
-  
-  .crear-proyecto-card {
+  .main-content {
+    margin-left: 0;
     padding: 20px;
   }
   
-  .form-actions {
-    flex-direction: column;
+  .form-row {
+    grid-template-columns: 1fr;
   }
 }
