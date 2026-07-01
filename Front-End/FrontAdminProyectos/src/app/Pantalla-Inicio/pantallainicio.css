@@ -1,213 +1,196 @@
+/* Contenedor principal alineado con el resto de la app */
 .inicio-container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 20px;
+  display: flex;
   min-height: 100vh;
-  background: #f0f2f5;
+  background-color: #f7f6f4; /* Gris cálido / off-white */
+  font-family: 'Inter', sans-serif;
 }
 
-/* Header */
+/* Ajuste para el menú lateral estrecho (Floating Vertical Rail) */
+.main-content {
+  flex: 1;
+  padding: 20px;
+}
+
+/* Cabecera limpia y minimalista */
 .header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 15px 25px;
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-  margin-bottom: 30px;
+  padding: 24px 32px;
+  background: #ffffff;
+  border-radius: 16px;
+  margin-bottom: 32px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.02);
+  border: 1px solid #f0eee9;
+  height: 30px;
 }
 
-.header-left h1 {
+.header-title h1 {
+  margin: 0 0 4px 0;
+  font-size: 26px;
+  color: #3b3530; /* Charcoal/Café oscuro */
+  font-family: 'Outfit', sans-serif;
+  font-weight: 700;
+}
+
+.header-title .subtitle {
   margin: 0;
-  font-size: 24px;
-  color: #1a1a2e;
+  color: #8c857f;
+  font-size: 14px;
 }
 
-.header-right {
+/* Info del usuario y avatar */
+.user-info {
   display: flex;
   align-items: center;
-  gap: 15px;
+  gap: 16px;
 }
 
-.usuario-info {
-  font-weight: 500;
-  color: #333;
-}
-
-.btn-logout {
-  padding: 8px 18px;
-  background: #dc3545;
+.user-avatar {
+  width: 40px;
+  height: 40px;
+  background-color: #bfaea0; /* Café claro Orbita */
   color: white;
-  border: none;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 16px;
+}
+
+.user-name {
+  color: #5c5550;
+  font-weight: 500;
+  font-size: 15px;
+}
+
+/* Botón de cierre de sesión sutil para no robar atención */
+.btn-logout {
+  padding: 8px 16px;
+  background: transparent;
+  color: #a89586;
+  border: 1px solid #e3e0da;
   border-radius: 8px;
   cursor: pointer;
-  transition: background 0.3s;
+  font-weight: 500;
+  transition: all 0.2s ease;
 }
 
 .btn-logout:hover {
-  background: #c82333;
+  background: #fdf5f5;
+  color: #c95252; /* Rojo suave solo al pasar el mouse */
+  border-color: #fae3e3;
 }
 
-/* Loading */
+/* Estado de carga */
 .loading {
   text-align: center;
-  padding: 60px 20px;
-}
-
-.spinner {
-  width: 50px;
-  height: 50px;
-  border: 4px solid #e9ecef;
-  border-top-color: #667eea;
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-  margin: 0 auto 15px;
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
+  padding: 80px 20px;
+  color: #8c857f;
+  font-size: 15px;
 }
 
 /* Grid de proyectos */
 .proyectos-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 24px;
 }
 
+/* Tarjetas de proyecto planas y limpias */
 .proyecto-card {
-  background: white;
+  background: #ffffff;
   border-radius: 12px;
-  padding: 20px;
+  padding: 24px;
   display: flex;
-  gap: 15px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  flex-direction: column;
   cursor: pointer;
-  transition: all 0.3s ease;
+  border: 1px solid #f0eee9;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.01);
 }
 
 .proyecto-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 25px rgba(0,0,0,0.12);
-}
-
-.proyecto-icono {
-  font-size: 32px;
-  min-width: 50px;
-  text-align: center;
+  transform: translateY(-3px);
+  box-shadow: 0 12px 25px rgba(0, 0, 0, 0.04);
+  border-color: #e3e0da;
 }
 
 .proyecto-info {
   flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 
 .proyecto-info h3 {
-  margin: 0 0 5px 0;
+  margin: 0 0 8px 0;
   font-size: 18px;
-  color: #1a1a2e;
+  color: #3b3530;
+  font-weight: 600;
 }
 
 .proyecto-info p {
-  margin: 0 0 10px 0;
-  color: #666;
+  margin: 0 0 24px 0;
+  color: #8c857f;
   font-size: 14px;
+  line-height: 1.5;
+  flex-grow: 1; /* Empuja los metadatos hacia abajo */
 }
 
+/* Metadatos (Fecha y Estado) tipo "Pill" o etiquetas */
 .proyecto-meta {
   display: flex;
-  gap: 15px;
-  font-size: 13px;
-  color: #888;
-}
-
-.progreso-mini {
-  margin-top: 10px;
-  display: flex;
+  justify-content: space-between;
   align-items: center;
-  gap: 10px;
+  border-top: 1px solid #f0eee9;
+  padding-top: 16px;
 }
 
-.barra-mini {
-  height: 6px;
-  background: #667eea;
-  border-radius: 3px;
-  transition: width 0.5s ease;
-  flex: 1;
-}
-
-.progreso-mini span {
-  font-size: 13px;
+.meta-item {
+  font-size: 12px;
   font-weight: 500;
-  color: #333;
 }
 
-/* Card nuevo proyecto */
+.meta-item.date {
+  color: #a89586;
+}
+
+.meta-item.status {
+  background: #f4f1ed;
+  color: #7a6e65;
+  padding: 4px 10px;
+  border-radius: 20px;
+}
+
+/* Tarjeta especial para "Nuevo Proyecto" */
 .proyecto-card.nuevo {
-  border: 2px dashed #ccc;
-  background: #fafafa;
+  border: 2px dashed #e3e0da;
+  background: transparent;
   justify-content: center;
   align-items: center;
   text-align: center;
+  box-shadow: none;
 }
 
 .proyecto-card.nuevo:hover {
-  border-color: #667eea;
-  background: #f8f7ff;
+  border-color: #bfaea0;
+  background: #ffffff;
 }
 
-.proyecto-card.nuevo .proyecto-icono {
-  font-size: 40px;
+.proyecto-icono-nuevo {
+  font-size: 32px;
+  color: #bfaea0;
+  margin-bottom: 12px;
+  font-weight: 300;
 }
 
 .proyecto-card.nuevo h3 {
-  color: #667eea;
+  color: #5c5550;
+  margin-bottom: 4px;
 }
 
-/* Sin proyectos */
-.sin-proyectos {
-  grid-column: 1 / -1;
-  text-align: center;
-  padding: 60px 20px;
-  background: white;
-  border-radius: 12px;
-}
-
-.sin-proyectos p {
-  color: #888;
-  font-size: 18px;
-  margin-bottom: 20px;
-}
-
-.btn-crear-proyecto {
-  padding: 12px 30px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  border: none;
-  border-radius: 8px;
-  font-size: 16px;
-  cursor: pointer;
-  transition: transform 0.2s;
-}
-
-.btn-crear-proyecto:hover {
-  transform: scale(1.05);
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-  .header {
-    flex-direction: column;
-    gap: 15px;
-    text-align: center;
-  }
-  
-  .header-right {
-    flex-wrap: wrap;
-    justify-content: center;
-  }
-  
-  .proyectos-grid {
-    grid-template-columns: 1fr;
-  }
+.proyecto-card.nuevo p {
+  margin: 0;
 }

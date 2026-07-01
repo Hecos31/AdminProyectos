@@ -1,79 +1,72 @@
 <div class="calendario-container">
-  <h2>📅 Calendario de Actividades</h2>
-
-  <!-- Formulario nueva actividad -->
-  <div class="form-actividad">
-    <h3>Nueva Actividad</h3>
-    <div class="form-grid">
-      <input 
-        type="text" 
-        [(ngModel)]="nuevaActividad.titulo" 
-        placeholder="Título de la actividad"
-        class="input-titulo"
-      >
-      <textarea 
-        [(ngModel)]="nuevaActividad.descripcion" 
-        placeholder="Descripción (opcional)"
-        class="input-descripcion"
-      ></textarea>
-      <input 
-        type="date" 
-        [(ngModel)]="nuevaActividad.fecha"
-        class="input-fecha"
-      >
-      <input 
-        type="time" 
-        [(ngModel)]="nuevaActividad.hora"
-        class="input-hora"
-      >
-      <select [(ngModel)]="nuevaActividad.prioridad" class="select-prioridad">
-        <option value="alta">🔴 Alta</option>
-        <option value="media">🟡 Media</option>
-        <option value="baja">🟢 Baja</option>
-      </select>
-      <button (click)="crearActividad()" class="btn-crear">
-        Crear Actividad
+  <main class="main-content">
+    
+    <header class="header-actions">
+      <button (click)="volverAlProyecto()" class="btn-volver">
+        <i class="fa-solid fa-arrow-left"></i> Volver al Proyecto
       </button>
-    </div>
-  </div>
+      <h2>Calendario de Actividades</h2>
+    </header>
 
-  <!-- Mensajes -->
-  <div *ngIf="successMessage" class="success-message">
-    ✅ {{ successMessage }}
-  </div>
-  <div *ngIf="errorMessage" class="error-message">
-    ❌ {{ errorMessage }}
-  </div>
-
-  <!-- Lista de actividades -->
-  <div *ngIf="cargando" class="loading">
-    Cargando actividades...
-  </div>
-
-  <div *ngIf="!cargando" class="lista-actividades">
-    <div *ngFor="let actividad of actividades" class="actividad-card">
-      <div class="actividad-header">
-        <h4>{{ actividad.titulo }}</h4>
-        <span class="prioridad-badge" [style.background]="getPrioridadColor(actividad.prioridad)">
-          {{ actividad.prioridad }}
-        </span>
-      </div>
-      
-      <p class="actividad-descripcion">{{ actividad.descripcion }}</p>
-      
-      <div class="actividad-footer">
-        <span class="actividad-fecha">
-          📅 {{ actividad.fecha | date }}
-          <span *ngIf="actividad.hora">⏰ {{ actividad.hora }}</span>
-        </span>
-        <button (click)="eliminarActividad(actividad._id)" class="btn-eliminar">
-          🗑️ Eliminar
-        </button>
+    <div class="form-tarea">
+      <h3><i class="fa-solid fa-plus-circle"></i> Nueva Tarea</h3>
+      <div class="form-grid">
+        <input type="text" [(ngModel)]="nuevaTarea.titulo" placeholder="Título de la tarea" class="input-field">
+        <textarea [(ngModel)]="nuevaTarea.descripcion" placeholder="Descripción (opcional)" class="input-field"></textarea>
+        <input type="date" [(ngModel)]="nuevaTarea.fecha_inicio" class="input-field" title="Fecha inicio">
+        <input type="date" [(ngModel)]="nuevaTarea.fecha_limite" class="input-field" title="Fecha límite">
+        
+        <select [(ngModel)]="nuevaTarea.prioridad" class="input-field">
+          <option value="Alta">Prioridad: Alta</option>
+          <option value="Media">Prioridad: Media</option>
+          <option value="Baja">Prioridad: Baja</option>
+        </select>
+        
+        <select [(ngModel)]="nuevaTarea.estado" class="input-field">
+          <option value="Pendiente por asignar">Estado: Pendiente</option>
+          <option value="Asignada">Estado: Asignada</option>
+          <option value="Concluida">Estado: Concluida</option>
+        </select>
+        
+        <button (click)="crearTarea()" class="btn-crear">Crear Tarea</button>
       </div>
     </div>
 
-    <div *ngIf="actividades.length === 0" class="sin-actividades">
-      No hay actividades programadas
+    <div *ngIf="successMessage" class="alert success-message">
+      <i class="fa-solid fa-check-circle"></i> {{ successMessage }}
     </div>
-  </div>
+    <div *ngIf="errorMessage" class="alert error-message">
+      <i class="fa-solid fa-exclamation-circle"></i> {{ errorMessage }}
+    </div>
+
+    <div *ngIf="cargando" class="loading-state">Cargando actividades...</div>
+
+    <div *ngIf="!cargando" class="lista-tareas">
+      <div *ngFor="let tarea of tareas" class="tarea-card">
+        <div class="tarea-header">
+          <h4>{{ tarea.titulo }}</h4>
+          <div class="badges">
+            <span class="badge" [style.background]="getEstadoColor(tarea.estado)">{{ tarea.estado }}</span>
+            <span class="badge" [style.background]="getPrioridadColor(tarea.prioridad)">{{ tarea.prioridad }}</span>
+          </div>
+        </div>
+        
+        <p class="tarea-descripcion">{{ tarea.descripcion }}</p>
+        
+        <div class="tarea-footer">
+          <span class="tarea-fecha">
+            <i class="fa-regular fa-calendar-alt"></i> {{ tarea.fecha_inicio | date:'dd/MM/yyyy' }} 
+            <span *ngIf="tarea.fecha_limite">→ {{ tarea.fecha_limite | date:'dd/MM/yyyy' }}</span>
+          </span>
+          <button (click)="eliminarTarea(tarea.id_tarea)" class="btn-eliminar">
+            <i class="fa-solid fa-trash"></i> Eliminar
+          </button>
+        </div>
+      </div>
+
+      <div *ngIf="tareas.length === 0" class="sin-tareas">
+        <p>No hay tareas registradas en este proyecto.</p>
+      </div>
+    </div>
+  </main>
 </div>

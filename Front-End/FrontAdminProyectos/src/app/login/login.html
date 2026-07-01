@@ -1,42 +1,51 @@
 <div class="login-container">
   <div class="login-card">
-    <h2>🔐 Iniciar Sesión</h2>
-    <p class="subtitle">Accede a tu cuenta de administración</p>
     
-    <form (ngSubmit)="onSubmit()">
+    <div class="brand-header">
+      <div class="logo-mark">O</div>
+      <h2>Orbita</h2>
+    </div>
+    
+    <p class="subtitle">Inicia sesión para continuar a tu espacio de trabajo</p>
+    
+    <form (ngSubmit)="onSubmit()" #loginForm="ngForm">
+      
       <div class="form-group">
-        <label>Email</label>
+        <label for="correo">Correo Electrónico</label>
         <input 
           type="email" 
-          [(ngModel)]="credentials.email" 
-          name="email"
-          required
-          placeholder="tu@email.com"
-        >
+          id="correo"
+          [(ngModel)]="credentials.correo" 
+          name="correo" 
+          required 
+          autocomplete="email">
       </div>
 
       <div class="form-group">
-        <label>Contraseña</label>
+        <label for="password">Contraseña</label>
         <input 
           type="password" 
+          id="password"
           [(ngModel)]="credentials.password" 
-          name="password"
-          required
-          placeholder="••••••••"
-        >
+          name="password" 
+          required 
+          autocomplete="current-password"
+          placeholder="Ingresa tu contraseña">
       </div>
 
       <div *ngIf="errorMessage" class="error-message">
-        ❌ {{ errorMessage }}
+        {{ errorMessage }}
       </div>
 
-      <button type="submit" [disabled]="cargando">
-        {{ cargando ? '⏳ Iniciando...' : 'Iniciar Sesión' }}
+      <button type="submit" [disabled]="cargando || loginForm.invalid">
+        {{ cargando ? 'Iniciando sesión...' : 'Ingresar' }}
       </button>
+      
     </form>
 
     <p class="register-link">
-      ¿No tienes cuenta? <a routerLink="/registro">Regístrate aquí</a>
+      ¿No tienes una cuenta? <a routerLink="/registro">Regístrate aquí</a>
     </p>
+    
   </div>
 </div>

@@ -1,33 +1,39 @@
+/* Contenedor principal con fondo gris muy suave */
 .login-container {
   display: flex;
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background-color: #f7f6f4; /* Gris cálido/off-white */
   padding: 20px;
+  font-family: 'Inter', sans-serif; /* Manteniendo una tipografía limpia */
 }
 
+/* Tarjeta limpia, sin bordes pesados y con sombra sutil */
 .login-card {
-  background: white;
+  background: #ffffff;
   padding: 40px;
   border-radius: 16px;
-  box-shadow: 0 10px 40px rgba(0,0,0,0.2);
   width: 100%;
   max-width: 420px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03); /* Sombra muy difuminada */
+  border: 1px solid #f0eee9; /* Borde beige muy sutil */
 }
 
+/* Títulos en tonos oscuros cálidos */
 .login-card h2 {
   text-align: center;
-  color: #1a1a2e;
+  color: #3b3530; /* Tono café oscuro/carbón */
   margin: 0 0 10px 0;
   font-size: 28px;
+  font-weight: 600;
 }
 
-.login-card .subtitle {
+.subtitle {
   text-align: center;
-  color: #888;
+  color: #8c857f; /* Gris cálido */
   margin-bottom: 30px;
-  font-size: 14px;
+  font-size: 15px;
 }
 
 .form-group {
@@ -37,73 +43,109 @@
 .form-group label {
   display: block;
   font-weight: 500;
-  color: #333;
-  margin-bottom: 6px;
+  color: #5c5550;
+  margin-bottom: 8px;
   font-size: 14px;
 }
 
+/* Inputs minimalistas con focus en tono café */
 .form-group input {
   width: 100%;
   padding: 12px 14px;
-  border: 1px solid #ddd;
+  background-color: #fcfcfb;
+  border: 1px solid #e3e0da;
   border-radius: 8px;
   font-size: 14px;
-  transition: border-color 0.3s;
+  color: #333;
   box-sizing: border-box;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 .form-group input:focus {
   outline: none;
-  border-color: #667eea;
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  border-color: #c4b5a5; /* Acento café claro */
+  box-shadow: 0 0 0 3px rgba(196, 181, 165, 0.2);
 }
 
+/* Botón principal usando la paleta café claro/beige */
 button[type="submit"] {
   width: 100%;
   padding: 12px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+  background: #bfaea0; /* Café claro apagado */
+  color: #ffffff;
   border: none;
   border-radius: 8px;
   font-size: 16px;
   font-weight: 600;
   cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition: background-color 0.3s ease;
 }
 
-button[type="submit"]:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+button[type="submit"]:hover:not(:disabled) {
+  background: #a89586; /* Tono ligeramente más oscuro al pasar el mouse */
 }
 
 button[type="submit"]:disabled {
   opacity: 0.7;
   cursor: not-allowed;
-  transform: none;
 }
 
+/* Alertas de error que no rompan la armonía visual */
 .error-message {
-  background: #f8d7da;
-  color: #721c24;
+  background: #fdf5f5;
+  color: #c95252;
   padding: 10px 14px;
   border-radius: 8px;
-  margin-bottom: 15px;
+  margin-bottom: 20px;
   font-size: 14px;
+  border: 1px solid #fae3e3;
 }
 
+/* Enlaces integrados a la paleta */
 .register-link {
   text-align: center;
-  margin-top: 20px;
+  margin-top: 24px;
+  color: #8c857f;
   font-size: 14px;
-  color: #666;
 }
 
 .register-link a {
-  color: #667eea;
+  color: #a89586;
   text-decoration: none;
-  font-weight: 500;
+  font-weight: 600;
+  transition: color 0.3s ease;
 }
 
 .register-link a:hover {
-  text-decoration: underline;
+  color: #8a7868;
+}
+/* Estilos para la cabecera de la marca Orbita */
+.brand-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.logo-mark {
+  width: 48px;
+  height: 48px;
+  background-color: #bfaea0; /* Café suave de la paleta */
+  color: white;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  font-weight: 800;
+  font-family: 'Outfit', sans-serif;
+  margin-bottom: 12px;
+}
+
+/* Ajuste fino al h2 para que coincida con el logo */
+.login-card h2 {
+  margin: 0;
+  font-size: 24px;
+  color: #3b3530;
+  font-weight: 700;
 }

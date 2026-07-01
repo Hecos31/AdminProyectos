@@ -1,39 +1,91 @@
 <div class="sidebar">
-  <!-- Logo -->
   <div class="sidebar-header">
-    <div class="logo">
-      <span class="logo-icon">🚀</span>
-      <span class="logo-text">AdminProyectos</span>
-    </div>
+    <div class="logo-mark">O</div>
+    <span class="logo-text">Orbita</span>
   </div>
 
-  <!-- Menú -->
   <nav class="sidebar-nav">
-    <ul class="nav-list">
-      <li *ngFor="let item of menuItems" class="nav-item">
-        <a 
-          [routerLink]="item.ruta"
-          class="nav-link"
-          [class.active]="estaActivo(item.ruta)"
-        >
-          <span class="nav-icon">{{ item.icono }}</span>
-          <span class="nav-text">{{ item.nombre }}</span>
-        </a>
-      </li>
-    </ul>
+    <div *ngIf="!modoProyecto" class="menu-global">
+      <ul class="nav-list">
+        <li class="nav-item">
+          <a routerLink="/inicio" class="nav-link" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
+            <i class="fa-solid fa-house nav-icon"></i>
+            <span class="nav-text">Inicio</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <button routerLink="/crear-proyecto" class="nav-link" routerLinkActive="active">
+            <i class="fa-solid fa-folder-plus nav-icon"></i>
+            <span class="nav-text"> + Nuevo Proyecto</span>
+          </button>
+        </li>
+      </ul>
+    </div>
+
+    <div *ngIf="modoProyecto" class="menu-proyecto">
+      <ul class="nav-list">
+        <li class="nav-item" style="margin-bottom: 24px;">
+          <button routerLink="/inicio" class="nav-link">
+            <i class="fa-solid fa-arrow-left nav-icon"></i>
+            <span class="nav-text">Proyectos</span>
+          </button>
+        </li>
+        <li class="nav-item">
+          <a [routerLink]="['/proyecto', proyectoActivoId]" class="nav-link" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
+            <i class="fa-solid fa-border-all nav-icon"></i>
+            <span class="nav-text">Dashboard</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a [routerLink]="['/proyecto', proyectoActivoId, 'tareas']" class="nav-link" routerLinkActive="active">
+            <i class="fa-solid fa-list-check nav-icon"></i>
+            <span class="nav-text">Tareas</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a [routerLink]="['/proyecto', proyectoActivoId, 'calendario']" class="nav-link" routerLinkActive="active">
+            <i class="fa-regular fa-calendar nav-icon"></i>
+            <span class="nav-text">Calendario</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a [routerLink]="['/proyecto', proyectoActivoId, 'integrantes']" class="nav-link" routerLinkActive="active">
+            <i class="fa-solid fa-users nav-icon"></i>
+            <span class="nav-text">Colaboradores</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a [routerLink]="['/proyecto', proyectoActivoId, 'configuracion']" class="nav-link" routerLinkActive="active">
+            <i class="fa-solid fa-gear nav-icon"></i>
+            <span class="nav-text">Configuración</span>
+          </a>
+        </li>
+      </ul>
+    </div>
   </nav>
 
-  <!-- Footer -->
-  <div class="sidebar-footer">
-    <div class="user-info">
-      <div class="user-avatar">👤</div>
-      <div class="user-details">
-        <div class="user-name">{{ usuario?.nombre || 'Usuario' }}</div>
-        <div class="user-email">{{ usuario?.email || 'usuario@email.com' }}</div>
+  <div class="user-profile-section">
+    
+  <div class="user-popover" *ngIf="mostrarMenuUsuario">
+    <div class="popover-header">
+      <div class="popover-avatar">{{ (usuario?.nombre | slice:0:1) || 'U' }}</div>
+      <div class="popover-info">
+        <span class="popover-name">{{ usuario?.nombre || 'Usuario' }} {{ usuario?.apellido || '' }}</span>
+        <span class="popover-email">{{ usuario?.correo || 'correo@ejemplo.com' }}</span>
       </div>
     </div>
-    <button (click)="cerrarSesion()" class="btn-logout" title="Cerrar sesión">
-      🚪
-    </button>
+    <div class="popover-actions">
+      <button (click)="cerrarSesion()" class="popover-btn logout">
+        <i class="fa-solid fa-arrow-right-from-bracket"></i> Cerrar Sesión
+      </button>
+    </div>
   </div>
+
+  <button class="user-profile-btn" (click)="toggleMenuUsuario()" [class.active]="mostrarMenuUsuario">
+    <div class="user-avatar-mini">{{ (usuario?.nombre | slice:0:1) || 'U' }}</div>
+    <span class="user-name-truncate">{{ usuario?.nombre || 'Usuario' }}</span>
+    <i class="fa-solid fa-chevron-up popover-chevron"></i>
+  </button>
+  
+</div>
 </div>

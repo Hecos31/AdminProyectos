@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { ApiServicio } from '../Servicios/api.servicio';
@@ -7,16 +7,16 @@ import { ApiServicio } from '../Servicios/api.servicio';
 @Component({
   selector: 'app-crear-usuario',
   standalone: true,
-  imports: [FormsModule, CommonModule],
+  imports: [FormsModule, CommonModule, RouterLink],
   templateUrl: './crearusuario.html',
   styleUrls: ['./crearusuario.css']
 })
 export class CrearUsuarioComponente {
   usuario = {
     nombre: '',
-    email: '',
-    password: '',
-    rol: 'usuario'
+    apellido: '',
+    correo: '',
+    password: ''
   };
   errorMessage = '';
   successMessage = '';
@@ -33,14 +33,12 @@ export class CrearUsuarioComponente {
     this.successMessage = '';
 
     this.apiService.registrarUsuario(this.usuario).subscribe({
-      next: (response) => {
+      next: () => {
         this.successMessage = 'Usuario creado exitosamente';
-        setTimeout(() => {
-          this.router.navigate(['/login']);
-        }, 2000);
+        setTimeout(() => this.router.navigate(['/login']), 2000);
       },
       error: (error) => {
-        this.errorMessage = error.error?.mensaje || 'Error al crear usuario';
+        this.errorMessage = error.error?.detail || 'Error al crear usuario';
         this.cargando = false;
       }
     });
