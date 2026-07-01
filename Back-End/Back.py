@@ -1,6 +1,6 @@
-from datetime import datetime, timedelta
-from typing import Optional
-from fastapi import FastAPI, HTTPException, Depends, status
+from datetime import datetime, timedelta, timezone
+from typing import Optional, Dict
+from fastapi import FastAPI, HTTPException, Depends, status, WebSocket, WebSocketDisconnect, Query
 from fastapi.security import OAuth2PasswordBearer
 from pydantic import BaseModel, EmailStr
 from sqlalchemy import create_engine, Column, Integer, String, Boolean, TIMESTAMP
@@ -10,10 +10,15 @@ from fastapi.middleware.cors import CORSMiddleware
 from enum import Enum
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import relationship
+from motor.motor_asyncio import AsyncIOMotorClient
+from jose import jwt, JWTError
 import jwt
 import urllib.parse
 import bcrypt  
 import sqlalchemy
+from typing import List
+from bson.errors import InvalidId
+from bson import ObjectId
 
 # --- CONFIGURACIÓN DE LAS VARIABLES DE ENTORNO  (NO OLVIDAR CONFIGURAR EN SU ENTORNO) ---
 password = urllib.parse.quote_plus("H3cos31!") # Cambia esto por tu contraseña de PostgreSQL
@@ -21,6 +26,13 @@ DATABASE_URL = f"postgresql://postgres:{password}@localhost:5432/ProdAdmin"  # C
 SECRET_KEY = "tu_clave_secreta_para_los_tokens_2026Pruebas"  # Clave para evitar firmas inválidas en JWT
 ALGORITHM = "HS256" # Algoritmo de encriptación para JWT y db
 ACCESS_TOKEN_EXPIRE_MINUTES = 60 # Tiempo de expiración del token en minutos
+
+
+# Configuración de MongoDB
+MONGO_URL = "mongodb://localhost:27017"
+client = AsyncIOMotorClient(MONGO_URL)
+db = client.chat_db
+
 
 # --- CONFIGURACIÓN DE LA BASE DE DATOS ---
 engine = create_engine(DATABASE_URL)
@@ -49,6 +61,34 @@ def get_db():
     finally:
         db.close()
 
+class MensajePrivadoRequest(BaseModel):
+    destinatario_id: int
+    contenido: str
+
+class ConnectionManager:
+    def __init__(self):
+        # Diccionario para mapear id_usuario -> WebSocket activo
+        self.active_connections: Dict[int, WebSocket] = {}
+
+    async def connect(self, websocket: WebSocket, user_id: int):
+        await websocket.accept()
+        self.active_connections[user_id] = websocket
+
+    def disconnect(self, user_id: int):
+        if user_id in self.active_connections:
+            del self.active_connections[user_id]
+
+    async def enviar_mensaje_en_vivo(self, mensaje: dict, destinatario_id: int):
+        # Si el destinatario tiene la app abierta, le enviamos el JSON instantáneamente
+        if destinatario_id in self.active_connections:
+            websocket = self.active_connections[destinatario_id]
+            await websocket.send_json(mensaje)
+
+# ¡Instancia global necesaria para los WebSockets!
+manager = ConnectionManager()
+
+
+
 class UsuarioDB(Base):
     __tablename__ = "usuarios"
 
@@ -58,6 +98,11 @@ class UsuarioDB(Base):
     correo = Column(String(150), unique=True, index=True)
     password = Column(String(255))
     fecha_registro = Column(TIMESTAMP, default=datetime.utcnow)
+
+
+class MensajeConversacionRequest(BaseModel):
+    id_conversacion: str
+    contenido: str
 
 
 # --- ESQUEMAS PARA CREACIÓN DE USUARIOS ---
@@ -237,6 +282,21 @@ class TareaDelete(BaseModel):
 # --- Seguridad y Autenticación ---
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 
+# Función auxiliar para validar el token
+async def validar_token_ws(token: str):
+    try:
+        # Decodificamos el token
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        # Extraemos el ID del usuario (usualmente guardado en 'sub' o 'id')
+        user_id = payload.get("sub") 
+        
+        if user_id is None:
+            return None
+        return int(user_id)
+    except JWTError:
+        # El token expiró o es inválido
+        return None
+
 def verificar_password(plain_password: str, hashed_password: str) -> bool:
     # Convertimos los strings a bytes para la validación nativa de bcrypt
     plain_bytes = plain_password.encode('utf-8')
@@ -401,6 +461,105 @@ def crear_proyecto(
 
     return nuevo_proyecto
 
+#Creacion de Enpoints Brnandon
+# ============ ENDPOINT PARA OBTENER TODOS LOS PROYECTOS DEL USUARIO ============
+@app.get("/proyectos")
+def obtener_proyectos(
+    db: Session = Depends(get_db),
+    id_usuario_actual: int = Depends(obtener_usuario_actual)
+):
+    """
+    Obtiene todos los proyectos donde el usuario es miembro.
+    """
+    proyectos = db.query(ProyectoDB).join(
+        ProyectoUsuarioDB,
+        ProyectoDB.id_proyecto == ProyectoUsuarioDB.id_proyecto
+    ).filter(
+        ProyectoUsuarioDB.id_usuario == id_usuario_actual
+    ).all()
+    
+    return proyectos
+
+
+@app.get("/proyectos/{id_proyecto}")
+def obtener_proyecto(
+    id_proyecto: int,
+    db: Session = Depends(get_db),
+    id_usuario_actual: int = Depends(obtener_usuario_actual)
+):
+    # Verificar que el usuario tiene acceso al proyecto
+    rol = obtener_rol_en_proyecto(id_proyecto, id_usuario_actual, db)
+    if rol is None:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="No tienes acceso a este proyecto."
+        )
+    
+    proyecto = db.query(ProyectoDB).filter(ProyectoDB.id_proyecto == id_proyecto).first()
+    if not proyecto:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="El proyecto no existe."
+        )
+    
+    return proyecto
+
+
+
+
+
+@app.get("/proyectos/{id_proyecto}/tareas", response_model=List[TareaResponse])
+def obtener_tareas_proyecto(
+    id_proyecto: int,
+    db: Session = Depends(get_db),
+    id_usuario_actual: int = Depends(obtener_usuario_actual)
+):
+    # Verificar que el usuario tiene acceso al proyecto
+    rol = obtener_rol_en_proyecto(id_proyecto, id_usuario_actual, db)
+    if rol is None:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="No tienes acceso a este proyecto."
+        )
+    
+    tareas = db.query(TareaDB).filter(TareaDB.id_proyecto == id_proyecto).all()
+    return tareas
+
+
+@app.get("/proyectos/{id_proyecto}/colaboradores")
+def obtener_colaboradores(
+    id_proyecto: int,
+    db: Session = Depends(get_db),
+    id_usuario_actual: int = Depends(obtener_usuario_actual)
+):
+    # Verificar que el usuario tiene acceso al proyecto
+    rol = obtener_rol_en_proyecto(id_proyecto, id_usuario_actual, db)
+    if rol is None:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="No tienes acceso a este proyecto."
+        )
+    
+    colaboradores = db.query(UsuarioDB).join(
+        ProyectoUsuarioDB,
+        UsuarioDB.id_usuario == ProyectoUsuarioDB.id_usuario
+    ).filter(
+        ProyectoUsuarioDB.id_proyecto == id_proyecto
+    ).all()
+    
+    resultado = []
+    for usuario in colaboradores:
+        rol_usuario = obtener_rol_en_proyecto(id_proyecto, usuario.id_usuario, db)
+        resultado.append({
+            "id_usuario": usuario.id_usuario,
+            "nombre": usuario.nombre,
+            "apellido": usuario.apellido,
+            "correo": usuario.correo,
+            "id_rol": rol_usuario
+        })
+    
+    return resultado
+#Finaliza aqui 
 
 
 # --- ENDPOINT DE CREACIÓN DE TAREAS ---
@@ -807,6 +966,170 @@ def eliminar_tarea(
         )
 
     return {"mensaje": f"La tarea con ID {tarea_del.id_tarea} fue eliminada correctamente."}
+
+
+
+@app.post("/mensajes/conversacion")
+async def enviar_mensaje_conversacion(
+    req: MensajeConversacionRequest,
+    id_usuario_actual: int = Depends(obtener_usuario_actual)
+):
+    try:
+        # Validación de formato del ID
+        try:
+            conv_id = ObjectId(req.id_conversacion)
+        except InvalidId:
+            raise HTTPException(status_code=400, detail="ID de conversación inválido")
+
+        # 1. Guardar mensaje
+        nuevo_mensaje = {
+            "id_conversacion": conv_id,
+            "id_usuario_remitente": id_usuario_actual,
+            "contenido": req.contenido,
+            "fecha_envio": datetime.now(timezone.utc)
+        }
+        await db.messages.insert_one(nuevo_mensaje)
+
+        # 2. Buscar participantes
+        chat = await db.conversations.find_one({"_id": conv_id})
+        
+        if chat:
+            # 3. Preparar datos para WebSocket
+            nuevo_mensaje_dict = {
+                "id_conversacion": req.id_conversacion,
+                "id_usuario_remitente": id_usuario_actual,
+                "contenido": req.contenido,
+                "fecha_envio": nuevo_mensaje["fecha_envio"].isoformat()
+            }
+            
+            # Enviar a todos los participantes
+            for participante in chat.get("participantes", []):
+                p_id = participante["id_usuario"]
+                await manager.enviar_mensaje_en_vivo(nuevo_mensaje_dict, p_id)
+
+        return {"status": "success"}
+
+    except Exception as e:
+        print(f"ERROR FATAL: {str(e)}") 
+        raise HTTPException(status_code=500, detail=str(e))
+    
+@app.websocket("/ws")
+async def websocket_endpoint(websocket: WebSocket, token: str = Query(...)):
+    # 1. Validar identidad antes de aceptar la conexión
+    user_id = await validar_token_ws(token)
+    
+    if user_id is None:
+        # Cerramos la conexión inmediatamente con código 1008 (Policy Violation)
+        await websocket.close(code=1008)
+        return
+
+    # 2. Si el token es válido, aceptamos la conexión
+    await manager.connect(websocket, user_id)
+    
+    try:
+        while True:
+            # Mantenemos viva la conexión esperando eventos
+            await websocket.receive_text()
+    except WebSocketDisconnect:
+        manager.disconnect(user_id)
+        
+        
+@app.get("/mensajes/conversaciones")
+async def obtener_lista_conversaciones(
+    db_sql: Session = Depends(get_db),
+    id_usuario_actual: int = Depends(obtener_usuario_actual)
+):
+    try:
+        # 1. Buscar en MongoDB todas las conversaciones donde el usuario actual es participante
+        cursor = db.conversations.find({
+            "participantes.id_usuario": id_usuario_actual
+        })
+        conversaciones = await cursor.to_list(length=100) # Límite de 100 para no saturar
+
+        resultado = []
+
+        for conv in conversaciones:
+            # 2. Buscar el último mensaje de esta conversación
+            ultimo_mensaje = await db.messages.find_one(
+                {"id_conversacion": conv["_id"]},
+                sort=[("fecha_envio", -1)] # Orden descendente para traer el más reciente
+            )
+
+            # 3. Resolver el nombre del chat
+            nombre_chat = conv.get("nombre")
+            
+            # Si es privado, buscamos el nombre del OTRO usuario en PostgreSQL
+            if conv["tipo"] == "privado":
+                # Encontrar el ID del participante que NO soy yo
+                otro_id = next((p["id_usuario"] for p in conv["participantes"] if p["id_usuario"] != id_usuario_actual), None)
+                
+                if otro_id:
+                    otro_usuario = db_sql.query(UsuarioDB).filter(UsuarioDB.id_usuario == otro_id).first()
+                    if otro_usuario:
+                        nombre_chat = f"{otro_usuario.nombre} {otro_usuario.apellido}"
+                    else:
+                        nombre_chat = "Usuario Desconocido"
+
+            # 4. Construir el objeto exactamente como lo espera el frontend
+            chat_preview = {
+                "id": str(conv["_id"]),
+                "nombre": nombre_chat or "Chat sin nombre",
+                "enLinea": False, # Esto requeriría lógica avanzada con WebSockets para saber si está conectado
+                "tipo": conv["tipo"],
+                "participantes": len(conv.get("participantes", [])),
+                "noLeidos": 0, # Placeholder (requiere tabla de leídos para calcularse)
+                "ultimoMensaje": {
+                    "contenido": ultimo_mensaje["contenido"] if ultimo_mensaje else "Sin mensajes",
+                    "fecha": ultimo_mensaje["fecha_envio"].isoformat() if ultimo_mensaje else conv["creado_en"].isoformat()
+                }
+            }
+            resultado.append(chat_preview)
+
+        # 5. Ordenar toda la lista para que los chats con mensajes más recientes salgan arriba
+        resultado.sort(key=lambda x: x["ultimoMensaje"]["fecha"], reverse=True)
+
+        return resultado
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    
+@app.get("/mensajes/historial/conversaciones/{id_conversacion}")
+async def obtener_historial_conversacion(
+    db_sql: Session = Depends(get_db),
+    id_usuario_actual: int = Depends(obtener_usuario_actual)
+):
+    try:
+        # 1. Buscar en MongoDB todos los mensajes de la conversación específica
+        cursor = db.messages.find({
+            "id_conversacion": id_conversacion
+        })
+        messages = await cursor.to_list(length=100) # Límite de 100 para no saturar
+        
+        resultado = []
+        
+        for msg in messages:
+            # 2. Resolver el nombre del remitente desde PostgreSQL
+            remitente = db_sql.query(UsuarioDB).filter(UsuarioDB.id_usuario == msg["id_usuario_remitente"]).first()
+            nombre_remitente = f"{remitente.nombre} {remitente.apellido}" if remitente else "Usuario Desconocido"
+            
+            # 3. Construir el objeto de mensaje
+            mensaje_obj = {
+                "id": str(msg["_id"]),
+                "contenido": msg["contenido"],
+                "fecha_envio": msg["fecha_envio"].isoformat(),
+                "remitente": {
+                    "id_usuario": msg["id_usuario_remitente"],
+                    "nombre": nombre_remitente
+                }
+            }
+            resultado.append(mensaje_obj)
+        
+        resultado.sort(key=lambda x: x["fecha_envio"])  # Ordenar cronológicamente
+        
+        return resultado
+    
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 # --- ENDPOINT PARA LISTAR PROYECTOS DISPONIBLES ---
 
