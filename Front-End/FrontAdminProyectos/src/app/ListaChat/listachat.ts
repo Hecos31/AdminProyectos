@@ -9,4 +9,6 @@ import { FormsModule } from '@angular/forms';
   templateUrl: './listachat.html',
   styleUrls: ['./listachat.css']
 })
-export class ListaChatComponente {}
+export class ListaChatComponente {
+  
+}
