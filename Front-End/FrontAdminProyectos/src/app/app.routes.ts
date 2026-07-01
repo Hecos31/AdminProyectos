@@ -7,6 +7,11 @@ import { PantallaPrincipalProyectoComponente } from './Pantalla-PrincipalProyect
 import { CalendarioActividadesComponente } from './CalendarioActividades/calendario';
 import { PantallaConfiguracionComponente } from './Pantalla-ConfiguracionProyecto/pantallaconfiguracion';
 import { MenuConfiguracionComponente } from './MenuConfiguracion/menuconfiguracion';
+import { ChatGlobalProyectoComponente } from './Chatglobalproyecto/chatglobalproyecto';
+import { ChatActividadComponente } from './Chatactividades/chatactividades';
+import { ChatPersonalComponente } from './Chatpersonal/chatpersonal';
+import { ListaChatComponente } from './ListaChat/listachat';
+
 
 export const routes: Routes = [
   // --- Rutas Públicas / Autenticación ---

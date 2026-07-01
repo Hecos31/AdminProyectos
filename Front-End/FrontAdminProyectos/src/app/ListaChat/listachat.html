@@ -1,0 +1,94 @@
+<div class="chat-list-container">
+  <div class="chat-list-header">
+    <h2>Conversaciones</h2>
+    <div class="chat-search">
+      <input 
+        type="text" 
+        placeholder="Buscar conversaciones..." 
+        [(ngModel)]="terminoBusqueda"
+        (input)="filtrarChats()"
+        class="search-input">
+    </div>
+  </div>
+
+  <div class="chat-tabs">
+    <button 
+      class="tab-btn" 
+      [class.active]="tabActivo === 'todos'"
+      (click)="cambiarTab('todos')">
+      Todos
+    </button>
+    <button 
+      class="tab-btn" 
+      [class.active]="tabActivo === 'proyectos'"
+      (click)="cambiarTab('proyectos')">
+      Proyectos
+    </button>
+    <button 
+      class="tab-btn" 
+      [class.active]="tabActivo === 'privados'"
+      (click)="cambiarTab('privados')">
+      Privados
+    </button>
+    <button 
+      class="tab-btn" 
+      [class.active]="tabActivo === 'actividades'"
+      (click)="cambiarTab('actividades')">
+      Actividades
+    </button>
+  </div>
+
+  <div class="chat-list" #chatListContainer>
+    <div *ngIf="cargando" class="loading-chats">
+      <div class="spinner"></div>
+      <span>Cargando conversaciones...</span>
+    </div>
+
+    <div *ngIf="!cargando && chatsFiltrados.length === 0" class="empty-chats">
+      <div class="empty-icon">💬</div>
+      <h3>No hay conversaciones</h3>
+      <p>Comienza una nueva conversación desde un proyecto o actividad</p>
+    </div>
+
+    <div 
+      *ngFor="let chat of chatsFiltrados" 
+      class="chat-item" 
+      (click)="seleccionarChat(chat)"
+      [class.active]="chat.id === chatSeleccionado?.id">
+      
+      <div class="chat-avatar">
+        <span class="avatar-text">{{ chat.nombre | slice:0:2 | uppercase }}</span>
+        <span class="status-indicator" [class.online]="chat.enLinea"></span>
+      </div>
+
+      <div class="chat-info">
+        <div class="chat-header-info">
+          <span class="chat-nombre">{{ chat.nombre }}</span>
+          <span class="chat-fecha">{{ chat.ultimoMensaje?.fecha | date:'short' }}</span>
+        </div>
+        <div class="chat-preview">
+          <span class="chat-mensaje">{{ chat.ultimoMensaje?.contenido || 'Sin mensajes' }}</span>
+          <span *ngIf="chat.noLeidos > 0" class="badge-no-leidos">{{ chat.noLeidos }}</span>
+        </div>
+        <div class="chat-meta">
+          <span class="chat-tipo" [class.proyecto]="chat.tipo === 'proyecto'">
+            {{ chat.tipo | titlecase }}
+          </span>
+          <span class="chat-participantes">{{ chat.participantes }} participantes</span>
+        </div>
+      </div>
+
+      <div class="chat-actions">
+        <button class="btn-ver" (click)="$event.stopPropagation(); verChat(chat)">
+          Ver
+        </button>
+      </div>
+    </div>
+
+    <div *ngIf="!cargando && chatsFiltrados.length > 0 && chatsFiltrados.length >= 10" class="load-more">
+      <button class="btn-cargar-mas" (click)="cargarMas()">
+        Cargar más conversaciones
+      </button>
+    </div>
+  </div>
+</div>

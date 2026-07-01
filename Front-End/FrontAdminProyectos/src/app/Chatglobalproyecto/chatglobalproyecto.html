@@ -1,0 +1,42 @@
+<div class="chat-global-container">
+  <div class="chat-header">
+    <div class="chat-header-info">
+      <h2>Chat Global</h2>
+      <span class="proyecto-nombre">{{ nombreProyecto }}</span>
+    </div>
+    <span class="miembros-badge">{{ participantes }} participantes</span>
+  </div>
+
+  <div class="chat-messages" #scrollContainer>
+    <div *ngFor="let msg of mensajes" 
+         class="message-item" 
+         [class.message-own]="msg.id_usuario_remitente === usuarioId">
+      <div class="message-avatar">
+        {{ msg.remitente?.nombre?.[0] || 'U' }}
+      </div>
+      <div class="message-body">
+        <div class="message-meta">
+          <span class="message-user">{{ msg.remitente?.nombre || 'Usuario' }}</span>
+          <span class="message-time">{{ msg.fecha_envio | date:'HH:mm' }}</span>
+        </div>
+        <p class="message-text">{{ msg.contenido }}</p>
+      </div>
+    </div>
+    <div *ngIf="cargando" class="loading-indicator">Cargando mensajes...</div>
+  </div>
+
+  <div class="chat-input-area">
+    <input 
+      type="text" 
+      [(ngModel)]="nuevoMensaje" 
+      placeholder="Escribe un mensaje..." 
+      (keyup.enter)="enviarMensaje()"
+      class="chat-input">
+    <button 
+      (click)="enviarMensaje()" 
+      [disabled]="!nuevoMensaje.trim()"
+      class="btn-enviar">
+      Enviar
+    </button>
+  </div>
+</div>

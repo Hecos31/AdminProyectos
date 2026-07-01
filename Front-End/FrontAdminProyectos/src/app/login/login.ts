@@ -28,18 +28,12 @@ export class LoginComponente {
     this.cargando = true;
     this.errorMessage = '';
 
-    console.log('📤 Enviando login:', this.credentials);
 
     this.apiService.login(this.credentials).subscribe({
       next: (response) => {
         console.log('Login exitoso:', response);
         localStorage.setItem('token', response.access_token);
-        console.log('🔑 Token guardado:', response.access_token);
-        
-        localStorage.setItem('usuario', JSON.stringify({
-          correo: this.credentials.correo,
-          nombre: this.credentials.correo.split('@')[0]
-        }));
+
         this.router.navigate(['/inicio']);
         this.cargando = false;
       },

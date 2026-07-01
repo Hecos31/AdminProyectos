@@ -797,8 +797,6 @@ def eliminar_tarea(
 
     # 3. Eliminar la tarea
     try:
-        # 💡 NOTA PARA EL FUTURO: Si más adelante mapeas tu tabla 'tarea_asignada' en Python, 
-        # deberás borrar los registros de esa tabla aquí antes de borrar la tarea principal.
         db.delete(tarea)
         db.commit()
     except Exception as e:
