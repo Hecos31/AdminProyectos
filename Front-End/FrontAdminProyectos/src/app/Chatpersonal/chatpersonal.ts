@@ -77,7 +77,6 @@ export class ChatPersonalComponente {
     const textoMensaje = this.nuevoMensaje;
     this.nuevoMensaje = ''; 
 
-    // Agregarlo visualmente para ti al instante
     const miNuevoMensaje = {
       id_usuario_remitente: this.usuarioId,
       contenido: textoMensaje,
@@ -86,7 +85,6 @@ export class ChatPersonalComponente {
     };
     this.mensajes.push(miNuevoMensaje);
 
-    // Enviar al backend usando el idConversacionActual (que es un string)
     this.chatService.enviarMensajeEnSala(this.idConversacionActual, textoMensaje)
       .subscribe({
         error: (err) => console.error('Error al enviar el mensaje:', err)

@@ -52,13 +52,22 @@ export class ChatService {
     const token = localStorage.getItem('access_token');
     const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
     
-    // Usamos el endpoint que ya tienes en FastAPI
     return this.http.get<any[]>(`${this.apiUrl}/proyectos/${idProyecto}/colaboradores`, { headers });
   }
 
 
   obtenerConversaciones() {
-    // CAMBIO AQUÍ: Buscar 'token'
+    const token = localStorage.getItem('token'); 
+    
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${token}`
+    });
+    
+    return this.http.get<any[]>(`${this.apiUrl}/mensajes/conversaciones`, { headers: headers });
+  }
+
+
+  obtenerMensajes() {
     const token = localStorage.getItem('token'); 
     
     const headers = new HttpHeaders({
