@@ -15,6 +15,8 @@ import { ActivatedRoute, Router } from '@angular/router'
 })
 export class ChatPersonalComponente {
  @ViewChild('scrollContainer') private scrollContainer!: ElementRef;
+ @Input() idConversacion: string = '';
+@Input() nombreContacto: string = 'Contacto';
 
   mensajes: any[] = [];
   nuevoMensaje: string = '';
@@ -22,7 +24,7 @@ export class ChatPersonalComponente {
   contactoEnLinea: boolean = false; 
   cargando: boolean = false;
   destinatarioId!: number;
-  nombreContacto: string = '';
+  //nombreContacto: string = ''; //Modificado
   idConversacionActual: string = '';
   private chatSub!: Subscription;
 
