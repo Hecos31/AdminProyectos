@@ -48,11 +48,16 @@
   font-family: 'Outfit', sans-serif;
 }
 
-/* Navegación */
 .sidebar-nav {
   flex: 1;
   padding: 10px 15px;
   overflow-y: auto;
+  scrollbar-width: none; 
+  -ms-overflow-style: none; 
+}
+
+.sidebar-nav::-webkit-scrollbar {
+  display: none;
 }
 
 .nav-list {
@@ -173,16 +178,4 @@
 /* Botón de logout con hover específico */
 .btn-icon[title="Cerrar Sesión"]:hover {
     color: #c95252;
-}
-
-/* Ocultar la barra de desplazamiento (opcional, para un look más limpio) */
-.sidebar-nav::-webkit-scrollbar {
-  width: 4px;
-}
-.sidebar-nav::-webkit-scrollbar-track {
-  background: transparent;
-}
-.sidebar-nav::-webkit-scrollbar-thumb {
-  background: #e3e0da;
-  border-radius: 4px;
 }

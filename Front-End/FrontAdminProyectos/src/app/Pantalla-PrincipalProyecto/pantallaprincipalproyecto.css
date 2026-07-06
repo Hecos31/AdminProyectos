@@ -8,7 +8,6 @@
 
 .main-content {
   flex: 1;
-  margin-left: 120px; /* Margen adaptado para el menú vertical estrecho */
   padding: 40px;
 }
 
