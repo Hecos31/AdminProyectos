@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta, timezone
 from typing import Optional, Dict
+from xml.parsers.expat import errors
 from fastapi import FastAPI, HTTPException, Depends, status, WebSocket, WebSocketDisconnect, Query
 from fastapi.security import OAuth2PasswordBearer
 from pydantic import BaseModel, EmailStr
@@ -19,6 +20,10 @@ import sqlalchemy
 from typing import List
 from bson.errors import InvalidId
 from bson import ObjectId
+from fastapi.staticfiles import StaticFiles
+
+
+
 
 # --- CONFIGURACIÓN DE LAS VARIABLES DE ENTORNO  (NO OLVIDAR CONFIGURAR EN SU ENTORNO) ---
 password = urllib.parse.quote_plus("H3cos31!") # Cambia esto por tu contraseña de PostgreSQL
@@ -47,6 +52,14 @@ app = FastAPI(title="API")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:4200"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+# Configuración de CORS para permitir solicitudes desde el frontend Angular a través del túnel ngrok
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["https://paying-anagram-bauble.ngrok-free.dev"],  # tu túnel del frontend
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -1147,3 +1160,6 @@ async def obtener_historial_conversacion(
     except Exception as e:
         print(f"Error en endpoint: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+    
+    
+# app.mount("/", StaticFiles(directory="../Front-End/FrontAdminProyectos/dist/front-admin-proyectos/browser", html=True), name="static")

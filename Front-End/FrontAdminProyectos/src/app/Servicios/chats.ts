@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Subject } from 'rxjs';
-
+import { environment } from '../../environments/environment';
 @Injectable({
   providedIn: 'root'
 })
@@ -9,8 +9,8 @@ export class ChatService {
   private socket!: WebSocket;
   public mensajesNuevos$ = new Subject<any>();
   
-  private apiUrl = 'http://localhost:8000'; 
-
+  private apiUrl = environment.apiUrl;
+  
   constructor(private http: HttpClient) {}
 
   conectarWebSocket() {
@@ -20,7 +20,7 @@ export class ChatService {
       console.error('No hay token disponible para el WebSocket');
       return;
     }
-    this.socket = new WebSocket(`ws://localhost:8000/ws?token=${token}`);
+    this.socket = new WebSocket(`${environment.wsUrl}/ws?token=${token}`);
 
     this.socket.onmessage = (event) => {
       const mensaje = JSON.parse(event.data);
