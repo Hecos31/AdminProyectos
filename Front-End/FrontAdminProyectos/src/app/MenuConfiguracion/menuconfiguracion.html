@@ -1,19 +1,27 @@
-<div class="menu-configuracion">
-  <h2>⚙️ Configuración del Proyecto</h2>
-  <p class="proyecto-nombre">{{ proyectoNombre }}</p>
+<div class="menu-configuracion-container">
+  <main class="main-content">
+    
+    <header class="header-simple">
+      <h2>Configuración del Proyecto</h2>
+      <p class="proyecto-nombre">{{ proyectoNombre || 'Gestiona las opciones de tu entorno' }}</p>
+    </header>
 
-  <div class="opciones-grid">
-    <div 
-      *ngFor="let opcion of opciones" 
-      class="opcion-card"
-      [class.peligroso]="opcion.peligroso"
-      (click)="irAOpcion(opcion)"
-    >
-      <div class="opcion-icono">{{ opcion.icono }}</div>
-      <div class="opcion-info">
-        <h3>{{ opcion.nombre }}</h3>
-        <p>{{ opcion.descripcion }}</p>
+    <div class="opciones-grid">
+      <div 
+        *ngFor="let opcion of opciones" 
+        class="opcion-card"
+        [class.peligroso]="opcion.peligroso"
+        (click)="irAOpcion(opcion)"
+      >
+        <div class="opcion-icono-wrapper">
+          <span class="opcion-icono">{{ opcion.icono }}</span>
+        </div>
+        <div class="opcion-info">
+          <h3>{{ opcion.nombre }}</h3>
+          <p>{{ opcion.descripcion }}</p>
+        </div>
       </div>
     </div>
-  </div>
+
+  </main>
 </div>

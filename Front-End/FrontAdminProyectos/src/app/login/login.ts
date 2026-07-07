@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectorRef } from '@angular/core'; // <-- 1. Importar ChangeDetectorRef
 import { Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
@@ -21,24 +21,36 @@ export class LoginComponente {
 
   constructor(
     private apiService: ApiServicio,
-    private router: Router
+    private router: Router,
+    private cdr: ChangeDetectorRef // <-- 2. Inyectarlo en el constructor
   ) {}
 
   onSubmit() {
     this.cargando = true;
     this.errorMessage = '';
 
-
     this.apiService.login(this.credentials).subscribe({
       next: (response) => {
+        // 1. Guardamos el token de seguridad
         localStorage.setItem('token', response.access_token);
-
-        this.router.navigate(['/inicio']);
+        
+        // 2. NUEVO: Guardamos los datos del usuario que ahora manda el backend
+        if (response.usuario) {
+          localStorage.setItem('usuario', JSON.stringify(response.usuario));
+        }
+        
         this.cargando = false;
+        
+        // Empujamos la navegación al siguiente ciclo de eventos
+        setTimeout(() => {
+            this.router.navigate(['/inicio']);
+        }, 0);
+        
       },
       error: (error) => {
         this.errorMessage = error.error?.detail || 'Error al iniciar sesión';
         this.cargando = false;
+        this.cdr.detectChanges(); 
       }
     });
   }

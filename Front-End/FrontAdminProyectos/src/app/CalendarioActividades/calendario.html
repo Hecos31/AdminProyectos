@@ -1,96 +1,86 @@
 <div class="calendario-container">
-  <div class="header-actions">
-    <button (click)="volverAlProyecto()" class="btn-volver">← Volver al Proyecto</button>
-    <h2>📅 Calendario de Tareas</h2>
-  </div>
-
-  <!-- Formulario nueva tarea -->
-  <div class="form-tarea">
-    <h3>➕ Nueva Tarea</h3>
-    <div class="form-grid">
-      <input 
-        type="text" 
-        [(ngModel)]="nuevaTarea.titulo" 
-        placeholder="Título de la tarea"
-        class="input-titulo"
-      >
-      <textarea 
-        [(ngModel)]="nuevaTarea.descripcion" 
-        placeholder="Descripción (opcional)"
-        class="input-descripcion"
-      ></textarea>
-      <input 
-        type="date" 
-        [(ngModel)]="nuevaTarea.fecha_inicio"
-        class="input-fecha"
-        placeholder="Fecha inicio"
-      >
-      <input 
-        type="date" 
-        [(ngModel)]="nuevaTarea.fecha_limite"
-        class="input-fecha"
-        placeholder="Fecha límite"
-      >
-      <select [(ngModel)]="nuevaTarea.prioridad" class="select-prioridad">
-        <option value="Alta">🔴 Alta</option>
-        <option value="Media">🟡 Media</option>
-        <option value="Baja">🟢 Baja</option>
-      </select>
-      <select [(ngModel)]="nuevaTarea.estado" class="select-estado">
-        <option value="Pendiente por asignar">⏳ Pendiente</option>
-        <option value="Asignada">📌 Asignada</option>
-        <option value="Concluida">✅ Concluida</option>
-      </select>
-      <button (click)="crearTarea()" class="btn-crear">
-        Crear Tarea
+  <main class="main-content">
+    
+    <header class="header-actions">
+      <button (click)="volverAlProyecto()" class="btn-volver">
+        <i class="fa-solid fa-arrow-left"></i> Volver al Proyecto
       </button>
-    </div>
-  </div>
+      <h2>Calendario de Actividades</h2>
+    </header>
 
-  <!-- Mensajes -->
-  <div *ngIf="successMessage" class="success-message">
-    ✅ {{ successMessage }}
-  </div>
-  <div *ngIf="errorMessage" class="error-message">
-    ❌ {{ errorMessage }}
-  </div>
+    <div class="form-tarea">
+      <h3><i class="fa-solid fa-plus-circle"></i> Nueva Tarea</h3>
+      <div class="form-grid">
+        <input type="text" [(ngModel)]="nuevaTarea.titulo" placeholder="Título de la tarea" class="input-field">
+        <textarea [(ngModel)]="nuevaTarea.descripcion" placeholder="Descripción (opcional)" class="input-field"></textarea>
+        
+        <div class="input-wrapper">
+          <label class="form-label">Fecha de inicio</label>
+          <input type="date" [(ngModel)]="nuevaTarea.fecha_inicio" class="input-field" [min]="fechaMinima">
+        </div>
 
-  <!-- Estado de carga -->
-  <div *ngIf="cargando" class="loading">
-    ⏳ Cargando tareas...
-  </div>
-
-  <!-- Lista de tareas -->
-  <div *ngIf="!cargando" class="lista-tareas">
-
-
-    <!-- Tareas reales -->
-    <div *ngFor="let tarea of tareas" class="tarea-card">
-      <div class="tarea-header">
-        <h4>{{ tarea.titulo }}</h4>
-        <span class="estado-badge" [style.background]="getEstadoColor(tarea.estado)">
-          {{ tarea.estado }}
-        </span>
-        <span class="prioridad-badge" [style.background]="getPrioridadColor(tarea.prioridad)">
-          {{ tarea.prioridad }}
-        </span>
-      </div>
-      
-      <p class="tarea-descripcion">{{ tarea.descripcion }}</p>
-      
-      <div class="tarea-footer">
-        <span class="tarea-fecha">
-          📅 Inicio: {{ tarea.fecha_inicio | date:'dd/MM/yyyy' }}
-          <span *ngIf="tarea.fecha_limite"> | Límite: {{ tarea.fecha_limite | date:'dd/MM/yyyy' }}</span>
-        </span>
-        <button (click)="eliminarTarea(tarea.id_tarea)" class="btn-eliminar">
-          🗑️ Eliminar
-        </button>
+        <div class="input-wrapper">
+          <label class="form-label">Fecha límite</label>
+          <input type="date" [(ngModel)]="nuevaTarea.fecha_limite" class="input-field" [min]="nuevaTarea.fecha_inicio || fechaMinima">
+        </div>
+        
+        <div class="input-wrapper">
+          <label class="form-label">Prioridad</label>
+          <select [(ngModel)]="nuevaTarea.prioridad" class="input-field">
+            <option value="Alta">Alta</option>
+            <option value="Media">Media</option>
+            <option value="Baja">Baja</option>
+          </select>
+        </div>
+        
+        <div class="input-wrapper">
+          <label class="form-label">Estado de la tarea</label>
+          <select [(ngModel)]="nuevaTarea.estado" class="input-field">
+            <option value="Pendiente por asignar">Pendiente</option>
+            <option value="Asignada">Asignada</option>
+            <option value="Concluida">Concluida</option>
+          </select>
+        </div>
+        
+        <button (click)="crearTarea()" class="btn-crear">Crear Tarea</button>
       </div>
     </div>
 
-    <div *ngIf="tareas.length === 0" class="sin-tareas">
-      📭 No hay tareas en este proyecto
+    <div *ngIf="successMessage" class="alert success-message">
+      <i class="fa-solid fa-check-circle"></i> {{ successMessage }}
     </div>
-  </div>
+    <div *ngIf="errorMessage" class="alert error-message">
+      <i class="fa-solid fa-exclamation-circle"></i> {{ errorMessage }}
+    </div>
+
+    <div *ngIf="cargando" class="loading-state">Cargando actividades...</div>
+
+    <div *ngIf="!cargando" class="lista-tareas">
+      <div *ngFor="let tarea of tareas" class="tarea-card">
+        <div class="tarea-header">
+          <h4>{{ tarea.titulo }}</h4>
+          <div class="badges">
+            <span class="badge" [style.background]="getEstadoColor(tarea.estado)">{{ tarea.estado }}</span>
+            <span class="badge" [style.background]="getPrioridadColor(tarea.prioridad)">{{ tarea.prioridad }}</span>
+          </div>
+        </div>
+        
+        <p class="tarea-descripcion">{{ tarea.descripcion }}</p>
+        
+        <div class="tarea-footer">
+          <span class="tarea-fecha">
+            <i class="fa-regular fa-calendar-alt"></i> {{ tarea.fecha_inicio | date:'dd/MM/yyyy' }} 
+            <span *ngIf="tarea.fecha_limite">→ {{ tarea.fecha_limite | date:'dd/MM/yyyy' }}</span>
+          </span>
+          <button (click)="eliminarTarea(tarea.id_tarea)" class="btn-eliminar">
+            <i class="fa-solid fa-trash"></i> Eliminar
+          </button>
+        </div>
+      </div>
+
+      <div *ngIf="tareas.length === 0" class="sin-tareas">
+        <p>No hay tareas registradas en este proyecto.</p>
+      </div>
+    </div>
+  </main>
 </div>

@@ -382,10 +382,16 @@ def login(login_data: LoginRequest, db: Session = Depends(get_db)):
         expires_delta=tiempo_expiracion
     )
     
-    # 6. Responder con el Token
-    return {"access_token": token_acceso, "token_type": "bearer"}
-
-
+    # 6. Responder con el Token y los datos del usuario
+    return {
+        "access_token": token_acceso, 
+        "token_type": "bearer",
+        "usuario": {
+            "id_usuario": usuario.id_usuario,
+            "nombre": usuario.nombre,
+            "correo": usuario.correo
+        }
+    }
 
 # --- ENDPOINT DE CREACIÓN DE USUARIOS ---
 

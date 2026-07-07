@@ -5,56 +5,87 @@
   </div>
 
   <nav class="sidebar-nav">
-    <ul class="nav-list">
-      <li class="nav-item">
-        <a routerLink="/inicio" class="nav-link" routerLinkActive="active">
-          <i class="fa-solid fa-border-all nav-icon"></i>
-          <span class="nav-text">Dashboard</span>
-        </a>
-      </li>
-
-      <li class="nav-item">
-        <a routerLink="/tareas" class="nav-link" routerLinkActive="active">
-          <i class="fa-solid fa-list-check nav-icon"></i>
-          <span class="nav-text">Tareas</span>
-        </a>
-      </li>
-
-      <li class="nav-item">
+    <div *ngIf="!modoProyecto" class="menu-global">
+      <ul class="nav-list">
+        <li class="nav-item">
+          <a routerLink="/inicio" class="nav-link" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
+            <i class="fa-solid fa-house nav-icon"></i>
+            <span class="nav-text">Inicio</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <button routerLink="/crear-proyecto" class="nav-link" routerLinkActive="active">
+            <i class="fa-solid fa-folder-plus nav-icon"></i>
+            <span class="nav-text"> + Nuevo Proyecto</span>
+          </button>
+        </li>
+<li class="nav-item">
         <a routerLink="/chats" class="nav-link" routerLinkActive="active">
           <i class="fa-regular fa-comment-dots nav-icon"></i>
           <span class="nav-text">Chats</span>
         </a>
       </li>
+      </ul>
+    </div>
 
-      <li class="nav-item">
-        <a routerLink="/documentos" class="nav-link" routerLinkActive="active">
-          <i class="fa-solid fa-chart-line nav-icon"></i>
-          <span class="nav-text">Reportes</span>
-        </a>
-      </li>
-
-      <li class="nav-item">
-        <button (click)="irACalendario()" class="nav-link">
-          <i class="fa-regular fa-calendar nav-icon"></i>
-          <span class="nav-text">Calendario</span>
-        </button>
-      </li>
-    </ul>
+    <div *ngIf="modoProyecto" class="menu-proyecto">
+      <ul class="nav-list">
+        <li class="nav-item" style="margin-bottom: 24px;">
+          <button routerLink="/inicio" class="nav-link">
+            <i class="fa-solid fa-arrow-left nav-icon"></i>
+            <span class="nav-text">Proyectos</span>
+          </button>
+        </li>
+        <li class="nav-item">
+          <a [routerLink]="['/proyecto', proyectoActivoId]" class="nav-link" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
+            <i class="fa-solid fa-border-all nav-icon"></i>
+            <span class="nav-text">Dashboard</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a [routerLink]="['/proyecto', proyectoActivoId, 'calendario']" class="nav-link" routerLinkActive="active">
+            <i class="fa-regular fa-calendar nav-icon"></i>
+            <span class="nav-text">Calendario</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a [routerLink]="['/proyecto', proyectoActivoId, 'integrantes']" class="nav-link" routerLinkActive="active">
+            <i class="fa-solid fa-users nav-icon"></i>
+            <span class="nav-text">Colaboradores</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a [routerLink]="['/proyecto', proyectoActivoId, 'configuracion']" class="nav-link" routerLinkActive="active">
+            <i class="fa-solid fa-gear nav-icon"></i>
+            <span class="nav-text">Configuración</span>
+          </a>
+        </li>
+      </ul>
+    </div>
   </nav>
 
-  <div class="sidebar-footer">
-    <div class="user-avatar">
-      {{ (usuario?.nombre | slice:0:1) }}
-    </div>
+  <div class="user-profile-section">
     
-    <div class="footer-actions">
-        <button (click)="irAConfiguracion()" class="btn-icon" title="Configuración">
-            <i class="fa-solid fa-gear"></i>
-        </button>
-        <button (click)="cerrarSesion()" class="btn-icon" title="Cerrar Sesión">
-            <i class="fa-solid fa-arrow-right-from-bracket"></i>
-        </button>
+  <div class="user-popover" *ngIf="mostrarMenuUsuario">
+    <div class="popover-header">
+      <div class="popover-avatar">{{ (usuario?.nombre | slice:0:1) || 'U' }}</div>
+      <div class="popover-info">
+        <span class="popover-name">{{ usuario?.nombre || 'Usuario' }} {{ usuario?.apellido || '' }}</span>
+        <span class="popover-email">{{ usuario?.correo || 'correo@ejemplo.com' }}</span>
+      </div>
+    </div>
+    <div class="popover-actions">
+      <button (click)="cerrarSesion()" class="popover-btn logout">
+        <i class="fa-solid fa-arrow-right-from-bracket"></i> Cerrar Sesión
+      </button>
     </div>
   </div>
+
+  <button class="user-profile-btn" (click)="toggleMenuUsuario()" [class.active]="mostrarMenuUsuario">
+    <div class="user-avatar-mini">{{ (usuario?.nombre | slice:0:1) || 'U' }}</div>
+    <span class="user-name-truncate">{{ usuario?.correo || 'Usuario' }}</span>
+    <i class="fa-solid fa-chevron-up popover-chevron"></i>
+  </button>
+  
+</div>
 </div>

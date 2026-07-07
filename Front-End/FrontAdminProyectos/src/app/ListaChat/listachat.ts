@@ -1,4 +1,4 @@
-import { Component, OnInit, Output, EventEmitter } from '@angular/core';
+import { Component, OnInit, Output, EventEmitter, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ChatService } from '../Servicios/chats';
@@ -24,12 +24,8 @@ export interface ChatPreview {
   templateUrl: './listachat.html',
   styleUrls: ['./listachat.css']
 })
-export class ListaChatComponente {
+export class ListaChatComponente implements OnInit {
   @Output() abrirChat = new EventEmitter<ChatPreview>();
-  
-
-  
-
   terminoBusqueda: string = '';
   tabActivo: string = 'todos';
   cargando: boolean = false;
@@ -39,7 +35,8 @@ export class ListaChatComponente {
 
   constructor(
     private chatService: ChatService,
-    private router: Router 
+    private router: Router,
+    private cdr: ChangeDetectorRef // <-- 2. Inyectarlo aquí
   ) {}
 
   ngOnInit() {
@@ -48,16 +45,17 @@ export class ListaChatComponente {
 
   cargarConversaciones() {
     this.cargando = true;
-    
     this.chatService.obtenerConversaciones().subscribe({
       next: (chatsDelBackend) => {
         this.chatsOriginales = chatsDelBackend;
         this.filtrarChats(); 
         this.cargando = false;
+        this.cdr.detectChanges(); // <-- 3. FORZAR ACTUALIZACIÓN
       },
       error: (error) => {
         console.error('Error al cargar la lista de chats', error);
         this.cargando = false;
+        this.cdr.detectChanges(); // <-- 4. FORZAR ACTUALIZACIÓN
       }
     });
   }

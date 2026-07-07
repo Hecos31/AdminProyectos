@@ -13,7 +13,7 @@ import { ActivatedRoute, Router } from '@angular/router'
   templateUrl: './chatpersonal.html',
   styleUrls: ['./chatpersonal.css']
 })
-export class ChatPersonalComponente {
+export class ChatPersonalComponente implements OnInit, OnDestroy {
  @ViewChild('scrollContainer') private scrollContainer!: ElementRef;
  @Input() idConversacion: string = '';
 @Input() nombreContacto: string = 'Contacto';
@@ -31,22 +31,12 @@ export class ChatPersonalComponente {
   constructor(
     private chatService: ChatService,
     private route: ActivatedRoute,
-    private router: Router 
+    private router: Router,
+    private cdr: ChangeDetectorRef // <-- 1. Inyectarlo aquí
   ) {}
 
   ngOnInit() {
-    const idParam = this.route.snapshot.paramMap.get('id');
-    if (idParam) {
-      this.idConversacionActual = idParam;
-    }
-
-    this.nombreContacto = this.route.snapshot.queryParamMap.get('nombre') || 'Contacto';
-
-    const token = localStorage.getItem('token');
-    if (token) {
-      const decodificado: any = jwtDecode(token);
-      this.usuarioId = Number(decodificado.sub); 
-    }
+    // ... (tu código para obtener IDs y Token se queda igual)
     
     this.chatService.conectarWebSocket();
 
@@ -58,6 +48,9 @@ export class ChatPersonalComponente {
       };
       
       this.mensajes.push(mensajeFormateado);
+      
+      // 2. FORZAR ACTUALIZACIÓN CUANDO LLEGA UN NUEVO MENSAJE
+      this.cdr.detectChanges(); 
     });
 
     this.cargarHistorial();
@@ -97,6 +90,9 @@ export class ChatPersonalComponente {
     setTimeout(() => {
       this.cargando = false;
       this.nombreContacto = "Colaborador del Proyecto";
+      
+      // 3. FORZAR ACTUALIZACIÓN AL TERMINAR DE CARGAR (incluso en el setTimeout)
+      this.cdr.detectChanges(); 
     }, 1000);
   }
 

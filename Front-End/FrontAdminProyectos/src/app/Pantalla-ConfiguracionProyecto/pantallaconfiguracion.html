@@ -1,78 +1,62 @@
 <div class="configuracion-container">
-  <!-- Botón volver -->
-  <div class="header-actions">
-    <button (click)="volverAlProyecto()" class="btn-volver">← Volver al Proyecto</button>
-  </div>
-
-  <!-- Gestión de Colaboradores -->
-  <div class="gestion-integrantes">
-    <h3>👥 Colaboradores del Proyecto</h3>
+  <main class="main-content">
     
-    <!-- Agregar colaborador -->
-    <div class="agregar-integrante">
-      <input 
-        type="email" 
-        [(ngModel)]="nuevoColaborador.correo" 
-        placeholder="Email del colaborador"
-        class="input-email"
-      >
-      <select [(ngModel)]="nuevoColaborador.rol" class="select-rol">
-        <option value="admin">Administrador</option>
-        <option value="editor">Editor</option>
-        <option value="colaborador">Colaborador</option>
-      </select>
-      <button (click)="agregarColaborador()" class="btn-agregar">
-        Agregar
+    <header class="header-actions">
+      <button (click)="volverAlProyecto()" class="btn-volver">
+        ← Volver al Proyecto
       </button>
-    </div>
+    </header>
 
-    <!-- Mensajes -->
-    <div *ngIf="successMessage" class="success-message">
-      ✅ {{ successMessage }}
-    </div>
-    <div *ngIf="errorMessage" class="error-message">
-      ❌ {{ errorMessage }}
-    </div>
+    <div class="gestion-integrantes">
+      <div class="card-header">
+        <h3>Colaboradores del Proyecto</h3>
+      </div>
+      
+      <div class="agregar-integrante">
+        <input type="email" [(ngModel)]="nuevoColaborador.correo" placeholder="Email del colaborador" class="input-email">
+        <select [(ngModel)]="nuevoColaborador.rol" class="select-rol">
+          <option value="admin">Administrador</option>
+          <option value="editor">Editor</option>
+          <option value="colaborador">Colaborador</option>
+        </select>
+        <button (click)="agregarColaborador()" class="btn-agregar">Agregar</button>
+      </div>
 
-    <!-- Lista de colaboradores -->
-    <div *ngIf="cargando" class="loading">
-      Cargando colaboradores...
-    </div>
+      <div *ngIf="successMessage" class="alert success-message">{{ successMessage }}</div>
+      <div *ngIf="errorMessage" class="alert error-message">{{ errorMessage }}</div>
 
-    <div *ngIf="!cargando" class="lista-integrantes">
-      <div *ngFor="let colaborador of colaboradores" class="integrante-item">
-        <div class="integrante-info">
-          <span class="avatar">👤</span>
-          <div>
-            <div class="nombre">{{ colaborador.nombre || colaborador.correo }}</div>
-            <div class="email">{{ colaborador.correo }}</div>
+      <div *ngIf="cargando" class="loading-state">Cargando colaboradores...</div>
+
+      <div *ngIf="!cargando" class="lista-integrantes">
+        <div *ngFor="let colaborador of colaboradores" class="integrante-item">
+          <div class="integrante-info">
+            <div class="detalles">
+              <div class="nombre">{{ colaborador.nombre || colaborador.correo }}</div>
+              <div class="email">{{ colaborador.correo }}</div>
+            </div>
+          </div>
+          
+          <div class="integrante-controls">
+            <select 
+              [value]="colaborador.rol_nombre || 'colaborador'" 
+              (change)="cambiarRol(colaborador.id_usuario, $any($event.target).value)" 
+              class="select-rol-mini"
+            >
+              <option value="admin">Administrador</option>
+              <option value="editor">Editor</option>
+              <option value="colaborador">Colaborador</option>
+            </select>
+            
+            <button (click)="eliminarColaborador(colaborador.id_usuario)" class="btn-eliminar">
+              Eliminar
+            </button>
           </div>
         </div>
-        <div class="integrante-rol">
-          <select 
-            [value]="colaborador.rol_nombre || 'colaborador'"
-            (change)="cambiarRol(colaborador.id_usuario, $any($event.target).value)"
-            class="select-rol-mini"
-          >
-            <option value="admin">Administrador</option>
-            <option value="editor">Editor</option>
-            <option value="colaborador">Colaborador</option>
-          </select>
-        </div>
-        <div class="integrante-acciones">
-          <button 
-            (click)="eliminarColaborador(colaborador.id_usuario)" 
-            class="btn-eliminar"
-            title="Eliminar colaborador"
-          >
-            🗑️
-          </button>
-        </div>
-      </div>
 
-      <div *ngIf="colaboradores.length === 0" class="sin-integrantes">
-        No hay colaboradores en este proyecto
+        <div *ngIf="colaboradores.length === 0" class="sin-integrantes">
+          No hay colaboradores en este proyecto
+        </div>
       </div>
     </div>
-  </div>
+  </main>
 </div>

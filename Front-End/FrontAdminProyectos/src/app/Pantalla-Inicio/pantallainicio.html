@@ -11,7 +11,7 @@
         <div class="user-avatar">
           {{ (usuario?.nombre | slice:0:1) || 'U' }}
         </div>
-        <span class="user-name">Hola, {{ usuario?.nombre}}</span>
+        <span class="user-name">Hola, {{ usuario?.nombre || 'Usuario' }}</span>
         <button (click)="cerrarSesion()" class="btn-logout">Cerrar Sesión</button>
       </div>
     </header>

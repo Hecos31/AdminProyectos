@@ -1,61 +1,127 @@
-.menu-configuracion {
-  padding: 20px;
-  max-width: 1200px;
-  margin: 0 auto;
+/* Contenedor principal alineado con el layout global */
+.menu-configuracion-container {
+  display: flex;
+  min-height: 100vh;
+  background-color: #f7f6f4;
+  font-family: 'Inter', sans-serif;
+}
+
+.main-content {
+  flex: 1;
+  padding: 40px;
+  max-width: 1100px;
+}
+
+/* Cabecera */
+.header-simple {
+  margin-bottom: 32px;
+}
+
+.header-simple h2 {
+  margin: 0 0 6px 0;
+  font-size: 26px;
+  color: #3b3530;
+  font-family: 'Outfit', sans-serif;
+  font-weight: 700;
 }
 
 .proyecto-nombre {
-  color: #666;
-  font-size: 16px;
-  margin-bottom: 30px;
+  margin: 0;
+  color: #8c857f;
+  font-size: 15px;
+  font-weight: 500;
 }
 
+/* Cuadrícula de opciones */
 .opciones-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 20px;
+  gap: 24px;
 }
 
+/* Tarjetas de configuración */
 .opcion-card {
-  background: white;
-  border: 1px solid #e0e0e0;
-  border-radius: 10px;
-  padding: 20px;
+  background: #ffffff;
+  border: 1px solid #f0eee9;
+  border-radius: 14px;
+  padding: 24px;
   display: flex;
-  align-items: center;
-  gap: 15px;
+  align-items: flex-start;
+  gap: 20px;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.01);
 }
 
 .opcion-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-  border-color: #007bff;
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.03);
+  border-color: #c4b5a5;
 }
 
-.opcion-card.peligroso:hover {
-  border-color: #dc3545;
-  box-shadow: 0 5px 15px rgba(220, 53, 69, 0.2);
+/* Contenedor para el emoji/icono */
+.opcion-icono-wrapper {
+  width: 48px;
+  height: 48px;
+  background-color: #faf9f6;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #f5f3ef;
+  flex-shrink: 0;
 }
 
 .opcion-icono {
-  font-size: 30px;
-  min-width: 50px;
-  text-align: center;
+  font-size: 20px;
+}
+
+/* Textos de la tarjeta */
+.opcion-info {
+  flex: 1;
 }
 
 .opcion-info h3 {
-  margin: 0 0 5px 0;
-  font-size: 18px;
+  margin: 0 0 6px 0;
+  font-size: 16px;
+  color: #3b3530;
+  font-weight: 600;
 }
 
 .opcion-info p {
   margin: 0;
-  color: #666;
-  font-size: 14px;
+  color: #8c857f;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+/* Tarjeta Peligrosa (Eliminar) */
+.opcion-card.peligroso {
+  border-color: #fae3e3;
+}
+
+.opcion-card.peligroso .opcion-icono-wrapper {
+  background-color: #fdf5f5;
+  border-color: #fae3e3;
+}
+
+.opcion-card.peligroso:hover {
+  border-color: #c95252;
+  box-shadow: 0 12px 24px rgba(201, 82, 82, 0.03);
 }
 
 .opcion-card.peligroso .opcion-info h3 {
-  color: #dc3545;
+  color: #c95252;
+}
+
+/* Diseño Responsivo */
+@media (max-width: 768px) {
+  .main-content {
+    margin-left: 0;
+    padding: 20px;
+  }
+  
+  .opciones-grid {
+    grid-template-columns: 1fr;
+  }
 }
