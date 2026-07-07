@@ -1,4 +1,4 @@
-import { Component, OnInit, Output, EventEmitter } from '@angular/core';
+import { Component, OnInit, Output, EventEmitter, ChangeDetectorRef  } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ChatService } from '../Servicios/chats';
@@ -39,7 +39,9 @@ export class ListaChatComponente {
 
   constructor(
     private chatService: ChatService,
-    private router: Router 
+    private router: Router ,
+    private cdr: ChangeDetectorRef //Agregue esto dado que es necesario puesto que no se actualiza la informacion 
+
   ) {}
 
   ngOnInit() {
@@ -53,14 +55,20 @@ export class ListaChatComponente {
       next: (chatsDelBackend) => {
         this.chatsOriginales = chatsDelBackend;
         this.filtrarChats(); 
-        this.cargando = false;
+        this.cargando = false; // Cambias la variable
+        this.cdr.detectChanges();  // Le dices a Angular que actualice la pantalla
       },
       error: (error) => {
         console.error('Error al cargar la lista de chats', error);
         this.cargando = false;
+        this.cdr.detectChanges(); 
+
       }
     });
+
   }
+
+
 
   cambiarTab(tab: string) {
     this.tabActivo = tab;
@@ -79,6 +87,7 @@ export class ListaChatComponente {
 
   seleccionarChat(chat: ChatPreview) {
     this.chatSeleccionado = chat;
+      this.abrirChat.emit(chat);  // AGREGE ESTA LÍNEA
   }
 
   verChat(chat: any) {

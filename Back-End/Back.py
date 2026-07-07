@@ -29,7 +29,7 @@ ACCESS_TOKEN_EXPIRE_MINUTES = 60 # Tiempo de expiración del token en minutos
 
 
 # Configuración de MongoDB
-MONGO_URL = "mongodb://localhost:27017"
+MONGO_URL = "mongodb://bran:bran123456@localhost:27017/?authSource=admin"
 client = AsyncIOMotorClient(MONGO_URL)
 db = client.chat_db
 

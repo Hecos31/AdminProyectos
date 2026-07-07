@@ -35,12 +35,26 @@ export class ChatPersonalComponente {
   ) {}
 
   ngOnInit() {
-    const idParam = this.route.snapshot.paramMap.get('id');
+    
+    /*const idParam = this.route.snapshot.paramMap.get('id');
     if (idParam) {
       this.idConversacionActual = idParam;
     }
 
-    this.nombreContacto = this.route.snapshot.queryParamMap.get('nombre') || 'Contacto';
+    this.nombreContacto = this.route.snapshot.queryParamMap.get('nombre') || 'Contacto';*/
+
+    // ESTA ES LA ÚNICA PARTE QUE CAMBIA
+    const idParam = this.route.snapshot.paramMap.get('id');
+    if (idParam) {
+      this.idConversacionActual = idParam;
+    } else if (this.idConversacion) {
+      this.idConversacionActual = this.idConversacion;
+    }
+
+    if (this.route.snapshot.queryParamMap.get('nombre')) {
+      this.nombreContacto = this.route.snapshot.queryParamMap.get('nombre') || 'Contacto';
+    }
+    // FIN DEL CAMBIO
 
     const token = localStorage.getItem('token');
     if (token) {
@@ -92,12 +106,45 @@ export class ChatPersonalComponente {
         error: (err) => console.error('Error al enviar el mensaje:', err)
       });
   }
-  cargarHistorial() {
+
+  /*cargarHistorial() {
     this.cargando = true;
     setTimeout(() => {
       this.cargando = false;
       this.nombreContacto = "Colaborador del Proyecto";
     }, 1000);
+  }*/
+
+ //SOLO ESTE MÉTODO FUE MODIFICADO
+  cargarHistorial() {
+    if (!this.idConversacionActual) {
+      this.cargando = false;
+      return;
+    }
+
+    this.cargando = true;
+
+    this.chatService.obtenerConversaciones().subscribe({
+      next: (chats) => {
+        const chatActual = chats.find((c: any) => c.id === this.idConversacionActual);
+
+        if (chatActual && chatActual.ultimoMensaje) {
+          this.mensajes = [{
+            id_usuario_remitente: this.usuarioId,
+            contenido: chatActual.ultimoMensaje.contenido,
+            fecha_envio: new Date(chatActual.ultimoMensaje.fecha),
+            remitente: { nombre: this.nombreContacto || 'Usuario' }
+          }];
+        }
+
+        this.cargando = false;
+        setTimeout(() => this.hacerScrollHaciaAbajo(), 100);
+      },
+      error: (error) => {
+        console.error('Error cargando mensajes:', error);
+        this.cargando = false;
+      }
+    });
   }
 
   ngOnDestroy() {
@@ -107,3 +154,4 @@ export class ChatPersonalComponente {
     this.chatService.desconectarWebSocket();
   }
 }
+

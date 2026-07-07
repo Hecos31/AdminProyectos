@@ -27,19 +27,7 @@ export class SidebarComponente implements OnInit {
       this.usuario = { nombre: 'Usuario', correo: 'usuario@email.com' };
     }
 
-    // Obtener proyectos para saber qué ID usar
-    this.apiService.obtenerProyectos().subscribe({
-      next: (data) => {
-        console.log('📦 Proyectos para sidebar:', data);
-        if (data && data.length > 0) {
-          this.proyectoId = data[0].id_proyecto;
-          console.log('📌 Proyecto ID para sidebar:', this.proyectoId);
-        }
-      },
-      error: (error) => {
-        console.error('❌ Error obteniendo proyectos:', error);
-      }
-    });
+
   }
 
   irAIntegrantes() {
