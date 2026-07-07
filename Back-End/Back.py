@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta, timezone
 from typing import Optional, Dict
+from xml.parsers.expat import errors
 from fastapi import FastAPI, HTTPException, Depends, status, WebSocket, WebSocketDisconnect, Query
 from fastapi.security import OAuth2PasswordBearer
 from pydantic import BaseModel, EmailStr
@@ -19,10 +20,14 @@ import sqlalchemy
 from typing import List
 from bson.errors import InvalidId
 from bson import ObjectId
+from fastapi.staticfiles import StaticFiles
+
+
+
 
 # --- CONFIGURACIÓN DE LAS VARIABLES DE ENTORNO  (NO OLVIDAR CONFIGURAR EN SU ENTORNO) ---
 password = urllib.parse.quote_plus("H3cos31!") # Cambia esto por tu contraseña de PostgreSQL
-DATABASE_URL = f"postgresql://postgres:{password}@localhost:5432/ProdAdmin"  # Cambia esto por tu URL de conexión a PostgreSQL
+DATABASE_URL = f"postgresql://postgres:{password}@localhost:5432/ProdAdmin" # Cambia esto por tu URL de conexión a PostgreSQL
 SECRET_KEY = "tu_clave_secreta_para_los_tokens_2026Pruebas"  # Clave para evitar firmas inválidas en JWT
 ALGORITHM = "HS256" # Algoritmo de encriptación para JWT y db
 ACCESS_TOKEN_EXPIRE_MINUTES = 60 # Tiempo de expiración del token en minutos
@@ -47,6 +52,14 @@ app = FastAPI(title="API")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:4200"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+# Configuración de CORS para permitir solicitudes desde el frontend Angular a través del túnel ngrok
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["https://paying-anagram-bauble.ngrok-free.dev"],  # tu túnel del frontend
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -1095,108 +1108,53 @@ async def obtener_lista_conversaciones(
     
 @app.get("/mensajes/historial/conversaciones/{id_conversacion}")
 async def obtener_historial_conversacion(
+    id_conversacion: str, # Recibimos el ID como string desde la URL
     db_sql: Session = Depends(get_db),
     id_usuario_actual: int = Depends(obtener_usuario_actual)
 ):
     try:
-        # 1. Buscar en MongoDB todos los mensajes de la conversación específica
-        cursor = db.messages.find({
-            "id_conversacion": id_conversacion
-        })
-        messages = await cursor.to_list(length=100) # Límite de 100 para no saturar
-        
-        resultado = []
-        
-        for msg in messages:
-            # 2. Resolver el nombre del remitente desde PostgreSQL
-            remitente = db_sql.query(UsuarioDB).filter(UsuarioDB.id_usuario == msg["id_usuario_remitente"]).first()
-            nombre_remitente = f"{remitente.nombre} {remitente.apellido}" if remitente else "Usuario Desconocido"
+        # 1. Intentar convertir el id_conversacion a ObjectId si es necesario
+        # Si tu base de datos usa ObjectIds, esto es obligatorio
+        try:
+            query_id = ObjectId(id_conversacion)
+        except errors.InvalidId:
+            # Si no es un formato de ObjectId, lo dejamos como string por si acaso
+            query_id = id_conversacion
             
-            # 3. Construir el objeto de mensaje
-            mensaje_obj = {
+        # 2. Buscar en MongoDB
+        # Usamos query_id que ya está adaptado
+        cursor = db.messages.find({"id_conversacion": query_id})
+        messages = await cursor.to_list(length=100)
+        
+        # DEBUG: Verifica qué está pasando en la consola del backend
+        print(f"Buscando ID: {query_id}. Mensajes encontrados: {len(messages)}")
+        
+        if not messages:
+            return []
+            
+        # 3. Resolver nombres desde SQL (con la lógica optimizada que definimos antes)
+        ids_usuarios = list(set(msg["id_usuario_remitente"] for msg in messages))
+        usuarios_db = db_sql.query(UsuarioDB).filter(UsuarioDB.id_usuario.in_(ids_usuarios)).all()
+        mapa_usuarios = {u.id_usuario: f"{u.nombre} {u.apellido}" for u in usuarios_db}
+        
+        resultado = [
+            {
                 "id": str(msg["_id"]),
                 "contenido": msg["contenido"],
                 "fecha_envio": msg["fecha_envio"].isoformat(),
                 "remitente": {
                     "id_usuario": msg["id_usuario_remitente"],
-                    "nombre": nombre_remitente
+                    "nombre": mapa_usuarios.get(msg["id_usuario_remitente"], "Usuario Desconocido")
                 }
             }
-            resultado.append(mensaje_obj)
-        
-        resultado.sort(key=lambda x: x["fecha_envio"])  # Ordenar cronológicamente
+            for msg in messages
+        ]
         
         return resultado
     
     except Exception as e:
+        print(f"Error en endpoint: {e}")
         raise HTTPException(status_code=500, detail=str(e))
-
-# --- ENDPOINT PARA LISTAR PROYECTOS DISPONIBLES ---
-
-@app.get("/proyectos", response_model=list[ProyectoResponse], status_code=status.HTTP_200_OK)
-def listar_proyectos(
-    db: Session = Depends(get_db),
-    id_usuario_actual: int = Depends(obtener_usuario_actual)
-):
-    """
-    Obtiene la lista de todos los proyectos en los que el usuario autenticado 
-    está registrado como colaborador (ya sea como Administrador o miembro).
-    """
-    proyectos = (
-        db.query(ProyectoDB)
-        .join(ProyectoUsuarioDB, ProyectoDB.id_proyecto == ProyectoUsuarioDB.id_proyecto)
-        .filter(ProyectoUsuarioDB.id_usuario == id_usuario_actual)
-        .all()
-    )
-    return proyectos
-
-
-# --- ENDPOINT PARA LISTAR TAREAS ASIGNADAS AL USUARIO ---
-
-@app.get("/tareas/asignadas", response_model=list[TareaResponse], status_code=status.HTTP_200_OK)
-def listar_tareas_asignadas(
-    db: Session = Depends(get_db),
-    id_usuario_actual: int = Depends(obtener_usuario_actual)
-):
-    """
-    Obtiene la lista completa de tareas asignadas directamente al usuario autenticado
-    a través de la tabla de vinculación 'tarea_asignada'.
-    """
-    tareas_asignadas = (
-        db.query(TareaDB)
-        .join(TareaAsignadaDB, TareaDB.id_tarea == TareaAsignadaDB.id_tarea)
-        .filter(TareaAsignadaDB.id_usuario == id_usuario_actual)
-        .all()
-    )
-    return tareas_asignadas
-
-# --- ENDPOINT PARA LISTAR USUARIOS DENTRO DE UN PROYECTO ---
-
-@app.get("/proyectos/{id_proyecto}/colaboradores", response_model=list[UsuarioResponse], status_code=status.HTTP_200_OK)
-def listar_colaboradores_proyecto(
-    id_proyecto: int,
-    db: Session = Depends(get_db),
-    id_usuario_actual: int = Depends(obtener_usuario_actual)
-):
-    """
-    Obtiene la lista de todos los usuarios (colaboradores y administradores) 
-    que pertenecen a un proyecto específico.
-    """
-    # 1. Validar que el usuario que hace la petición pertenezca al proyecto
-    rol_usuario = obtener_rol_en_proyecto(id_proyecto, id_usuario_actual, db)
-    if rol_usuario is None:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="No tienes acceso a este proyecto para ver a sus colaboradores."
-        )
-
-    # 2. Consultar los usuarios haciendo un JOIN con la tabla intermedia 'proyecto_usuarios'
-    # para traer únicamente los datos de los usuarios asignados a ese proyecto
-    colaboradores = (
-        db.query(UsuarioDB)
-        .join(ProyectoUsuarioDB, UsuarioDB.id_usuario == ProyectoUsuarioDB.id_usuario)
-        .filter(ProyectoUsuarioDB.id_proyecto == id_proyecto)
-        .all()
-    )
     
-    return colaboradores
+    
+# app.mount("/", StaticFiles(directory="../Front-End/FrontAdminProyectos/dist/front-admin-proyectos/browser", html=True), name="static")

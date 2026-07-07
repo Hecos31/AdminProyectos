@@ -1,13 +1,23 @@
 <div class="chat-list-container">
   <div class="chat-list-header">
-    <h2>Conversaciones</h2>
+    <div class="header-top">
+      <h2>Conversaciones</h2>
+      <span class="chat-count">{{ chatsFiltrados.length }} chats</span>
+    </div>
     <div class="chat-search">
+      <span class="search-icon">🔍</span>
       <input 
         type="text" 
         placeholder="Buscar conversaciones..." 
         [(ngModel)]="terminoBusqueda"
         (input)="filtrarChats()"
         class="search-input">
+      <button 
+        *ngIf="terminoBusqueda.length > 0" 
+        class="clear-search" 
+        (click)="terminoBusqueda = ''; filtrarChats()">
+        ✕
+      </button>
     </div>
   </div>
 
@@ -77,18 +87,6 @@
           <span class="chat-participantes">{{ chat.participantes }} participantes</span>
         </div>
       </div>
-
-      <div class="chat-actions">
-        <button class="btn-ver" (click)="$event.stopPropagation(); verChat(chat)">
-          Ver
-        </button>
-      </div>
     </div>
-
-    <!-- <div *ngIf="!cargando && chatsFiltrados.length > 0 && chatsFiltrados.length >= 10" class="load-more">
-      <button class="btn-cargar-mas" (click)="cargarMas()">
-        Cargar más conversaciones
-      </button>
-    </div> -->
   </div>
 </div>

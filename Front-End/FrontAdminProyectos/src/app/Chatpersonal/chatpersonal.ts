@@ -15,6 +15,8 @@ import { ActivatedRoute, Router } from '@angular/router'
 })
 export class ChatPersonalComponente {
  @ViewChild('scrollContainer') private scrollContainer!: ElementRef;
+ @Input() idConversacion: string = '';
+@Input() nombreContacto: string = 'Contacto';
 
   mensajes: any[] = [];
   nuevoMensaje: string = '';
@@ -22,23 +24,38 @@ export class ChatPersonalComponente {
   contactoEnLinea: boolean = false; 
   cargando: boolean = false;
   destinatarioId!: number;
-  nombreContacto: string = '';
+  //nombreContacto: string = ''; //Modificado
   idConversacionActual: string = '';
   private chatSub!: Subscription;
 
   constructor(
     private chatService: ChatService,
     private route: ActivatedRoute,
-    private router: Router 
+    private router: Router,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit() {
-    const idParam = this.route.snapshot.paramMap.get('id');
+    
+    /*const idParam = this.route.snapshot.paramMap.get('id');
     if (idParam) {
       this.idConversacionActual = idParam;
     }
 
-    this.nombreContacto = this.route.snapshot.queryParamMap.get('nombre') || 'Contacto';
+    this.nombreContacto = this.route.snapshot.queryParamMap.get('nombre') || 'Contacto';*/
+
+    // ESTA ES LA ÚNICA PARTE QUE CAMBIA
+    const idParam = this.route.snapshot.paramMap.get('id');
+    if (idParam) {
+      this.idConversacionActual = idParam;
+    } else if (this.idConversacion) {
+      this.idConversacionActual = this.idConversacion;
+    }
+
+    if (this.route.snapshot.queryParamMap.get('nombre')) {
+      this.nombreContacto = this.route.snapshot.queryParamMap.get('nombre') || 'Contacto';
+    }
+    // FIN DEL CAMBIO
 
     const token = localStorage.getItem('token');
     if (token) {
@@ -49,13 +66,22 @@ export class ChatPersonalComponente {
     this.chatService.conectarWebSocket();
 
     this.chatSub = this.chatService.mensajesNuevos$.subscribe((msg) => {
+      // Si el mensaje es mío, ya lo agregué de forma optimista al enviarlo. Ignóralo.
+      if (msg.id_usuario_remitente === this.usuarioId) {
+        return;
+      }
+
       const mensajeFormateado = {
         ...msg,
         fecha_envio: new Date(msg.fecha_envio),
-        remitente: { nombre: this.nombreContacto } 
+        remitente: {
+          id_usuario: msg.id_usuario_remitente,
+          nombre: this.nombreContacto
+        }
       };
-      
+
       this.mensajes.push(mensajeFormateado);
+      this.cdr.detectChanges();
     });
 
     this.cargarHistorial();
@@ -78,10 +104,9 @@ export class ChatPersonalComponente {
     this.nuevoMensaje = ''; 
 
     const miNuevoMensaje = {
-      id_usuario_remitente: this.usuarioId,
       contenido: textoMensaje,
       fecha_envio: new Date(),
-      remitente: { nombre: 'Yo' }
+      remitente: { id_usuario: this.usuarioId, nombre: 'Yo' }
     };
     this.mensajes.push(miNuevoMensaje);
 
@@ -90,13 +115,38 @@ export class ChatPersonalComponente {
         error: (err) => console.error('Error al enviar el mensaje:', err)
       });
   }
-  cargarHistorial() {
+
+  /*cargarHistorial() {
     this.cargando = true;
     setTimeout(() => {
       this.cargando = false;
       this.nombreContacto = "Colaborador del Proyecto";
     }, 1000);
+  }*/
+
+ //SOLO ESTE MÉTODO FUE MODIFICADO
+  cargarHistorial() {
+  if (!this.idConversacionActual) {
+    this.cargando = false;
+    return;
   }
+
+  this.cargando = true;
+  this.chatService.obtenerHistorialCompleto(this.idConversacionActual).subscribe({
+    next: (mensajesDesdeBackend) => {
+      this.mensajes = mensajesDesdeBackend; // Aquí ya tienes tus datos
+      
+      this.cargando = false;
+      this.cdr.detectChanges(); // 3. FORZAR LA ACTUALIZACIÓN DE LA VISTA
+      
+      setTimeout(() => this.hacerScrollHaciaAbajo(), 100);
+    },
+    error: (error) => {
+      console.error('Error:', error);
+      this.cargando = false;
+    }
+  });
+}
 
   ngOnDestroy() {
     if (this.chatSub) {
@@ -105,3 +155,4 @@ export class ChatPersonalComponente {
     this.chatService.desconectarWebSocket();
   }
 }
+

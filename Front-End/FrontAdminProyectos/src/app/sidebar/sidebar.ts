@@ -31,6 +31,7 @@ export class SidebarComponente implements OnInit {
       this.usuario = JSON.parse(usuarioStr);
     }
 
+<<<<<<< HEAD
     // 2. Escuchar cambios de ruta
     this.router.events.pipe(
       filter((event): event is NavigationEnd => event instanceof NavigationEnd)
@@ -47,6 +48,9 @@ export class SidebarComponente implements OnInit {
         this.proyectoActivoId = null;
       }
     });
+=======
+
+>>>>>>> hector
   }
 
   // Métodos para el menú de usuario
