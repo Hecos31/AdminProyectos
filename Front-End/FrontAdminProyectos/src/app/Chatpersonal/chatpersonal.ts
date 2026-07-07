@@ -31,7 +31,8 @@ export class ChatPersonalComponente {
   constructor(
     private chatService: ChatService,
     private route: ActivatedRoute,
-    private router: Router 
+    private router: Router,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit() {
@@ -65,13 +66,22 @@ export class ChatPersonalComponente {
     this.chatService.conectarWebSocket();
 
     this.chatSub = this.chatService.mensajesNuevos$.subscribe((msg) => {
+      // Si el mensaje es mío, ya lo agregué de forma optimista al enviarlo. Ignóralo.
+      if (msg.id_usuario_remitente === this.usuarioId) {
+        return;
+      }
+
       const mensajeFormateado = {
         ...msg,
         fecha_envio: new Date(msg.fecha_envio),
-        remitente: { nombre: this.nombreContacto } 
+        remitente: {
+          id_usuario: msg.id_usuario_remitente,
+          nombre: this.nombreContacto
+        }
       };
-      
+
       this.mensajes.push(mensajeFormateado);
+      this.cdr.detectChanges();
     });
 
     this.cargarHistorial();
@@ -94,10 +104,9 @@ export class ChatPersonalComponente {
     this.nuevoMensaje = ''; 
 
     const miNuevoMensaje = {
-      id_usuario_remitente: this.usuarioId,
       contenido: textoMensaje,
       fecha_envio: new Date(),
-      remitente: { nombre: 'Yo' }
+      remitente: { id_usuario: this.usuarioId, nombre: 'Yo' }
     };
     this.mensajes.push(miNuevoMensaje);
 
@@ -117,35 +126,27 @@ export class ChatPersonalComponente {
 
  //SOLO ESTE MÉTODO FUE MODIFICADO
   cargarHistorial() {
-    if (!this.idConversacionActual) {
-      this.cargando = false;
-      return;
-    }
-
-    this.cargando = true;
-
-    this.chatService.obtenerConversaciones().subscribe({
-      next: (chats) => {
-        const chatActual = chats.find((c: any) => c.id === this.idConversacionActual);
-
-        if (chatActual && chatActual.ultimoMensaje) {
-          this.mensajes = [{
-            id_usuario_remitente: this.usuarioId,
-            contenido: chatActual.ultimoMensaje.contenido,
-            fecha_envio: new Date(chatActual.ultimoMensaje.fecha),
-            remitente: { nombre: this.nombreContacto || 'Usuario' }
-          }];
-        }
-
-        this.cargando = false;
-        setTimeout(() => this.hacerScrollHaciaAbajo(), 100);
-      },
-      error: (error) => {
-        console.error('Error cargando mensajes:', error);
-        this.cargando = false;
-      }
-    });
+  if (!this.idConversacionActual) {
+    this.cargando = false;
+    return;
   }
+
+  this.cargando = true;
+  this.chatService.obtenerHistorialCompleto(this.idConversacionActual).subscribe({
+    next: (mensajesDesdeBackend) => {
+      this.mensajes = mensajesDesdeBackend; // Aquí ya tienes tus datos
+      
+      this.cargando = false;
+      this.cdr.detectChanges(); // 3. FORZAR LA ACTUALIZACIÓN DE LA VISTA
+      
+      setTimeout(() => this.hacerScrollHaciaAbajo(), 100);
+    },
+    error: (error) => {
+      console.error('Error:', error);
+      this.cargando = false;
+    }
+  });
+}
 
   ngOnDestroy() {
     if (this.chatSub) {

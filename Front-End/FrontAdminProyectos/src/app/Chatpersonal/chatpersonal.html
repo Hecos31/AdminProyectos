@@ -12,7 +12,7 @@
   <div class="chat-messages" #scrollContainer>
     <div *ngFor="let msg of mensajes" 
          class="message-item" 
-         [class.message-own]="msg.id_usuario_remitente === usuarioId">
+         [class.message-own]="msg.remitente?.id_usuario === usuarioId">
       <div class="message-avatar">
         {{ msg.remitente?.nombre?.[0] || 'U' }}
       </div>

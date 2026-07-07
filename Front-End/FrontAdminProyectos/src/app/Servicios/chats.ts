@@ -76,4 +76,16 @@ export class ChatService {
     
     return this.http.get<any[]>(`${this.apiUrl}/mensajes/conversaciones`, { headers: headers });
   }
+
+  // En tu ChatService.ts
+  obtenerHistorialCompleto(idConversacion: string) {
+  const token = localStorage.getItem('token');
+  
+  // Es vital agregar el encabezado Authorization
+  const headers = {
+    'Authorization': `Bearer ${token}`
+  };
+
+  return this.http.get<any[]>(`${this.apiUrl}/mensajes/historial/conversaciones/${idConversacion}`, { headers });
+  }
 }
