@@ -48,11 +48,21 @@
   font-family: 'Outfit', sans-serif;
 }
 
-/* Navegación */
+/* Ocultar la barra de desplazamiento (Scrollbar) pero permitir el scroll */
 .sidebar-nav {
   flex: 1;
   padding: 10px 15px;
   overflow-y: auto;
+  
+  /* Ocultar barra en Firefox */
+  scrollbar-width: none; 
+  /* Ocultar barra en IE y Edge antiguo */
+  -ms-overflow-style: none; 
+}
+
+/* Ocultar barra en Chrome, Safari y Opera */
+.sidebar-nav::-webkit-scrollbar {
+  display: none;
 }
 
 .nav-list {
@@ -175,17 +185,6 @@
     color: #c95252;
 }
 
-/* Ocultar la barra de desplazamiento (opcional, para un look más limpio) */
-.sidebar-nav::-webkit-scrollbar {
-  width: 4px;
-}
-.sidebar-nav::-webkit-scrollbar-track {
-  background: transparent;
-}
-.sidebar-nav::-webkit-scrollbar-thumb {
-  background: #e3e0da;
-  border-radius: 4px;
-}
 /* --- NUEVA SECCIÓN DE PERFIL DE USUARIO --- */
 .user-profile-section {
   position: relative; /* Necesario para que el popover se posicione respecto a este contenedor */

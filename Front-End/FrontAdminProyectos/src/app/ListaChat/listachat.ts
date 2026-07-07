@@ -24,12 +24,8 @@ export interface ChatPreview {
   templateUrl: './listachat.html',
   styleUrls: ['./listachat.css']
 })
-export class ListaChatComponente {
+export class ListaChatComponente implements OnInit {
   @Output() abrirChat = new EventEmitter<ChatPreview>();
-  
-
-  
-
   terminoBusqueda: string = '';
   tabActivo: string = 'todos';
   cargando: boolean = false;
@@ -50,7 +46,6 @@ export class ListaChatComponente {
 
   cargarConversaciones() {
     this.cargando = true;
-    
     this.chatService.obtenerConversaciones().subscribe({
       next: (chatsDelBackend) => {
         this.chatsOriginales = chatsDelBackend;

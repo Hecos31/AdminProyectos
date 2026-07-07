@@ -14,6 +14,10 @@ import { ApiServicio } from '../Servicios/api.servicio';
 export class CalendarioActividadesComponente implements OnInit {
   proyectoId: number = 0;
   tareas: any[] = [];
+  
+  // Añadimos esta variable para guardar la fecha actual
+  fechaMinima: string = ''; 
+
   nuevaTarea = {
     id_proyecto: 0,
     titulo: '',
@@ -24,6 +28,7 @@ export class CalendarioActividadesComponente implements OnInit {
     fecha_limite: '',
     id_usuario_asignado: null as number | null
   };
+  
   cargando = true;
   errorMessage = '';
   successMessage = '';
@@ -37,28 +42,35 @@ export class CalendarioActividadesComponente implements OnInit {
 
   ngOnInit() {
     this.proyectoId = Number(this.route.snapshot.params['id']);
-    console.log('📌 Proyecto ID calendario:', this.proyectoId);
     this.nuevaTarea.id_proyecto = this.proyectoId;
+    
+    // Calculamos la fecha de hoy al iniciar el componente
+    this.establecerFechaMinima(); 
+    
     this.cargarTareas();
+  }
+
+  // Método para formatear la fecha actual en YYYY-MM-DD
+  establecerFechaMinima() {
+    const hoy = new Date();
+    const year = hoy.getFullYear();
+    const month = ('0' + (hoy.getMonth() + 1)).slice(-2);
+    const day = ('0' + hoy.getDate()).slice(-2);
+    this.fechaMinima = `${year}-${month}-${day}`;
   }
 
   cargarTareas() {
     this.cargando = true;
-    console.log('⏳ Cargando tareas...');
-    
     this.apiService.obtenerTareas(this.proyectoId).subscribe({
       next: (data) => {
-        console.log('📦 Tareas recibidas:', data);
         this.tareas = Array.isArray(data) ? data : [];
-        console.log('📊 Cantidad de tareas:', this.tareas.length);
         this.cargando = false;
-        this.cdr.detectChanges();  // ← FORZAR ACTUALIZACIÓN
+        this.cdr.detectChanges();
       },
       error: (error) => {
-        console.error('❌ Error cargando tareas:', error);
         this.tareas = [];
         this.cargando = false;
-        this.cdr.detectChanges();  // ← FORZAR ACTUALIZACIÓN
+        this.cdr.detectChanges();
       }
     });
   }
@@ -69,6 +81,23 @@ export class CalendarioActividadesComponente implements OnInit {
       setTimeout(() => this.errorMessage = '', 3000);
       return;
     }
+
+    // --- NUEVAS VALIDACIONES DE FECHAS ---
+    if (this.nuevaTarea.fecha_inicio && this.nuevaTarea.fecha_inicio < this.fechaMinima) {
+      this.errorMessage = 'La fecha de inicio no puede ser anterior a hoy';
+      setTimeout(() => this.errorMessage = '', 3000);
+      return;
+    }
+
+    if (this.nuevaTarea.fecha_limite) {
+      const fechaComparacion = this.nuevaTarea.fecha_inicio || this.fechaMinima;
+      if (this.nuevaTarea.fecha_limite < fechaComparacion) {
+        this.errorMessage = 'La fecha límite no puede ser anterior a la de inicio';
+        setTimeout(() => this.errorMessage = '', 3000);
+        return;
+      }
+    }
+    // ------------------------------------
 
     if (this.nuevaTarea.id_usuario_asignado) {
       this.nuevaTarea.estado = 'Asignada';
@@ -87,12 +116,9 @@ export class CalendarioActividadesComponente implements OnInit {
       id_usuario_asignado: this.nuevaTarea.id_usuario_asignado || null
     };
 
-    console.log('📤 Enviando tarea:', data);
-
     this.apiService.crearTarea(data).subscribe({
       next: (response) => {
-        console.log('✅ Tarea creada:', response);
-        this.successMessage = '✅ Tarea creada exitosamente';
+        this.successMessage = 'Tarea creada exitosamente';
         this.nuevaTarea = {
           id_proyecto: this.proyectoId,
           titulo: '',
@@ -107,9 +133,8 @@ export class CalendarioActividadesComponente implements OnInit {
         setTimeout(() => this.successMessage = '', 3000);
       },
       error: (error) => {
-        console.error('❌ Error:', error);
         const mensaje = error.error?.detail || 'Error al crear tarea';
-        this.errorMessage = '❌ ' + mensaje;
+        this.errorMessage = mensaje;
         setTimeout(() => this.errorMessage = '', 5000);
       }
     });
@@ -120,12 +145,12 @@ export class CalendarioActividadesComponente implements OnInit {
 
     this.apiService.eliminarTarea(id_tarea).subscribe({
       next: () => {
-        this.successMessage = '✅ Tarea eliminada';
+        this.successMessage = 'Tarea eliminada';
         this.cargarTareas();
         setTimeout(() => this.successMessage = '', 3000);
       },
       error: () => {
-        this.errorMessage = '❌ Error al eliminar tarea';
+        this.errorMessage = 'Error al eliminar tarea';
         setTimeout(() => this.errorMessage = '', 3000);
       }
     });
@@ -136,20 +161,12 @@ export class CalendarioActividadesComponente implements OnInit {
   }
 
   getPrioridadColor(prioridad: string): string {
-    const colores: any = { 
-      'Alta': '#d97373',   // Rojo suave
-      'Media': '#d9a773',  // Beige/Café cálido
-      'Baja': '#73d9a7'    // Verde suave
-    };
+    const colores: any = { 'Alta': '#d97373', 'Media': '#d9a773', 'Baja': '#73d9a7' };
     return colores[prioridad] || '#a89586';
   }
 
   getEstadoColor(estado: string): string {
-    const colores: any = {
-      'Concluida': '#a89586',
-      'Asignada': '#bfaea0',
-      'Pendiente por asignar': '#e3e0da'
-    };
+    const colores: any = { 'Concluida': '#a89586', 'Asignada': '#bfaea0', 'Pendiente por asignar': '#e3e0da' };
     return colores[estado] || '#f0eee9';
   }
 }

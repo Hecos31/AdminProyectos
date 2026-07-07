@@ -26,8 +26,8 @@ from fastapi.staticfiles import StaticFiles
 
 
 # --- CONFIGURACIÓN DE LAS VARIABLES DE ENTORNO  (NO OLVIDAR CONFIGURAR EN SU ENTORNO) ---
-password = urllib.parse.quote_plus("H3cos31!") # Cambia esto por tu contraseña de PostgreSQL
-DATABASE_URL = f"postgresql://postgres:{password}@localhost:5432/ProdAdmin" # Cambia esto por tu URL de conexión a PostgreSQL
+password = urllib.parse.quote_plus("1234") # Cambia esto por tu contraseña de PostgreSQL
+DATABASE_URL = f"postgresql://postgres:{password}@localhost:5432/AdminProyectosBD"  # Cambia esto por tu URL de conexión a PostgreSQL
 SECRET_KEY = "tu_clave_secreta_para_los_tokens_2026Pruebas"  # Clave para evitar firmas inválidas en JWT
 ALGORITHM = "HS256" # Algoritmo de encriptación para JWT y db
 ACCESS_TOKEN_EXPIRE_MINUTES = 60 # Tiempo de expiración del token en minutos
@@ -390,10 +390,16 @@ def login(login_data: LoginRequest, db: Session = Depends(get_db)):
         expires_delta=tiempo_expiracion
     )
     
-    # 6. Responder con el Token
-    return {"access_token": token_acceso, "token_type": "bearer"}
-
-
+    # 6. Responder con el Token y los datos del usuario
+    return {
+        "access_token": token_acceso, 
+        "token_type": "bearer",
+        "usuario": {
+            "id_usuario": usuario.id_usuario,
+            "nombre": usuario.nombre,
+            "correo": usuario.correo
+        }
+    }
 
 # --- ENDPOINT DE CREACIÓN DE USUARIOS ---
 

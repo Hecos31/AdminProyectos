@@ -8,7 +8,7 @@ import { MenuConfiguracionComponente } from '../MenuConfiguracion/menuconfigurac
 @Component({
   selector: 'app-pantalla-configuracion-proyecto',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, MenuConfiguracionComponente],
   templateUrl: './pantallaconfiguracion.html',
   styleUrls: ['./pantallaconfiguracion.css']
 })

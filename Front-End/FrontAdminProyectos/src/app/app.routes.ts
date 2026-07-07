@@ -9,22 +9,33 @@ import { PantallaConfiguracionComponente } from './Pantalla-ConfiguracionProyect
 import { MenuConfiguracionComponente } from './MenuConfiguracion/menuconfiguracion';
 import { ChatComponente } from './Chats/chat';
 
-
 export const routes: Routes = [
   // --- Rutas Públicas / Autenticación ---
   { path: '', redirectTo: '/login', pathMatch: 'full' },
   { path: 'login', component: LoginComponente },
   { path: 'registro', component: CrearUsuarioComponente },
+<<<<<<< HEAD
 
   // --- Rutas Globales (Contexto de Usuario) ---
+=======
+  
+  // Rutas Globales
+>>>>>>> Fabi-Front
   { path: 'inicio', component: PantallaInicioComponente },
   { path: 'crear-proyecto', component: CrearProyectoComponente },
+  { path: 'chats', component: ChatComponente },
+  
+  // Rutas de Proyecto Específico
   { path: 'proyecto/:id', component: PantallaPrincipalProyectoComponente },
   { path: 'proyecto/:id/calendario', component: CalendarioActividadesComponente },
-  { path: 'proyecto/:id/configuracion/:opcion', component: PantallaConfiguracionComponente },
-  { path: 'integrantes', component: PantallaConfiguracionComponente },
-  { path: 'calendario', component: CalendarioActividadesComponente },
-  { path: 'configuracion', component: MenuConfiguracionComponente },
-  { path: 'chats', component: ChatComponente },
-
+  
+  // 1. Ruta para el menú de configuración general (El grid de opciones)
+  { path: 'proyecto/:id/configuracion', component: MenuConfiguracionComponente },
+  
+  // 2. Ruta directa para la gestión de integrantes (PantallaConfiguracion)
+  { path: 'proyecto/:id/integrantes', component: PantallaConfiguracionComponente },
+  
+  // 3. Ruta comodín para cuando navegas desde el grid de opciones (ej. reportes, etiquetas)
+  // Nota: La dejamos al final para que Angular priorice las rutas exactas de arriba
+  { path: 'proyecto/:id/configuracion/:opcion', component: PantallaConfiguracionComponente }
 ];

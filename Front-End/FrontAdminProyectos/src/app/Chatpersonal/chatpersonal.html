@@ -1,30 +1,35 @@
 <div class="chat-personal-container">
   <div class="chat-header">
     <div class="chat-header-info">
-      <h2>Chat Personal</h2>
-      <span class="contacto-nombre">{{ nombreContacto || 'Contacto' }}</span>
+      <div class="header-avatar">{{ (nombreContacto | slice:0:1) | uppercase }}</div>
+      <div>
+        <h2>{{ nombreContacto || 'Contacto' }}</h2>
+        <span class="estado-conexion" [class.online]="contactoEnLinea">
+          {{ contactoEnLinea ? 'En línea' : 'Desconectado' }}
+        </span>
+      </div>
     </div>
-    <span class="estado-conexion" [class.online]="contactoEnLinea">
-      {{ contactoEnLinea ? 'En línea' : 'Desconectado' }}
-    </span>
   </div>
 
   <div class="chat-messages" #scrollContainer>
+    <div *ngIf="cargando" class="loading-state">Cargando mensajes...</div>
+    
     <div *ngFor="let msg of mensajes" 
          class="message-item" 
-         [class.message-own]="msg.remitente?.id_usuario === usuarioId">
-      <div class="message-avatar">
+         [class.message-own]="msg.id_usuario_remitente === usuarioId">
+      
+      <div class="message-avatar" *ngIf="msg.id_usuario_remitente !== usuarioId">
         {{ msg.remitente?.nombre?.[0] || 'U' }}
       </div>
+      
       <div class="message-body">
-        <div class="message-meta">
+        <div class="message-meta" *ngIf="msg.id_usuario_remitente !== usuarioId">
           <span class="message-user">{{ msg.remitente?.nombre || 'Usuario' }}</span>
-          <span class="message-time">{{ msg.fecha_envio | date:'HH:mm' }}</span>
         </div>
         <p class="message-text">{{ msg.contenido }}</p>
+        <span class="message-time">{{ msg.fecha_envio | date:'HH:mm' }}</span>
       </div>
     </div>
-    <div *ngIf="cargando" class="loading-indicator">Cargando mensajes...</div>
   </div>
 
   <div class="chat-input-area">
@@ -34,10 +39,7 @@
       placeholder="Escribe un mensaje..." 
       (keyup.enter)="enviarMensaje()"
       class="chat-input">
-    <button 
-      (click)="enviarMensaje()" 
-      [disabled]="!nuevoMensaje.trim()"
-      class="btn-enviar">
+    <button (click)="enviarMensaje()" [disabled]="!nuevoMensaje.trim()" class="btn-enviar">
       Enviar
     </button>
   </div>
