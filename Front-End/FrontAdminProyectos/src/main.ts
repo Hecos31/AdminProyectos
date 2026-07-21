@@ -1,4 +1,4 @@
-import 'zone.js'; // <-- ¡Añade esta línea hasta arriba!
+import 'zone.js'; 
 
 import { bootstrapApplication } from '@angular/platform-browser';
 import { App } from './app/app';

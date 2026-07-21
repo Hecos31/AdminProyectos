@@ -14,13 +14,8 @@ export const routes: Routes = [
   { path: '', redirectTo: '/login', pathMatch: 'full' },
   { path: 'login', component: LoginComponente },
   { path: 'registro', component: CrearUsuarioComponente },
-<<<<<<< HEAD
-
-  // --- Rutas Globales (Contexto de Usuario) ---
-=======
   
   // Rutas Globales
->>>>>>> Fabi-Front
   { path: 'inicio', component: PantallaInicioComponente },
   { path: 'crear-proyecto', component: CrearProyectoComponente },
   { path: 'chats', component: ChatComponente },
