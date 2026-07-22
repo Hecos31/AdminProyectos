@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { ApiServicio } from '../Servicios/api.servicio';
@@ -8,7 +8,7 @@ import { ApiServicio } from '../Servicios/api.servicio';
   standalone: true,
   imports: [CommonModule],
   templateUrl: './pantallainicio.html',
-  styleUrls: ['./pantallainicio.css']
+  styleUrls: ['./pantallainicio.css'] 
 })
 export class PantallaInicioComponente implements OnInit {
   proyectos: any[] = [];
@@ -18,7 +18,8 @@ export class PantallaInicioComponente implements OnInit {
 
   constructor(
     private apiService: ApiServicio,
-    private router: Router
+    private router: Router,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit() {
@@ -36,10 +37,12 @@ export class PantallaInicioComponente implements OnInit {
       next: (data) => {
         this.proyectos = Array.isArray(data) ? data : [];
         this.cargando = false;
+        this.cdr.detectChanges();
       },
       error: (error) => {
         console.error('Error al cargar proyectos:', error);
         this.cargando = false;
+        this.cdr.detectChanges();
       }
     });
   }

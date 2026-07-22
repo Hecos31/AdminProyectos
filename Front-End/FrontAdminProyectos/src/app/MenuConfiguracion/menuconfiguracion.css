@@ -1,8 +1,8 @@
-/* Contenedor adaptado a la distribución de la app */
+/* Contenedor principal alineado con el layout global */
 .menu-configuracion-container {
   display: flex;
   min-height: 100vh;
-  background-color: #f7f6f4; /* Fondo off-white base */
+  background-color: #f7f6f4;
   font-family: 'Inter', sans-serif;
 }
 
@@ -12,6 +12,7 @@
   max-width: 1100px;
 }
 
+/* Cabecera */
 .header-simple {
   margin-bottom: 32px;
 }
@@ -19,26 +20,26 @@
 .header-simple h2 {
   margin: 0 0 6px 0;
   font-size: 26px;
-  color: #3b3530; /* Charcoal */
+  color: #3b3530;
   font-family: 'Outfit', sans-serif;
   font-weight: 700;
 }
 
 .proyecto-nombre {
   margin: 0;
-  color: #8c857f; /* Gris cálido */
+  color: #8c857f;
   font-size: 15px;
   font-weight: 500;
 }
 
-/* Distribución en rejilla responsiva */
+/* Cuadrícula de opciones */
 .opciones-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: 24px;
 }
 
-/* Tarjetas planas de configuración */
+/* Tarjetas de configuración */
 .opcion-card {
   background: #ffffff;
   border: 1px solid #f0eee9;
@@ -55,10 +56,10 @@
 .opcion-card:hover {
   transform: translateY(-4px);
   box-shadow: 0 12px 24px rgba(0, 0, 0, 0.03);
-  border-color: #c4b5a5; /* Color de acento neutro */
+  border-color: #c4b5a5;
 }
 
-/* Contenedor plano para simular un icono de sistema */
+/* Contenedor para el emoji/icono */
 .opcion-icono-wrapper {
   width: 48px;
   height: 48px;
@@ -75,6 +76,7 @@
   font-size: 20px;
 }
 
+/* Textos de la tarjeta */
 .opcion-info {
   flex: 1;
 }
@@ -93,7 +95,7 @@
   line-height: 1.5;
 }
 
-/* --- Variación de sección destructiva / peligro --- */
+/* Tarjeta Peligrosa (Eliminar) */
 .opcion-card.peligroso {
   border-color: #fae3e3;
 }
@@ -104,7 +106,7 @@
 }
 
 .opcion-card.peligroso:hover {
-  border-color: #c95252; /* Rojo apagado Orbita */
+  border-color: #c95252;
   box-shadow: 0 12px 24px rgba(201, 82, 82, 0.03);
 }
 
@@ -112,7 +114,7 @@
   color: #c95252;
 }
 
-/* --- Responsividad --- */
+/* Diseño Responsivo */
 @media (max-width: 768px) {
   .main-content {
     margin-left: 0;

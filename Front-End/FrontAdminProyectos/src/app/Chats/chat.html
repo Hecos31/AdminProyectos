@@ -1,0 +1,22 @@
+<div class="chat-main-container">
+  <div class="chat-sidebar">
+    <app-chat-list (abrirChat)="onAbrirChat($event)"></app-chat-list>
+  </div>
+
+  <div class="chat-content">
+    <div *ngIf="chatSeleccionado" class="chat-content-wrapper">
+      <app-chat-personal 
+        [idConversacion]="chatSeleccionado.id"
+        [nombreContacto]="chatSeleccionado.nombre">
+      </app-chat-personal>
+    </div>
+
+    <div *ngIf="!chatSeleccionado" class="chat-empty-state">
+      <div class="empty-state-content">
+        <div class="empty-avatar">O</div>
+        <h3>Selecciona una conversación</h3>
+        <p>Elige un chat de la lista para comenzar a enviar mensajes</p>
+      </div>
+    </div>
+  </div>
+</div>

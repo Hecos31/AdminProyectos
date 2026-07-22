@@ -1,11 +1,13 @@
 30/06/2026 10/30
 pip install "python-jose[cryptography]"
+
 Instalaciones de FastApi
 
 # 20/06/2026 9:15 pm
 pip install fastapi uvicorn sqlalchemy psycopg2-binary passlib[bcrypt] pyjwt pydantic[email] 
 
 
+<<<<<<< HEAD
 para crear tabla de notificaciones en postgresql
 CREATE TABLE notificaciones (
     id_notificacion SERIAL PRIMARY KEY,
@@ -18,3 +20,9 @@ CREATE TABLE notificaciones (
 -----------------------------valor de prueba----------------------------------
 INSERT INTO notificaciones (id_usuario, mensaje) 
 VALUES (1, 'Te han asignado al proyecto: Mi Primer Proyecto Angular');
+=======
+# 22/07/2026 11:10 am
+pip install google-generativeai
+pip install python-dotenv google-generativeai
+pip install google-genai
+>>>>>>> 1c9c8b93fa859aad004b78119fa5920df0507b1a

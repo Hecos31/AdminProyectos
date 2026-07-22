@@ -3,7 +3,6 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiServicio } from '../Servicios/api.servicio';
-import { MenuConfiguracionComponente } from '../MenuConfiguracion/menuconfiguracion';
 
 @Component({
   selector: 'app-pantalla-configuracion-proyecto',

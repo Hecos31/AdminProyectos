@@ -13,20 +13,34 @@
       <div class="form-grid">
         <input type="text" [(ngModel)]="nuevaTarea.titulo" placeholder="Título de la tarea" class="input-field">
         <textarea [(ngModel)]="nuevaTarea.descripcion" placeholder="Descripción (opcional)" class="input-field"></textarea>
-        <input type="date" [(ngModel)]="nuevaTarea.fecha_inicio" class="input-field" title="Fecha inicio">
-        <input type="date" [(ngModel)]="nuevaTarea.fecha_limite" class="input-field" title="Fecha límite">
         
-        <select [(ngModel)]="nuevaTarea.prioridad" class="input-field">
-          <option value="Alta">Prioridad: Alta</option>
-          <option value="Media">Prioridad: Media</option>
-          <option value="Baja">Prioridad: Baja</option>
-        </select>
+        <div class="input-wrapper">
+          <label class="form-label">Fecha de inicio</label>
+          <input type="date" [(ngModel)]="nuevaTarea.fecha_inicio" class="input-field" [min]="fechaMinima">
+        </div>
+
+        <div class="input-wrapper">
+          <label class="form-label">Fecha límite</label>
+          <input type="date" [(ngModel)]="nuevaTarea.fecha_limite" class="input-field" [min]="nuevaTarea.fecha_inicio || fechaMinima">
+        </div>
         
-        <select [(ngModel)]="nuevaTarea.estado" class="input-field">
-          <option value="Pendiente por asignar">Estado: Pendiente</option>
-          <option value="Asignada">Estado: Asignada</option>
-          <option value="Concluida">Estado: Concluida</option>
-        </select>
+        <div class="input-wrapper">
+          <label class="form-label">Prioridad</label>
+          <select [(ngModel)]="nuevaTarea.prioridad" class="input-field">
+            <option value="Alta">Alta</option>
+            <option value="Media">Media</option>
+            <option value="Baja">Baja</option>
+          </select>
+        </div>
+        
+        <div class="input-wrapper">
+          <label class="form-label">Estado de la tarea</label>
+          <select [(ngModel)]="nuevaTarea.estado" class="input-field">
+            <option value="Pendiente por asignar">Pendiente</option>
+            <option value="Asignada">Asignada</option>
+            <option value="Concluida">Concluida</option>
+          </select>
+        </div>
         
         <button (click)="crearTarea()" class="btn-crear">Crear Tarea</button>
       </div>

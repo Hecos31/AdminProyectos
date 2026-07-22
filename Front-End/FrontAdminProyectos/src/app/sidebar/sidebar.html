@@ -19,6 +19,12 @@
             <span class="nav-text"> + Nuevo Proyecto</span>
           </button>
         </li>
+<li class="nav-item">
+        <a routerLink="/chats" class="nav-link" routerLinkActive="active">
+          <i class="fa-regular fa-comment-dots nav-icon"></i>
+          <span class="nav-text">Chats</span>
+        </a>
+      </li>
       </ul>
     </div>
 
@@ -34,12 +40,6 @@
           <a [routerLink]="['/proyecto', proyectoActivoId]" class="nav-link" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
             <i class="fa-solid fa-border-all nav-icon"></i>
             <span class="nav-text">Dashboard</span>
-          </a>
-        </li>
-        <li class="nav-item">
-          <a [routerLink]="['/proyecto', proyectoActivoId, 'tareas']" class="nav-link" routerLinkActive="active">
-            <i class="fa-solid fa-list-check nav-icon"></i>
-            <span class="nav-text">Tareas</span>
           </a>
         </li>
         <li class="nav-item">
@@ -83,7 +83,7 @@
 
   <button class="user-profile-btn" (click)="toggleMenuUsuario()" [class.active]="mostrarMenuUsuario">
     <div class="user-avatar-mini">{{ (usuario?.nombre | slice:0:1) || 'U' }}</div>
-    <span class="user-name-truncate">{{ usuario?.nombre || 'Usuario' }}</span>
+    <span class="user-name-truncate">{{ usuario?.correo || 'Usuario' }}</span>
     <i class="fa-solid fa-chevron-up popover-chevron"></i>
   </button>
   
