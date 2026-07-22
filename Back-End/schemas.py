@@ -4,8 +4,9 @@ from datetime import datetime
 from enum import Enum
 
 class EstadoTarea(str, Enum):
-    ASIGNADA = "Asignada"
     PENDIENTE = "Pendiente por asignar"
+    ASIGNADA = "Asignada"
+    EN_PROGRESO = "En progreso" 
     CONCLUIDA = "Concluida"
 
 class PrioridadTarea(str, Enum):
@@ -18,6 +19,20 @@ class UsuarioCreate(BaseModel):
     apellido: str
     correo: EmailStr
     password: str  
+    
+class UsuarioAsignado(BaseModel):
+    id_usuario: int
+    nombre: str
+    apellido: str
+    correo: str
+    class Config:
+        from_attributes = True
+        
+class TareaEstadoUpdate(BaseModel):
+    estado: EstadoTarea
+
+class TareaAsignarUpdate(BaseModel):
+    id_usuario_asignado: Optional[int] = None
 
 class UsuarioResponse(BaseModel):
     id_usuario: int
@@ -40,10 +55,9 @@ class TareaCreate(BaseModel):
     titulo: str
     descripcion: Optional[str] = None
     prioridad: PrioridadTarea = PrioridadTarea.MEDIA
-    estado: EstadoTarea = EstadoTarea.PENDIENTE 
     fecha_inicio: Optional[datetime] = None
     fecha_limite: Optional[datetime] = None
-    id_usuario_asignado: Optional[int] = None  
+    id_usuario_asignado: Optional[int] = None 
 
 class TareaResponse(BaseModel):
     id_tarea: int
@@ -54,15 +68,14 @@ class TareaResponse(BaseModel):
     estado: str
     fecha_inicio: Optional[datetime]
     fecha_limite: Optional[datetime]
+    usuario_asignado: Optional[UsuarioAsignado] = None
     class Config:
         from_attributes = True  
 
 class TareaUpdate(BaseModel):
-    id_tarea: int 
     titulo: Optional[str] = None
     descripcion: Optional[str] = None
     prioridad: Optional[PrioridadTarea] = None
-    estado: Optional[EstadoTarea] = None
     fecha_inicio: Optional[datetime] = None
     fecha_limite: Optional[datetime] = None
 
@@ -115,3 +128,16 @@ class ColaboradorUpdate(BaseModel):
 class MensajeConversacionRequest(BaseModel):
     id_conversacion: str
     contenido: str
+    
+    
+    
+class AITareaRequest(BaseModel):
+    id_proyecto: int
+    texto_libre: str
+
+class AITareaResponse(BaseModel):
+    titulo: str
+    descripcion: str
+    prioridad: str
+    id_usuario_asignado: Optional[int] = None
+    fecha_limite: Optional[str] = None

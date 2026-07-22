@@ -6,3 +6,8 @@ Instalaciones de FastApi
 # 20/06/2026 9:15 pm
 pip install fastapi uvicorn sqlalchemy psycopg2-binary passlib[bcrypt] pyjwt pydantic[email] 
 
+
+# 22/07/2026 11:10 am
+pip install google-generativeai
+pip install python-dotenv google-generativeai
+pip install google-genai

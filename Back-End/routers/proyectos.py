@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from database import get_db
-from models import ProyectoDB, ProyectoUsuarioDB, TareaDB, UsuarioDB
+from models import ProyectoDB, ProyectoUsuarioDB, TareaDB, UsuarioDB, TareaAsignadaDB
 from schemas import (
     ProyectoCreate,
     ProyectoResponse,
@@ -12,7 +12,7 @@ from schemas import (
     ColaboradorCreate,
     ColaboradorDelete,
     ColaboradorUpdate,
-    TareaResponse
+    TareaResponse,
 )
 from auth import obtener_usuario_actual, obtener_rol_en_proyecto
 
@@ -102,13 +102,30 @@ def obtener_tareas_proyecto(
 ):
     rol = obtener_rol_en_proyecto(id_proyecto, id_usuario_actual, db)
     if rol is None:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="No tienes acceso a este proyecto."
-        )
+        raise HTTPException(status_code=403, detail="No tienes acceso a este proyecto.")
     
-    tareas = db.query(TareaDB).filter(TareaDB.id_proyecto == id_proyecto).all()
-    return tareas
+    tareas_db = db.query(TareaDB).filter(TareaDB.id_proyecto == id_proyecto).all()
+    resultado = []
+
+    for tarea in tareas_db:
+        asignacion = db.query(TareaAsignadaDB).filter(TareaAsignadaDB.id_tarea == tarea.id_tarea).first()
+        usuario_data = None
+        
+        if asignacion:
+            usuario = db.query(UsuarioDB).filter(UsuarioDB.id_usuario == asignacion.id_usuario).first()
+            if usuario:
+                usuario_data = {
+                    "id_usuario": usuario.id_usuario,
+                    "nombre": usuario.nombre,
+                    "apellido": usuario.apellido,
+                    "correo": usuario.correo
+                }
+        
+        tarea_dict = tarea.__dict__.copy()
+        tarea_dict["usuario_asignado"] = usuario_data
+        resultado.append(tarea_dict)
+
+    return resultado
 
 
 @router.get("/{id_proyecto}/colaboradores", status_code=status.HTTP_200_OK)
@@ -358,3 +375,4 @@ def eliminar_proyecto(
         )
 
     return {"mensaje": f"El proyecto {proyecto_del.id_proyecto} y todos sus datos relacionados fueron eliminados correctamente."}
+
