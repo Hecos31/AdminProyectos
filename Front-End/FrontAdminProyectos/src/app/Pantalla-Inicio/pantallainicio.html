@@ -28,6 +28,15 @@
         <h3>Nuevo Proyecto</h3>
         <p>Configurar un nuevo entorno</p>
       </div>
+      
+      <div class="seccion-notificaciones" *ngIf="notificaciones.length > 0">
+  <h3 class="titulo-noti">🔔 Notificaciones</h3>
+  <div class="lista-noti">
+    <div *ngFor="let noti of notificaciones" class="tarjeta-noti">
+      <p>{{ noti.mensaje }}</p>
+    </div>
+  </div>
+</div>
 
       <div *ngFor="let proyecto of proyectos" class="proyecto-card" (click)="irAProyecto(proyecto.id_proyecto)">
         <div class="proyecto-info">

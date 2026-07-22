@@ -3,7 +3,7 @@ from typing import Optional, Dict
 from fastapi import FastAPI, HTTPException, Depends, status, WebSocket, WebSocketDisconnect, Query
 from fastapi.security import OAuth2PasswordBearer
 from pydantic import BaseModel, EmailStr
-from sqlalchemy import create_engine, Column, Integer, String, Boolean, TIMESTAMP
+from sqlalchemy import create_engine, Column, Integer, String, Boolean, TIMESTAMP, DateTime
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, Session
 from fastapi.middleware.cors import CORSMiddleware
@@ -19,10 +19,11 @@ import sqlalchemy
 from typing import List
 from bson.errors import InvalidId
 from bson import ObjectId
+from datetime import datetime
 
 # --- CONFIGURACIÓN DE LAS VARIABLES DE ENTORNO  (NO OLVIDAR CONFIGURAR EN SU ENTORNO) ---
 password = urllib.parse.quote_plus("H3cos31!") # Cambia esto por tu contraseña de PostgreSQL
-DATABASE_URL = f"postgresql://postgres:{password}@localhost:5432/ProdAdmin"  # Cambia esto por tu URL de conexión a PostgreSQL
+DATABASE_URL = f"postgresql+pg8000://postgres:{password}@localhost:5432/ProdAdmin"  # Cambia esto por tu URL de conexión a PostgreSQL
 SECRET_KEY = "tu_clave_secreta_para_los_tokens_2026Pruebas"  # Clave para evitar firmas inválidas en JWT
 ALGORITHM = "HS256" # Algoritmo de encriptación para JWT y db
 ACCESS_TOKEN_EXPIRE_MINUTES = 60 # Tiempo de expiración del token en minutos
@@ -46,7 +47,7 @@ app = FastAPI(title="API")
 # Configuración de CORS para permitir solicitudes desde el frontend Angular 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:4200"],
+    allow_origin_regex="^https?://(localhost|127\.0\.0\.1)(:[0-9]+)?$",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -619,7 +620,7 @@ def crear_tarea(
         # 5. Utilizamos flush() para que Postgres genere el id_tarea sin cerrar la transacción
         db.flush()
 
-        # 6. Si venía un usuario asignado, lo insertamos en la tabla intermedia
+        # 6. Si venía un usuario asignado, lo insertamos en la tabla intermedia Y CREAMOS NOTIFICACIÓN
         if tarea_in.id_usuario_asignado:
             nueva_asignacion = TareaAsignadaDB(
                 id_tarea=nueva_tarea.id_tarea,
@@ -627,11 +628,27 @@ def crear_tarea(
             )
             db.add(nueva_asignacion)
 
+            # =========================================================================
+            # --- DISPARADOR DE NOTIFICACIÓN ---
+            # =========================================================================
+            # Buscamos el nombre del creador para que el mensaje sea dinámico
+            usuario_admin = db.query(UsuarioDB).filter(UsuarioDB.id_usuario == id_usuario_actual).first()
+            nombre_admin = usuario_admin.nombre if usuario_admin else "Un administrador"
+
+            nueva_notificacion = NotificacionDB(
+                id_usuario=tarea_in.id_usuario_asignado,
+                mensaje=f"{nombre_admin} te ha asignado la tarea: '{tarea_in.titulo}'."
+            )
+            db.add(nueva_notificacion)
+            # =========================================================================
+
         # 7. Guardamos todo junto de forma segura
         db.commit()
         db.refresh(nueva_tarea)
     except Exception as e:
         db.rollback()
+        # Imprimimos el error real en consola por si la base de datos rechaza la transacción
+        print(f"Error al registrar tarea/notificación: {e}") 
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Error interno al registrar la tarea."
@@ -1200,3 +1217,70 @@ def listar_colaboradores_proyecto(
     )
     
     return colaboradores
+
+
+#-----------------------------------------------------------------------------------------------
+#--------------------------------SISTEMA DE NOTIFICACIONES -------------------------------------
+
+# --- MODELOS DE NOTIFICACIONES ---
+
+class NotificacionDB(Base):
+    __tablename__ = 'notificaciones'
+
+    id_notificacion = Column(Integer, primary_key=True, index=True)
+    id_usuario = Column(Integer, ForeignKey('usuarios.id_usuario'))
+    mensaje = Column(String(255))
+    leida = Column(Boolean, default=False)
+    fecha_creacion = Column(DateTime, default=datetime.utcnow)
+
+
+class NotificacionResponse(BaseModel):
+    id_notificacion: int
+    id_usuario: int
+    mensaje: str
+    leida: bool
+    fecha_creacion: datetime
+
+# --- ENDPOINTS DE NOTIFICACIONES ---
+
+@app.get("/notificaciones", response_model=list[NotificacionResponse], status_code=status.HTTP_200_OK)
+def listar_notificaciones(
+    db: Session = Depends(get_db),
+    id_usuario_actual: int = Depends(obtener_usuario_actual)
+):
+    """
+    Trae las notificaciones del usuario actual que no han sido leídas.
+    """
+    notificaciones = (
+        db.query(NotificacionDB)
+        .filter(NotificacionDB.id_usuario == id_usuario_actual)
+        .filter(NotificacionDB.leida == False)
+        .order_by(NotificacionDB.fecha_creacion.desc())
+        .all()
+    )
+    return notificaciones
+
+
+@app.put("/notificaciones/{id_notificacion}/leer", status_code=status.HTTP_200_OK)
+def marcar_notificacion_leida(
+    id_notificacion: int,
+    db: Session = Depends(get_db),
+    id_usuario_actual: int = Depends(obtener_usuario_actual)
+):
+    """
+    Actualiza el estado de la notificación a leída.
+    """
+    notificacion = db.query(NotificacionDB).filter(
+        NotificacionDB.id_notificacion == id_notificacion,
+        NotificacionDB.id_usuario == id_usuario_actual
+    ).first()
+
+    if not notificacion:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, 
+            detail="Notificación no encontrada o no te pertenece."
+        )
+
+    notificacion.leida = True
+    db.commit()
+    return {"detail": "Notificación marcada como leída exitosamente."}

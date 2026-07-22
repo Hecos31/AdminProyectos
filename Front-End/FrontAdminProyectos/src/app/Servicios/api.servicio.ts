@@ -43,7 +43,9 @@ export class ApiServicio {
   actualizarProyecto(proyecto: any): Observable<any> {
     return this.http.put(`${this.apiUrl}/proyectos`, proyecto, { headers: this.getHeaders() });
   }
-
+  obtenerNotificaciones(): Observable<any[]> {
+  return this.http.get<any[]>('http://localhost:8000/notificaciones');
+}
   eliminarProyecto(id: number): Observable<any> {
     return this.http.delete(`${this.apiUrl}/proyectos`, { 
       headers: this.getHeaders(),

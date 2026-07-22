@@ -8,10 +8,11 @@ import { ApiServicio } from '../Servicios/api.servicio';
   standalone: true,
   imports: [CommonModule],
   templateUrl: './pantallainicio.html',
-  styleUrls: ['./pantallainicio.css'] // Asegúrate de tener aquí el CSS que armamos antes
+  styleUrls: ['./pantallainicio.css']
 })
 export class PantallaInicioComponente implements OnInit {
   proyectos: any[] = [];
+  notificaciones: any[] = []; // <-- Nueva lista para las notificaciones
   usuario: any = null;
   cargando = true;
 
@@ -26,6 +27,7 @@ export class PantallaInicioComponente implements OnInit {
       this.usuario = JSON.parse(usuarioStr);
     }
     this.cargarProyectos();
+    this.cargarNotificaciones(); // <-- La llamamos al arrancar
   }
 
   cargarProyectos() {
@@ -36,13 +38,25 @@ export class PantallaInicioComponente implements OnInit {
         this.cargando = false;
       },
       error: (error) => {
-        console.error('Error:', error);
+        console.error('Error al cargar proyectos:', error);
         this.cargando = false;
       }
     });
   }
 
-  // Método añadido para la navegación
+  // <-- Nuevo método para consumir tu endpoint del Backend
+  cargarNotificaciones() {
+    this.apiService.obtenerNotificaciones().subscribe({
+      next: (data) => {
+        this.notificaciones = Array.isArray(data) ? data : [];
+        console.log('Notificaciones leídas:', this.notificaciones);
+      },
+      error: (error) => {
+        console.error('Error al cargar notificaciones:', error);
+      }
+    });
+  }
+
   crearProyecto() {
     this.router.navigate(['/crear-proyecto']);
   }
