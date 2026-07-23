@@ -1,0 +1,145 @@
+<div class="k-container">
+  
+  <!-- Sistema de Notificaciones Minimalista -->
+  <div *ngIf="mensajeToast.texto" class="k-toast" [ngClass]="mensajeToast.tipo">
+    {{ mensajeToast.texto }}
+  </div>
+
+  <header class="k-header">
+    <div class="k-header-title">
+      <h2>Tablero de Proyecto</h2>
+      <span class="k-subtitle">Gestión visual y asignación inteligente</span>
+    </div>
+    <button class="k-btn k-btn-outline" (click)="volverAlProyecto()">Regresar</button>
+  </header>
+
+  <!-- MÓDULO DE CREACIÓN (CADDY DE IA + MANUAL) -->
+  <section class="k-creation-panel">
+    <div class="k-ai-box">
+      <div class="k-ai-header">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+        <span>Asistente de IA (Gemini)</span>
+      </div>
+      <div class="k-ai-input-wrapper">
+        <textarea [(ngModel)]="textoIA" placeholder="Describe la actividad. Ej: 'Diseñar la base de datos de usuarios para el próximo lunes, asígnalo a Héctor. Es crítico.'"></textarea>
+        <button class="k-btn k-btn-primary" (click)="generarConIA()" [disabled]="cargandoIA">
+          {{ cargandoIA ? 'Procesando...' : 'Autocompletar' }}
+        </button>
+      </div>
+    </div>
+
+    <div class="k-manual-form">
+      <div class="k-form-row">
+        <div class="k-form-group flex-2">
+          <label>Título de la actividad *</label>
+          <input type="text" [(ngModel)]="nuevaTarea.titulo" placeholder="Ej. Refactorización de API">
+        </div>
+        <div class="k-form-group flex-1">
+          <label>Responsable</label>
+          <select [(ngModel)]="nuevaTarea.id_usuario_asignado">
+            <option [ngValue]="null">-- Sin asignar --</option>
+            <option *ngFor="let c of colaboradores" [ngValue]="c.id_usuario">{{ c.nombre }} {{ c.apellido }}</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="k-form-row">
+        <div class="k-form-group flex-1">
+          <label>Descripción detallada</label>
+          <textarea [(ngModel)]="nuevaTarea.descripcion" rows="2"></textarea>
+        </div>
+      </div>
+
+      <div class="k-form-row">
+        <div class="k-form-group">
+          <label>Nivel de Prioridad</label>
+          <select [(ngModel)]="nuevaTarea.prioridad">
+            <option value="Alta">Alta</option>
+            <option value="Media">Media</option>
+            <option value="Baja">Baja</option>
+          </select>
+        </div>
+        <div class="k-form-group">
+          <label>Fecha Inicio</label>
+          <input type="date" [(ngModel)]="nuevaTarea.fecha_inicio" [min]="fechaMinima">
+        </div>
+        <div class="k-form-group">
+          <label>Fecha Límite</label>
+          <input type="date" [(ngModel)]="nuevaTarea.fecha_limite" [min]="fechaMinima">
+        </div>
+      </div>
+      
+      <div class="k-form-actions">
+        <button class="k-btn k-btn-dark" (click)="crearTarea()">Añadir al Tablero</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- TABLERO KANBAN (DRAG & DROP) -->
+  <div class="k-board" cdkDropListGroup *ngIf="!cargando">
+    
+    <div class="k-column" *ngFor="let estado of estados">
+      <div class="k-column-header">
+        <h3>{{ estado }}</h3>
+        <span class="k-count">{{ columnas[estado].length }}</span>
+      </div>
+
+      <!-- Zona de soltar (Drop List) -->
+      <div class="k-drop-zone"
+           cdkDropList
+           [cdkDropListData]="columnas[estado]"
+           (cdkDropListDropped)="onDrop($event, estado)">
+           
+        <!-- Tarjeta Arrastrable (Drag Item) -->
+        <!-- Agregamos el evento (click) para llamar a abrirDetalle -->
+        <div class="k-card" *ngFor="let tarea of columnas[estado]" cdkDrag (click)="abrirDetalle(tarea)">
+
+          <!-- Placeholder visual al arrastrar -->
+          <div class="k-custom-placeholder" *cdkDragPlaceholder></div>
+          
+          <div class="k-card-header">
+            <span class="k-badge">{{ tarea.prioridad }}</span>
+            <!-- Detenemos el evento click para que la X no abra el modal accidentalmente -->
+            <button class="k-btn-icon" (click)="eliminarTarea(tarea.id_tarea); $event.stopPropagation()">×</button>
+          </div>
+          
+          <h4 class="k-card-title">{{ tarea.titulo }}</h4>
+          <p class="k-card-desc" *ngIf="tarea.descripcion">{{ tarea.descripcion }}</p>
+          
+          <div class="k-card-footer">
+            <div class="k-date" *ngIf="tarea.fecha_limite">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+              {{ tarea.fecha_limite | date:'MMM d' }}
+            </div>
+            
+            <!-- NUEVO: Selector de responsable integrado en la tarjeta -->
+            <div class="k-assignee-selector">
+              <select (change)="cambiarResponsable(tarea, $event)" (click)="$event.stopPropagation()">
+                <option [value]="'null'" [selected]="!tarea.usuario_asignado">Sin asignar</option>
+                <option *ngFor="let colab of colaboradores" 
+                        [value]="colab.id_usuario" 
+                        [selected]="tarea.usuario_asignado?.id_usuario === colab.id_usuario">
+                  👤 {{ colab.nombre }}
+                </option>
+              </select>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Estado vacío -->
+        <div class="k-empty-state" *ngIf="columnas[estado].length === 0">
+          Soltar tareas aquí
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="k-loading" *ngIf="cargando">Cargando infraestructura del tablero...</div>
+
+    
+</div>
+
+<app-detalles-actividades 
+        [tarea]="tareaSeleccionada" 
+        (cerrar)="cerrarDetalle()">
+</app-detalles-actividades>

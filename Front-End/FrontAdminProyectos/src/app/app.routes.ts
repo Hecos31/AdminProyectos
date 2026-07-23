@@ -8,6 +8,10 @@ import { CalendarioActividadesComponente } from './CalendarioActividades/calenda
 import { PantallaConfiguracionComponente } from './Pantalla-ConfiguracionProyecto/pantallaconfiguracion';
 import { MenuConfiguracionComponente } from './MenuConfiguracion/menuconfiguracion';
 import { ChatComponente } from './Chats/chat';
+import { TablonActividades } from './tablon-actividades/tablon-actividades';
+import { Actividadesusuario } from './actividadesusuario/actividadesusuario';
+import { Crearactividades } from './crearactividades/crearactividades';
+
 
 export const routes: Routes = [
   // --- Rutas Públicas / Autenticación ---
@@ -22,7 +26,7 @@ export const routes: Routes = [
   
   // Rutas de Proyecto Específico
   { path: 'proyecto/:id', component: PantallaPrincipalProyectoComponente },
-  { path: 'proyecto/:id/calendario', component: CalendarioActividadesComponente },
+  // { path: 'proyecto/:id/calendario', component: CalendarioActividadesComponente },
   
   // 1. Ruta para el menú de configuración general (El grid de opciones)
   { path: 'proyecto/:id/configuracion', component: MenuConfiguracionComponente },
@@ -32,5 +36,9 @@ export const routes: Routes = [
   
   // 3. Ruta comodín para cuando navegas desde el grid de opciones (ej. reportes, etiquetas)
   // Nota: La dejamos al final para que Angular priorice las rutas exactas de arriba
-  { path: 'proyecto/:id/configuracion/:opcion', component: PantallaConfiguracionComponente }
+  { path: 'proyecto/:id/configuracion/:opcion', component: PantallaConfiguracionComponente },
+
+  { path: 'proyecto/:id/tablon', component: TablonActividades },
+  { path: 'proyecto/:id/mis-actividades', component: Actividadesusuario },
+  { path: 'proyecto/:id/crearactividades', component: Crearactividades }
 ];

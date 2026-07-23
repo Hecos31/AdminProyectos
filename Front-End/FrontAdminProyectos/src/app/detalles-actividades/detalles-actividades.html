@@ -1,0 +1,51 @@
+<div class="modal-overlay" *ngIf="tarea" (click)="cerrarModal()">
+  <!-- (click)="$event.stopPropagation()" evita que dar clic dentro de la caja cierre el modal -->
+  <div class="modal-caja" (click)="$event.stopPropagation()">
+    
+    <header class="modal-header">
+      <h3>Detalles de la Actividad</h3>
+      <button class="btn-cerrar" (click)="cerrarModal()">×</button>
+    </header>
+
+    <div class="modal-cuerpo">
+      <div class="detalle-principal">
+        <h2>{{ tarea.titulo }}</h2>
+        <span class="badge" [attr.data-prio]="tarea.prioridad.toLowerCase()">
+          Prioridad {{ tarea.prioridad }}
+        </span>
+      </div>
+
+      <div class="seccion-detalle">
+        <h4>Descripción</h4>
+        <p *ngIf="tarea.descripcion">{{ tarea.descripcion }}</p>
+        <p *ngIf="!tarea.descripcion" class="texto-vacio">Sin descripción proporcionada.</p>
+      </div>
+
+      <div class="cuadricula-detalles">
+        <div class="dato-box">
+          <label>Estado actual</label>
+          <p>{{ tarea.estado }}</p>
+        </div>
+        
+        <div class="dato-box">
+          <label>Responsable</label>
+          <p *ngIf="tarea.usuario_asignado">👤 {{ tarea.usuario_asignado.nombre }} {{ tarea.usuario_asignado.apellido }}</p>
+          <p *ngIf="!tarea.usuario_asignado" class="texto-vacio">Sin asignar</p>
+        </div>
+
+        <div class="dato-box">
+          <label>Fecha de inicio</label>
+          <p *ngIf="tarea.fecha_inicio">📅 {{ tarea.fecha_inicio | date:'longDate' }}</p>
+          <p *ngIf="!tarea.fecha_inicio">-</p>
+        </div>
+
+        <div class="dato-box">
+          <label>Fecha límite</label>
+          <p *ngIf="tarea.fecha_limite">📅 {{ tarea.fecha_limite | date:'longDate' }}</p>
+          <p *ngIf="!tarea.fecha_limite">-</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>

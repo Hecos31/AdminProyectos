@@ -1,0 +1,45 @@
+<div class="k-container">
+  <header class="k-header">
+    <div class="k-header-title">
+      <h2>Panorama del Proyecto</h2>
+      <span class="k-subtitle">Vista de solo lectura</span>
+    </div>
+  </header>
+
+  <div class="k-board" *ngIf="!cargando">
+    <div class="k-column" *ngFor="let estado of estados">
+      <div class="k-column-header">
+        <h3>{{ estado }}</h3>
+        <span class="k-count">{{ columnas[estado].length }}</span>
+      </div>
+
+      <div class="k-drop-zone read-only">
+        <!-- Tarjeta simple, sin cdkDrag -->
+        <div class="k-card" *ngFor="let tarea of columnas[estado]" (click)="abrirDetalle(tarea)">
+          <div class="k-card-header">
+            <span class="k-badge" [attr.data-prio]="tarea.prioridad.toLowerCase()">{{ tarea.prioridad }}</span>
+          </div>
+          
+          <h4 class="k-card-title">{{ tarea.titulo }}</h4>
+          <p class="k-card-desc" *ngIf="tarea.descripcion">{{ tarea.descripcion }}</p>
+          
+          <div class="k-card-footer">
+            <div class="k-date" *ngIf="tarea.fecha_limite">📅 {{ tarea.fecha_limite | date:'MMM d' }}</div>
+            <div class="k-assignee">
+              <span *ngIf="tarea.usuario_asignado" class="k-avatar" [title]="tarea.usuario_asignado.correo">
+                {{ tarea.usuario_asignado.nombre.charAt(0) }}
+              </span>
+              <span *ngIf="!tarea.usuario_asignado" class="k-unassigned">Libre</span>
+            </div>
+          </div>
+        </div>
+        <div class="k-empty-state" *ngIf="columnas[estado].length === 0">Sin tareas</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<app-detalles-actividades 
+  [tarea]="tareaSeleccionada" 
+  (cerrar)="cerrarDetalle()">
+</app-detalles-actividades>

@@ -72,7 +72,7 @@ export class ApiServicio {
     return this.http.put(`${this.apiUrl}/proyectos/colaboradores`, data, { headers: this.getHeaders() });
   }
 
-  // ============ TAREAS (CON TOKEN) ============
+  // ============ TAREAS GLOBALES (CON TOKEN) ============
   obtenerTareas(proyectoId: number): Observable<any> {
     return this.http.get(`${this.apiUrl}/proyectos/${proyectoId}/tareas`, { headers: this.getHeaders() });
   }
@@ -90,5 +90,24 @@ export class ApiServicio {
       headers: this.getHeaders(),
       body: { id_tarea } 
     });
+  }
+
+  // ============ TAREAS: TABLÓN KANBAN (NUEVOS) ============
+  
+  cambiarEstadoTarea(id_tarea: number, estado: string): Observable<any> {
+    return this.http.patch(`${this.apiUrl}/tareas/${id_tarea}/estado`, { estado }, { headers: this.getHeaders() });
+  }
+
+  asignarTarea(id_tarea: number, id_usuario_asignado: number | null): Observable<any> {
+    return this.http.patch(`${this.apiUrl}/tareas/${id_tarea}/asignar`, { id_usuario_asignado }, { headers: this.getHeaders() });
+  }
+
+  // ============ INTELIGENCIA ARTIFICIAL (NUEVO) ============
+  
+  analizarConIA(id_proyecto: number, texto_libre: string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/ai/analizar-tarea`, 
+      { id_proyecto, texto_libre }, 
+      { headers: this.getHeaders() }
+    );
   }
 }

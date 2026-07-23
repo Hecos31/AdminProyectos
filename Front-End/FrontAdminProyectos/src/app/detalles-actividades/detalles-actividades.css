@@ -1,0 +1,51 @@
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-color: rgba(17, 24, 39, 0.6);
+  backdrop-filter: blur(2px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-caja {
+  background: white;
+  width: 100%;
+  max-width: 600px;
+  border-radius: 8px;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+  animation: slideIn 0.2s ease-out;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.modal-header h3 { margin: 0; font-size: 0.95rem; color: #6b7280; text-transform: uppercase; }
+.btn-cerrar { background: none; border: none; font-size: 1.5rem; color: #9ca3af; cursor: pointer; }
+.btn-cerrar:hover { color: #111827; }
+
+.modal-cuerpo { padding: 1.5rem; }
+
+.detalle-principal { margin-bottom: 1.5rem; }
+.detalle-principal h2 { margin: 0 0 0.5rem 0; font-size: 1.5rem; color: #111827; }
+.badge { padding: 0.2rem 0.6rem; border-radius: 4px; font-size: 0.75rem; font-weight: bold; }
+.badge[data-prio="alta"] { background: #fee2e2; color: #991b1b; }
+.badge[data-prio="media"] { background: #fef3c7; color: #92400e; }
+.badge[data-prio="baja"] { background: #dcfce7; color: #166534; }
+
+.seccion-detalle { margin-bottom: 2rem; }
+.seccion-detalle h4 { margin: 0 0 0.5rem 0; font-size: 0.85rem; color: #4b5563; }
+.seccion-detalle p { margin: 0; font-size: 0.95rem; color: #374151; line-height: 1.5; }
+
+.cuadricula-detalles { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; background: #f9fafb; padding: 1rem; border-radius: 6px; }
+.dato-box label { display: block; font-size: 0.75rem; color: #6b7280; font-weight: 600; margin-bottom: 0.25rem; }
+.dato-box p { margin: 0; font-size: 0.9rem; color: #111827; font-weight: 500; }
+.texto-vacio { font-style: italic; color: #9ca3af !important; }
+
+@keyframes slideIn { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }

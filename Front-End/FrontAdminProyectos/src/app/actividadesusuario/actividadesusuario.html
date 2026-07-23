@@ -1,0 +1,128 @@
+<div class="workspace-container">
+  
+  <!-- ENCABEZADO Y MÉTRICAS -->
+  <header class="workspace-header">
+    <div>
+      <h1>Mi Espacio de Trabajo</h1>
+      <p class="subtitle">Gestiona tus responsabilidades actuales</p>
+    </div>
+    
+    <!-- Tarjetas de métricas rápidas -->
+    <div class="stats-panel" *ngIf="!cargando">
+      <div class="stat-box">
+        <span class="stat-number">{{ misTareasNuevas.length }}</span>
+        <span class="stat-label">Por Empezar</span>
+      </div>
+      <div class="stat-box active">
+        <span class="stat-number text-blue">{{ misTareasProgreso.length }}</span>
+        <span class="stat-label">En Progreso</span>
+      </div>
+      <div class="stat-box">
+        <span class="stat-number text-green">{{ misTareasTerminadas.length }}</span>
+        <span class="stat-label">Terminadas</span>
+      </div>
+    </div>
+  </header>
+
+  <div *ngIf="cargando" class="loading-state">Cargando tu información...</div>
+
+  <!-- LISTAS DESPLEGABLES -->
+  <div class="task-lists-container" *ngIf="!cargando">
+
+    <!-- SECCIÓN: EN PROGRESO (Prioridad visual: va primero) -->
+    <div class="list-section" *ngIf="misTareasProgreso.length > 0">
+      <h3 class="section-title text-blue">🟡 Trabajando Actualmente</h3>
+      
+      <div class="task-row active-task" *ngFor="let t of misTareasProgreso" 
+           [attr.data-prio]="t.prioridad.toLowerCase()" 
+           (click)="toggleDetalles(t.id_tarea)">
+        
+        <div class="task-summary">
+          <div class="task-title-group">
+            <span class="prio-indicator"></span>
+            <span class="task-title">{{ t.titulo }}</span>
+          </div>
+          <span class="badge">{{ t.prioridad }}</span>
+        </div>
+
+        <!-- DETALLES EXPANDIBLES (INLINE) -->
+        <div class="task-details" *ngIf="tareaExpandidaId === t.id_tarea">
+          <p class="task-desc">{{ t.descripcion || 'Sin descripción detallada.' }}</p>
+          
+          <div class="task-meta">
+            <span *ngIf="t.fecha_limite">📅 Entrega: {{ t.fecha_limite | date:'mediumDate' }}</span>
+          </div>
+
+          <div class="task-actions">
+            <button class="btn btn-success" (click)="cambiarEstado(t, 'Concluida', $event)">
+              ✓ Marcar como Completada
+            </button>
+            <button class="btn btn-ghost" (click)="cambiarEstado(t, 'Asignada', $event)">
+              Pausar (Regresar)
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECCIÓN: POR EMPEZAR -->
+    <div class="list-section" *ngIf="misTareasNuevas.length > 0">
+      <h3 class="section-title">⚪ Por Empezar</h3>
+      
+      <div class="task-row" *ngFor="let t of misTareasNuevas" 
+           [attr.data-prio]="t.prioridad.toLowerCase()" 
+           (click)="toggleDetalles(t.id_tarea)">
+        
+        <div class="task-summary">
+          <div class="task-title-group">
+            <span class="prio-indicator"></span>
+            <span class="task-title">{{ t.titulo }}</span>
+          </div>
+          <span class="badge">{{ t.prioridad }}</span>
+        </div>
+
+        <div class="task-details" *ngIf="tareaExpandidaId === t.id_tarea">
+          <p class="task-desc">{{ t.descripcion || 'Sin descripción detallada.' }}</p>
+          <div class="task-meta">
+            <span *ngIf="t.fecha_limite">📅 Entrega: {{ t.fecha_limite | date:'mediumDate' }}</span>
+          </div>
+          <div class="task-actions">
+            <button class="btn btn-primary" (click)="cambiarEstado(t, 'En progreso', $event)">
+              ▶ Iniciar Tarea
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECCIÓN: TERMINADAS -->
+    <div class="list-section" *ngIf="misTareasTerminadas.length > 0">
+      <h3 class="section-title text-gray">✅ Historial Reciente</h3>
+      
+      <div class="task-row completed" *ngFor="let t of misTareasTerminadas" (click)="toggleDetalles(t.id_tarea)">
+        <div class="task-summary">
+          <div class="task-title-group">
+            <span class="task-title">{{ t.titulo }}</span>
+          </div>
+        </div>
+        
+        <div class="task-details" *ngIf="tareaExpandidaId === t.id_tarea">
+          <p class="task-desc">{{ t.descripcion }}</p>
+          <div class="task-actions">
+            <button class="btn btn-ghost" (click)="cambiarEstado(t, 'En progreso', $event)">
+              Deshacer (Reabrir)
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ESTADO VACÍO GLOBAL -->
+    <div class="empty-workspace" *ngIf="misTareasNuevas.length === 0 && misTareasProgreso.length === 0 && misTareasTerminadas.length === 0">
+      <div class="empty-icon">☕</div>
+      <h3>Todo al día</h3>
+      <p>No tienes tareas asignadas en este proyecto actualmente.</p>
+    </div>
+
+  </div>
+</div>
