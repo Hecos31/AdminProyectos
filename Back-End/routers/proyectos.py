@@ -1,7 +1,6 @@
 from typing import List
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-
 from database import get_db
 from models import ProyectoDB, ProyectoUsuarioDB, TareaDB, UsuarioDB, TareaAsignadaDB
 from schemas import (
@@ -15,6 +14,17 @@ from schemas import (
     TareaResponse,
 )
 from auth import obtener_usuario_actual, obtener_rol_en_proyecto
+
+#Para notificaciones en bd
+from database import get_db
+import models # Para acceder a las tablas (ej. ProyectoUsuario)
+from routers.notificaciones import disparar_notificacion
+from pydantic import BaseModel
+from routers.notificaciones import disparar_notificacion
+router = APIRouter(
+    prefix="/proyectos",
+    tags=["Proyectos"]
+)
 
 router = APIRouter(prefix="/proyectos", tags=["Proyectos"])
 
@@ -161,34 +171,33 @@ def obtener_colaboradores(
     
     return resultado
 
-
+# Se agrego linea para poder trabajar en conjunto con las notificaciones
 @router.post("/colaboradores", status_code=status.HTTP_201_CREATED)
-def agregar_colaborador(
+async def agregar_colaborador(
     colaborador_in: ColaboradorCreate,
     db: Session = Depends(get_db),
     id_usuario_actual: int = Depends(obtener_usuario_actual)
 ):
+    print(f"\n--- [1] INTENTANDO AGREGAR: {colaborador_in.correo_colaborador} ---")
+    
     id_rol_admin = obtener_rol_en_proyecto(colaborador_in.id_proyecto, id_usuario_actual, db)
+    print(f"--- [2] Tu rol actual es: {id_rol_admin} ---")
+    
     if id_rol_admin != 1:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Solo los administradores pueden agregar colaboradores a este proyecto."
-        )
+        print("!!! ERROR: La función se detuvo porque tu rol no es 1.")
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Solo los administradores pueden agregar colaboradores.")
 
     usuario_nuevo = db.query(UsuarioDB).filter(UsuarioDB.correo == colaborador_in.correo_colaborador).first()
     if not usuario_nuevo:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="El usuario con el correo especificado no existe en el sistema."
-        )
+        print("!!! ERROR: La función se detuvo porque el correo no existe en la BD.")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="El usuario no existe.")
 
     rol_existente = obtener_rol_en_proyecto(colaborador_in.id_proyecto, usuario_nuevo.id_usuario, db)
     if rol_existente is not None:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="El usuario ya es un colaborador de este proyecto."
-        )
+        print("!!! ERROR: La función se detuvo porque ya es colaborador.")
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="El usuario ya es colaborador.")
 
+    print("--- [3] Validaciones pasadas. Guardando en BD... ---")
     nuevo_colaborador = ProyectoUsuarioDB(
         id_proyecto=colaborador_in.id_proyecto,
         id_usuario=usuario_nuevo.id_usuario,
@@ -198,14 +207,22 @@ def agregar_colaborador(
     try:
         db.add(nuevo_colaborador)
         db.commit()
-    except Exception:
-        db.rollback()
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Error interno al agregar el colaborador al proyecto."
+        print("--- [4] Colaborador guardado. Disparando notificación... ---")
+        
+        await disparar_notificacion(
+            usuario_id=usuario_nuevo.id_usuario,
+            tipo="NUEVO_PROYECTO",
+            mensaje="Te han agregado como colaborador a un nuevo proyecto.",
+            db=db
         )
+        print("--- [5] ¡Notificación inyectada con éxito! ---")
+        
+    except Exception as e:
+        db.rollback()
+        print(f"!!! ERROR FATAL EN BASE DE DATOS: {e}")
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Error interno.")
 
-    return {"mensaje": f"Usuario {usuario_nuevo.correo} agregado exitosamente con el rol {colaborador_in.id_rol}."}
+    return {"mensaje": f"Usuario {usuario_nuevo.correo} agregado exitosamente."}
 
 
 @router.delete("/colaboradores", status_code=status.HTTP_200_OK)
@@ -376,3 +393,21 @@ def eliminar_proyecto(
 
     return {"mensaje": f"El proyecto {proyecto_del.id_proyecto} y todos sus datos relacionados fueron eliminados correctamente."}
 
+@router.post("/asignar")
+async def asignar_tarea_a_usuario(tarea_id: int, usuario_asignado_id: int, db: Session = Depends(get_db)):
+    
+    # ... Tu código normal donde guardas la asignación en la base de datos ...
+    # asignacion = models.Asignacion(tarea_id=tarea_id, usuario_id=usuario_asignado_id)
+    # db.add(asignacion)
+    # db.commit()
+
+    # 2. ¡EL DISPARADOR DINÁMICO!
+    # Justo después de guardar en la BD, llamas a la función para alertar al usuario:
+    await disparar_notificacion(
+        usuario_id=usuario_asignado_id,
+        tipo="ASIGNACION_TAREA",
+        mensaje=f"Se te ha asignado una nueva tarea en tu proyecto.",
+        db=db
+    )
+
+    return {"mensaje": "Tarea asignada correctamente"}  

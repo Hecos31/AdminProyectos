@@ -2,7 +2,15 @@ from enum import Enum
 import sqlalchemy
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-
+from routers.notificaciones import disparar_notificacion
+#Para notificaciones
+from database import get_db
+import models # Para acceder a las tablas de tu base de datos
+from routers.notificaciones import disparar_notificacion
+router = APIRouter(
+    prefix="/proyectos",
+    tags=["Proyectos"]
+)
 from database import get_db
 from models import TareaDB, TareaAsignadaDB, UsuarioDB
 from schemas import (
@@ -60,6 +68,7 @@ def crear_tarea(
                 usuario_asignado_data = {"id_usuario": usuario.id_usuario, "nombre": usuario.nombre, "apellido": usuario.apellido, "correo": usuario.correo}
 
         db.commit()
+        
         db.refresh(nueva_tarea)
         
         resultado = nueva_tarea.__dict__.copy()
@@ -194,3 +203,65 @@ def eliminar_tarea(
         raise HTTPException(status_code=500, detail="Error interno al eliminar la tarea.")
 
     return {"mensaje": f"La tarea con ID {id_tarea} fue eliminada correctamente."}
+
+
+# Notificacion de tarea asignada
+@router.post("/asignar")
+async def asignar_tarea_a_usuario(tarea_id: int, usuario_asignado_id: int, db: Session = Depends(get_db)):
+    
+    # ... Tu código normal donde guardas la asignación en la base de datos ...
+    # asignacion = models.Asignacion(tarea_id=tarea_id, usuario_id=usuario_asignado_id)
+    # db.add(asignacion)
+    # db.commit()
+
+    # 2. ¡EL DISPARADOR DINÁMICO!
+    # Justo después de guardar en la BD, llamas a la función para alertar al usuario:
+    await disparar_notificacion(
+        usuario_id=usuario_asignado_id,
+        tipo="ASIGNACION_TAREA",
+        mensaje=f"Se te ha asignado una nueva tarea en tu proyecto.",
+        db=db
+    )
+
+    return {"mensaje": "Tarea asignada correctamente"}
+
+# =======================================================
+# ENDPOINT: ASIGNAR TAREA A UN USUARIO
+# =======================================================
+@router.post("/asignar", status_code=status.HTTP_200_OK)
+async def asignar_tarea_a_usuario(tarea_id: int, usuario_asignado_id: int, db: Session = Depends(get_db)):
+    
+    # 1. (Opcional pero recomendado) Validar si el usuario y la tarea existen
+    # tarea = db.query(models.Tarea).filter(models.Tarea.id_tarea == tarea_id).first()
+    # usuario = db.query(models.UsuarioDB).filter(models.UsuarioDB.id_usuario == usuario_asignado_id).first()
+    # if not tarea or not usuario:
+    #     raise HTTPException(status_code=404, detail="Tarea o usuario no encontrados")
+
+    try:
+        # 2. Tu código real donde guardas la asignación en la base de datos
+        # IMPORTANTE: Revisa que "Asignacion", "tarea_id" e "id_usuario" 
+        # coincidan exactamente con cómo llamaste a tus columnas en models.py
+        nueva_asignacion = models.Asignacion(
+            tarea_id=tarea_id, 
+            id_usuario=usuario_asignado_id
+        )
+        
+        db.add(nueva_asignacion)
+        db.commit()
+        # db.refresh(nueva_asignacion) # Descomentar si necesitas devolver el ID de la asignación
+
+        # 3. ¡EL DISPARADOR DINÁMICO!
+        # Como está debajo del commit, solo se enviará si la base de datos guardó todo sin errores
+        await disparar_notificacion(
+            usuario_id=usuario_asignado_id,
+            tipo="ASIGNACION_TAREA",
+            mensaje="Se te ha asignado una nueva tarea en tu proyecto.",
+            db=db
+        )
+
+        return {"mensaje": "Tarea asignada correctamente y usuario notificado"}
+
+    except Exception as e:
+        # Si algo falla en la base de datos (ej. un registro duplicado), evitamos que el servidor se caiga
+        db.rollback()
+        raise HTTPException(status_code=400, detail=f"Error al asignar la tarea: {str(e)}")

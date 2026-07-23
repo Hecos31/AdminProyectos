@@ -49,15 +49,20 @@ export class PantallaInicioComponente implements OnInit {
 
   // <-- Nuevo método para consumir tu endpoint del Backend
   cargarNotificaciones() {
-    this.apiService.obtenerNotificaciones().subscribe({
-      next: (data) => {
-        this.notificaciones = Array.isArray(data) ? data : [];
-        console.log('Notificaciones leídas:', this.notificaciones);
-      },
-      error: (error) => {
-        console.error('Error al cargar notificaciones:', error);
-      }
-    });
+    // 1. Obtenemos al usuario de la memoria
+const usuarioStr = localStorage.getItem('usuario');
+if (usuarioStr) {
+  const usuario = JSON.parse(usuarioStr);
+  
+  // 2. Ahora sí le pasamos el id_usuario a la función
+  this.apiService.obtenerNotificaciones(usuario.id_usuario).subscribe({
+    next: (data) => {
+      console.log('Notificaciones cargadas en inicio:', data);
+      // this.notificaciones = data; // (Si tienes una variable para guardarlas aquí)
+    },
+    error: (err) => console.error('Error al cargar notificaciones en inicio', err)
+  });
+}
   }
 
   crearProyecto() {

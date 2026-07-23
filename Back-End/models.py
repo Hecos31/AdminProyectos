@@ -1,6 +1,7 @@
-from sqlalchemy import Column, Integer, String, TIMESTAMP, ForeignKey
+from sqlalchemy import Column, Integer, String, TIMESTAMP, ForeignKey, Boolean, DateTime, func
 from datetime import datetime
 from database import Base
+
 
 class UsuarioDB(Base):
     __tablename__ = "usuarios"
@@ -42,3 +43,19 @@ class ProyectoUsuarioDB(Base):
     id_proyecto = Column(Integer, ForeignKey("proyectos.id_proyecto"), primary_key=True)
     id_usuario = Column(Integer, ForeignKey("usuarios.id_usuario"), primary_key=True)
     id_rol = Column(Integer, primary_key=True)
+
+#Para notificaciones
+class Notificacion(Base):
+    __tablename__ = "notificaciones"
+
+    id_notificacion = Column(Integer, primary_key=True, index=True)
+    
+    # Asumiendo que tu tabla principal se llama 'usuarios' y su PK es 'id_usuario'
+    id_usuario = Column(Integer, ForeignKey("usuarios.id_usuario")) 
+    
+    tipo = Column(String(50))
+    mensaje = Column(String(255))
+    leida = Column(Boolean, default=False)
+    
+    # func.now() le dice a Postgres que ponga la fecha actual automáticamente
+    fecha_creacion = Column(DateTime, server_default=func.now())

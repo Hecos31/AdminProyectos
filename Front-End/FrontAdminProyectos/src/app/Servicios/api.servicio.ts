@@ -44,9 +44,7 @@ export class ApiServicio {
   actualizarProyecto(proyecto: any): Observable<any> {
     return this.http.put(`${this.apiUrl}/proyectos`, proyecto, { headers: this.getHeaders() });
   }
-  obtenerNotificaciones(): Observable<any[]> {
-  return this.http.get<any[]>('http://localhost:8000/notificaciones');
-}
+
   eliminarProyecto(id: number): Observable<any> {
     return this.http.delete(`${this.apiUrl}/proyectos`, { 
       headers: this.getHeaders(),
@@ -63,7 +61,7 @@ export class ApiServicio {
     return this.http.post(`${this.apiUrl}/proyectos/colaboradores`, data, { headers: this.getHeaders() });
   }
 
-  eliminarColaborador(data: { id_proyecto: number; id_usuario: number }): Observable<any> {
+ eliminarColaborador(data: { id_proyecto: number; id_usuario: number }): Observable<any> {
     return this.http.delete(`${this.apiUrl}/proyectos/colaboradores`, { 
       headers: this.getHeaders(),
       body: data 
@@ -92,5 +90,14 @@ export class ApiServicio {
       headers: this.getHeaders(),
       body: { id_tarea } 
     });
+  }
+
+  // ============ NOTIFICACIONES (CON TOKEN) ============
+  obtenerNotificaciones(usuarioId: number): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/notificaciones/?usuario_id=${usuarioId}`, { headers: this.getHeaders() });
+  }
+
+  marcarNotificacionLeida(notificacionId: number): Observable<any> {
+    return this.http.put(`${this.apiUrl}/notificaciones/${notificacionId}/leer`, {}, { headers: this.getHeaders() });
   }
 }

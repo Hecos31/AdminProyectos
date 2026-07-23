@@ -3,12 +3,19 @@ from bson import ObjectId
 from bson.errors import InvalidId
 from fastapi import APIRouter, Depends, HTTPException, WebSocket, WebSocketDisconnect, Query, status
 from sqlalchemy.orm import Session
-
 from database import get_db, db_mongo
 from models import UsuarioDB
 from schemas import MensajeConversacionRequest
 from auth import obtener_usuario_actual, validar_token_ws
 from websocket import manager
+#Para notificaciones
+from database import get_db
+import models # Para acceder a tus tablas (ej. Mensaje)
+from routers.notificaciones import disparar_notificacion
+router = APIRouter(
+    prefix="/mensajes",
+    tags=["Mensajes"]
+)
 
 router = APIRouter(tags=["Mensajes y WebSockets"])
 
@@ -167,3 +174,49 @@ async def obtener_historial_conversacion(
     except Exception as e:
         print(f"Error en endpoint: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+# =======================================================
+# ENDPOINT: ENVIAR UN MENSAJE A OTRO USUARIO
+# =======================================================
+@router.post("/enviar", status_code=status.HTTP_201_CREATED)
+async def enviar_mensaje(remitente_id: int, receptor_id: int, texto: str, db: Session = Depends(get_db)):
+    
+    # 1. (Opcional) Validar que el receptor exista y no sea el mismo que el remitente
+    if remitente_id == receptor_id:
+        raise HTTPException(status_code=400, detail="No puedes enviarte un mensaje a ti mismo")
+
+    try:
+        # 2. Guardar el mensaje en la base de datos
+        # IMPORTANTE: Revisa que "Mensaje", "id_remitente", "id_receptor" y "contenido" 
+        # coincidan exactamente con cómo llamaste a tus columnas en models.py
+        nuevo_mensaje = models.Mensaje(
+            id_remitente=remitente_id,
+            id_receptor=receptor_id,
+            contenido=texto
+        )
+        
+        db.add(nuevo_mensaje)
+        db.commit()
+
+        # 3. ¡EL DISPARADOR DINÁMICO!
+        # Se envía la notificación exclusivamente al usuario que recibe el mensaje
+        await disparar_notificacion(
+            usuario_id=receptor_id,
+            tipo="NUEVO_MENSAJE",
+            mensaje=f"Tienes un nuevo mensaje sin leer.",
+            db=db
+        )
+
+        return {"mensaje": "Mensaje enviado y notificación entregada"}
+
+    except Exception as e:
+        # Si la base de datos rechaza la inserción, deshacemos los cambios
+        db.rollback()
+        raise HTTPException(status_code=400, detail=f"Error al enviar el mensaje: {str(e)}")
+
+# =======================================================
+# AQUÍ ABAJO VAN TUS OTRAS RUTAS DE MENSAJES (Si las tienes)
+# =======================================================
+# @router.get("/historial/{usuario_id}")
+# def obtener_mensajes(...):
+#     ...

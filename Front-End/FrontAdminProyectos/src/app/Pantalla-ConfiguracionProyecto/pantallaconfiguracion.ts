@@ -106,25 +106,28 @@ export class PantallaConfiguracionComponente implements OnInit {
     });
   }
 
-  eliminarColaborador(id_usuario: number) {
-  if (!confirm('¿Estás seguro de eliminar este colaborador?')) return;
+eliminarColaborador(id_usuario: number) {
+    // 👇 AQUÍ ESTÁ EL CÓDIGO NUEVO PARA RASTREAR EL ERROR 👇
+    console.log('🚨 ATENCIÓN: Intentando eliminar el ID:', id_usuario); 
+    
+    if (!confirm('¿Estás seguro de eliminar este colaborador?')) return;
 
-  this.apiService.eliminarColaborador({ 
-    id_proyecto: this.proyectoId, 
-    id_usuario: id_usuario 
-  }).subscribe({
-    next: () => {
-      this.successMessage = 'Colaborador eliminado exitosamente';
-      this.cargarColaboradores(); // Recargamos la lista
-      setTimeout(() => this.successMessage = '', 3000);
-    },
-    error: (error) => {
-      console.error('Error al eliminar:', error);
-      this.errorMessage = 'Error al eliminar colaborador';
-      setTimeout(() => this.errorMessage = '', 3000);
-    }
-  });
-}
+    this.apiService.eliminarColaborador({ 
+      id_proyecto: this.proyectoId, 
+      id_usuario: id_usuario 
+    }).subscribe({
+      next: () => {
+        this.successMessage = 'Colaborador eliminado exitosamente';
+        this.cargarColaboradores(); // Recargamos la lista
+        setTimeout(() => this.successMessage = '', 3000);
+      },
+      error: (error) => {
+        console.error('Error al eliminar:', error);
+        this.errorMessage = 'Error al eliminar colaborador';
+        setTimeout(() => this.errorMessage = '', 3000);
+      }
+    });
+  }
 
   cambiarRol(id_usuario: number, nuevoRol: string) {
     this.apiService.cambiarRolColaborador({

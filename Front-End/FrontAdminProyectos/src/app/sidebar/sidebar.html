@@ -19,12 +19,12 @@
             <span class="nav-text"> + Nuevo Proyecto</span>
           </button>
         </li>
-<li class="nav-item">
-        <a routerLink="/chats" class="nav-link" routerLinkActive="active">
-          <i class="fa-regular fa-comment-dots nav-icon"></i>
-          <span class="nav-text">Chats</span>
-        </a>
-      </li>
+        <li class="nav-item">
+          <a routerLink="/chats" class="nav-link" routerLinkActive="active">
+            <i class="fa-regular fa-comment-dots nav-icon"></i>
+            <span class="nav-text">Chats</span>
+          </a>
+        </li>
       </ul>
     </div>
 
@@ -64,28 +64,77 @@
     </div>
   </nav>
 
-  <div class="user-profile-section">
+  <!-- ========================================================= -->
+  <!-- NUEVA SECCIÓN: BOTÓN Y MENÚ DE NOTIFICACIONES             -->
+  <!-- ========================================================= -->
+  <div class="notifications-section" style="position: relative; padding: 0 16px; margin-bottom: 16px;">
     
-  <div class="user-popover" *ngIf="mostrarMenuUsuario">
-    <div class="popover-header">
-      <div class="popover-avatar">{{ (usuario?.nombre | slice:0:1) || 'U' }}</div>
-      <div class="popover-info">
-        <span class="popover-name">{{ usuario?.nombre || 'Usuario' }} {{ usuario?.apellido || '' }}</span>
-        <span class="popover-email">{{ usuario?.correo || 'correo@ejemplo.com' }}</span>
+    <!-- Menú Desplegable (Popover) de Notificaciones -->
+    <div class="notificaciones-popover" *ngIf="mostrarNotificaciones">
+      <div class="noti-header">
+        <h4>Notificaciones</h4>
+        <span class="noti-badge" *ngIf="noLeidas > 0">{{ noLeidas }} nuevas</span>
+      </div>
+      
+      <div class="noti-body">
+        <!-- Ciclo para mostrar cada notificación -->
+        <div class="noti-item" *ngFor="let noti of notificaciones" 
+             [class.no-leida]="!noti.leida" 
+             (click)="leerNotificacion(noti)">
+          
+          <div class="noti-icono">
+            <i class="fa-solid fa-bell"></i>
+          </div>
+          
+          <div class="noti-contenido">
+            <span class="noti-tipo">{{ noti.tipo }}</span>
+            <p class="noti-texto">{{ noti.mensaje }}</p>
+          </div>
+          
+          <!-- Puntito indicador de no leída -->
+          <div class="noti-punto" *ngIf="!noti.leida"></div>
+        </div>
+        
+        <!-- Mensaje si no hay notificaciones -->
+        <div class="noti-vacia" *ngIf="notificaciones.length === 0">
+          <p>No tienes notificaciones recientes.</p>
+        </div>
       </div>
     </div>
-    <div class="popover-actions">
-      <button (click)="cerrarSesion()" class="popover-btn logout">
-        <i class="fa-solid fa-arrow-right-from-bracket"></i> Cerrar Sesión
-      </button>
-    </div>
-  </div>
 
-  <button class="user-profile-btn" (click)="toggleMenuUsuario()" [class.active]="mostrarMenuUsuario">
-    <div class="user-avatar-mini">{{ (usuario?.nombre | slice:0:1) || 'U' }}</div>
-    <span class="user-name-truncate">{{ usuario?.correo || 'Usuario' }}</span>
-    <i class="fa-solid fa-chevron-up popover-chevron"></i>
-  </button>
-  
-</div>
+    <!-- Botón de la Campana (siempre visible) -->
+    <button class="nav-link notificaciones-btn" (click)="toggleNotificaciones()" [class.active]="mostrarNotificaciones" style="width: 100%; border: none; background: transparent; cursor: pointer; text-align: left; padding: 10px 15px; border-radius: 8px; display: flex; align-items: center; gap: 12px;">
+      <div style="position: relative;">
+        <i class="fa-regular fa-bell nav-icon"></i>
+        <!-- Burbuja roja de contador -->
+        <span class="burbuja-roja" *ngIf="noLeidas > 0">{{ noLeidas }}</span>
+      </div>
+      <span class="nav-text" style="font-size: 14px; color: #a1a1aa;">Notificaciones</span>
+    </button>
+
+  </div>
+  <!-- ========================================================= -->
+
+  <div class="user-profile-section">
+    <div class="user-popover" *ngIf="mostrarMenuUsuario">
+      <div class="popover-header">
+        <div class="popover-avatar">{{ (usuario?.nombre | slice:0:1) || 'U' }}</div>
+        <div class="popover-info">
+          <span class="popover-name">{{ usuario?.nombre || 'Usuario' }} {{ usuario?.apellido || '' }}</span>
+          <span class="popover-email">{{ usuario?.correo || 'correo@ejemplo.com' }}</span>
+        </div>
+      </div>
+      <div class="popover-actions">
+        <button (click)="cerrarSesion()" class="popover-btn logout">
+          <i class="fa-solid fa-arrow-right-from-bracket"></i> Cerrar Sesión
+        </button>
+      </div>
+    </div>
+
+    <button class="user-profile-btn" (click)="toggleMenuUsuario()" [class.active]="mostrarMenuUsuario">
+      <div class="user-avatar-mini">{{ (usuario?.nombre | slice:0:1) || 'U' }}</div>
+      <span class="user-name-truncate">{{ usuario?.correo || 'Usuario' }}</span>
+      <i class="fa-solid fa-chevron-up popover-chevron"></i>
+    </button>
+  </div>
 </div>

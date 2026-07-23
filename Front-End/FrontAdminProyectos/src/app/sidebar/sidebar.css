@@ -336,3 +336,125 @@
 .popover-btn.logout:hover {
   background: #fdf5f5;
 }
+
+/* ========================================================= */
+/* ESTILOS DE NOTIFICACIONES                                 */
+/* ========================================================= */
+
+/* Burbuja roja encima de la campana */
+.burbuja-roja {
+  position: absolute;
+  top: -5px;
+  right: -8px;
+  background-color: #ef4444; /* Rojo de alerta */
+  color: white;
+  font-size: 10px;
+  font-weight: bold;
+  padding: 2px 6px;
+  border-radius: 10px;
+  border: 2px solid #18181b; /* Borde del color de tu sidebar para separarlo */
+}
+
+/* El recuadro flotante de las notificaciones */
+.notificaciones-popover {
+  position: absolute;
+  bottom: 100%;
+  left: 16px;
+  width: 280px;
+  background-color: #27272a;
+  border: 1px solid #3f3f46;
+  border-radius: 8px;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+  margin-bottom: 10px;
+  z-index: 1000;
+  overflow: hidden;
+}
+
+.noti-header {
+  padding: 12px 16px;
+  border-bottom: 1px solid #3f3f46;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.noti-header h4 {
+  margin: 0;
+  color: white;
+  font-size: 14px;
+}
+
+.noti-badge {
+  background-color: #ef4444;
+  color: white;
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 12px;
+}
+
+.noti-body {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.noti-item {
+  display: flex;
+  padding: 12px 16px;
+  border-bottom: 1px solid #3f3f46;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.noti-item:hover {
+  background-color: #3f3f46;
+}
+
+.noti-item.no-leida {
+  background-color: rgba(239, 68, 68, 0.1);
+}
+
+.noti-icono {
+  color: #a1a1aa;
+  margin-top: 2px;
+}
+
+.noti-contenido {
+  flex: 1;
+}
+
+.noti-tipo {
+  display: block;
+  font-size: 11px;
+  color: #a1a1aa;
+  font-weight: bold;
+  margin-bottom: 4px;
+}
+
+.noti-texto {
+  margin: 0;
+  font-size: 13px;
+  color: #e4e4e7;
+  line-height: 1.4;
+}
+
+.noti-punto {
+  width: 8px;
+  height: 8px;
+  background-color: #ef4444;
+  border-radius: 50%;
+  margin-top: 6px;
+}
+
+.noti-vacia {
+  padding: 20px;
+  text-align: center;
+  color: #a1a1aa;
+  font-size: 13px;
+}
+
+/* Efecto hover para el botón de la campana */
+.notificaciones-btn:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+}
