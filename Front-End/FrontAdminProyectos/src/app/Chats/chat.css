@@ -1,32 +1,36 @@
+/* === CONTENEDOR PRINCIPAL === */
 .chat-main-container {
   display: flex;
-  height: calc(100vh - 80px); /* Ajustado para respetar márgenes globales */
+  height: calc(100vh - 80px); 
   width: 100%;
   background: #ffffff;
-  border-radius: 16px;
-  border: 1px solid #f0eee9;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
   overflow: hidden;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
-  font-family: 'Inter', sans-serif;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
 
+/* === PANEL LATERAL === */
 .chat-sidebar {
   width: 35%;
   min-width: 280px;
   max-width: 380px;
   height: 100%;
-  border-right: 1px solid #f0eee9;
-  background: #fdfdfc;
+  border-right: 1px solid #e5e7eb;
+  background: #fafafa;
   display: flex;
   flex-direction: column;
 }
 
+/* === PANEL PRINCIPAL === */
 .chat-content {
   flex: 1;
   height: 100%;
   background: #ffffff;
   display: flex;
   flex-direction: column;
+  position: relative;
 }
 
 .chat-content-wrapper {
@@ -36,50 +40,73 @@
   width: 100%;
 }
 
+/* === ESTADO VACÍO === */
 .chat-empty-state {
   display: flex;
   align-items: center;
   justify-content: center;
   height: 100%;
-  background: #faf9f6;
+  background: #fdfdfc;
 }
 
 .empty-state-content {
   text-align: center;
   padding: 40px;
+  max-width: 320px;
 }
 
 .empty-avatar {
-  width: 72px;
-  height: 72px;
+  width: 64px;
+  height: 64px;
   margin: 0 auto 20px;
-  border-radius: 20px;
-  background: #f0eee9;
-  color: #bfaea0;
+  border-radius: 16px;
+  background: #f3f4f6;
+  color: #9ca3af;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 32px;
-  font-weight: 800;
-  font-family: 'Outfit', sans-serif;
 }
 
 .empty-state-content h3 {
   margin: 0 0 8px 0;
-  color: #3b3530;
-  font-size: 18px;
+  color: #111827;
+  font-size: 1.1rem;
   font-weight: 600;
-  font-family: 'Outfit', sans-serif;
 }
 
 .empty-state-content p {
   margin: 0;
-  color: #8c857f;
-  font-size: 14px;
+  color: #6b7280;
+  font-size: 0.9rem;
+  line-height: 1.5;
 }
 
+/* === ANIMACIONES === */
+.fade-in {
+  animation: fadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* === RESPONSIVE === */
 @media (max-width: 768px) {
-  .chat-main-container { flex-direction: column; border-radius: 0; border: none; }
-  .chat-sidebar { width: 100%; height: 45%; border-right: none; border-bottom: 1px solid #f0eee9; max-width: none; }
-  .chat-content { height: 55%; }
+  .chat-main-container { 
+    flex-direction: column; 
+    border-radius: 0; 
+    border: none; 
+    height: calc(100vh - 60px); 
+  }
+  .chat-sidebar { 
+    width: 100%; 
+    height: 40%; 
+    border-right: none; 
+    border-bottom: 1px solid #e5e7eb; 
+    max-width: none; 
+  }
+  .chat-content { 
+    height: 60%; 
+  }
 }

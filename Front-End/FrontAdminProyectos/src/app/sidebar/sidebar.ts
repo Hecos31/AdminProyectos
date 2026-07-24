@@ -1,4 +1,5 @@
-import { Component, OnInit, HostListener, ElementRef } from '@angular/core';
+// === IMPORTACIONES ===
+import { Component, OnInit, HostListener, ElementRef, inject } from '@angular/core';
 import { Router, RouterModule, NavigationEnd } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { filter } from 'rxjs/operators';
@@ -11,27 +12,36 @@ import { filter } from 'rxjs/operators';
   styleUrls: ['./sidebar.css']
 })
 export class SidebarComponente implements OnInit {
+  // === INYECCIÓN DE DEPENDENCIAS ===
+  private router = inject(Router);
+  private eRef = inject(ElementRef);
+
+  // === ESTADO DEL MENÚ ===
   modoProyecto: boolean = false;
   proyectoActivoId: string | null = null;
   proyectosRecientes: any[] = []; 
   
-  // Variables para el menú de usuario
+  // === ESTADO DEL USUARIO ===
   usuario: any = null;
   mostrarMenuUsuario: boolean = false;
 
-  constructor(
-    private router: Router,
-    private eRef: ElementRef // Necesario para detectar clics fuera del menú
-  ) {}
-
+  // === CICLO DE VIDA ===
   ngOnInit() {
-    // 1. Obtener datos del usuario logueado
+    this.obtenerUsuario();
+    this.escucharRutas();
+  }
+
+  // === MÉTODOS DE INICIALIZACIÓN ===
+  private obtenerUsuario() {
     const usuarioStr = localStorage.getItem('usuario');
     if (usuarioStr) {
-      this.usuario = JSON.parse(usuarioStr);
+      try {
+        this.usuario = JSON.parse(usuarioStr);
+      } catch (e) {}
     }
+  }
 
-    // 2. Escuchar cambios de ruta
+  private escucharRutas() {
     this.router.events.pipe(
       filter((event): event is NavigationEnd => event instanceof NavigationEnd)
     ).subscribe((event: NavigationEnd) => {
@@ -49,7 +59,7 @@ export class SidebarComponente implements OnInit {
     });
   }
 
-  // Métodos para el menú de usuario
+  // === ACCIONES DE UI ===
   toggleMenuUsuario() {
     this.mostrarMenuUsuario = !this.mostrarMenuUsuario;
   }
@@ -60,10 +70,10 @@ export class SidebarComponente implements OnInit {
     this.router.navigate(['/login']);
   }
 
-  // Cierra el menú si se hace clic fuera de él
+  // Cierra el menú de usuario si se hace clic fuera de él
   @HostListener('document:click', ['$event'])
   clickout(event: Event) {
-    if(!this.eRef.nativeElement.contains(event.target)) {
+    if (!this.eRef.nativeElement.contains(event.target)) {
       this.mostrarMenuUsuario = false;
     }
   }

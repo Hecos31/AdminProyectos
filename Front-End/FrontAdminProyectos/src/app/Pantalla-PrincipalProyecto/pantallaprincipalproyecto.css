@@ -1,71 +1,75 @@
-/* Contenedor principal alineado con el fondo base de la app */
+/* === CONTENEDOR PRINCIPAL === */
 .principal-container {
   display: flex;
   min-height: 100vh;
-  background-color: #f7f6f4; /* Gris cálido / off-white */
-  font-family: 'Inter', sans-serif;
+  background-color: #fafafa; 
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
 
 .main-content {
   flex: 1;
-  padding: 40px;
+  padding: 32px 40px;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
-/* Cabecera del Proyecto - Limpia y estructurada */
+/* === CABECERA === */
 .proyecto-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   flex-wrap: wrap;
   gap: 16px;
-  padding: 24px 32px;
+  padding: 24px;
   background: #ffffff;
-  border-radius: 16px;
-  margin-bottom: 32px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.01); /* Sombra casi invisible */
-  border: 1px solid #f0eee9; /* Borde suave Orbita */
+  border-radius: 12px;
+  margin-bottom: 24px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e5e7eb;
 }
 
 .header-left {
   display: flex;
   align-items: center;
-  gap: 24px;
+  gap: 20px;
 }
 
 .title-group {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 16px;
 }
 
 .title-group h1 {
   margin: 0;
-  font-size: 26px;
-  color: #3b3530; /* Charcoal */
-  font-family: 'Outfit', sans-serif;
+  font-size: 1.6rem;
+  color: #111827;
   font-weight: 700;
+  letter-spacing: -0.02em;
 }
 
-/* Botón de retroceso minimalista */
-.btn-volver {
+/* Botones y Acciones */
+.btn-icon-text {
   background: transparent;
-  border: 1px solid #f07373;
-  color: #f16262;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  padding: 8px 16px;
-  border-radius: 8px;
   display: flex;
   align-items: center;
-  gap: 8px;
+  justify-content: center;
+  cursor: pointer;
+  border-radius: 8px;
   transition: all 0.2s ease;
 }
 
+.btn-volver {
+  border: 1px solid transparent;
+  color: #6b7280;
+  padding: 8px;
+  border: 1px solid #e5e7eb;
+}
+
 .btn-volver:hover {
-  background: #fdfdfc;
-  color: #ff0000;
-  border-color: #ff0000;
+  background: #f3f4f6;
+  color: #111827;
+  border-color: #d1d5db;
 }
 
 .header-right {
@@ -73,15 +77,14 @@
   gap: 12px;
 }
 
-/* Botones secundarios (Calendario, Configuración) */
 .btn-secundario {
-  padding: 10px 16px;
-  border: 1px solid #e3e0da;
+  padding: 8px 16px;
+  border: 1px solid #d1d5db;
   border-radius: 8px;
   background: #ffffff;
-  color: #5c5550;
-  font-size: 14px;
-  font-weight: 500;
+  color: #4b5563;
+  font-size: 0.9rem;
+  font-weight: 600;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -90,56 +93,80 @@
 }
 
 .btn-secundario:hover {
-  background: #fdfdfc;
-  border-color: #bfaea0;
-  color: #3b3530;
+  background: #f3f4f6;
+  color: #111827;
+  border-color: #9ca3af;
 }
 
-/* Etiqueta de Estado (Pill) */
+/* Etiqueta de Estado */
 .status-badge {
-  background: #f4f1ed;
-  color: #7a6e65;
   padding: 4px 12px;
   border-radius: 20px;
-  font-size: 13px;
-  font-weight: 600;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
 }
 
-/* Estados de carga y error */
+.status-badge[data-status="activo"] { background: #dcfce7; color: #166534; }
+.status-badge[data-status="pausado"] { background: #fef3c7; color: #92400e; }
+.status-badge[data-status="finalizado"] { background: #f3f4f6; color: #4b5563; }
+
+/* === CARGA Y ALERTAS === */
 .loading-state {
-  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   padding: 80px 20px;
-  color: #8c857f;
-  font-size: 15px;
+  color: #6b7280;
+  font-size: 0.95rem;
+}
+
+.spinner {
+  border: 3px solid #f3f4f6;
+  border-top: 3px solid #3b82f6;
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  animation: spin 1s linear infinite;
+  margin-bottom: 16px;
+}
+
+@keyframes spin { 
+  0% { transform: rotate(0deg); } 
+  100% { transform: rotate(360deg); } 
 }
 
 .alert {
   padding: 16px;
   border-radius: 8px;
   margin-bottom: 24px;
-  font-size: 14px;
+  font-size: 0.95rem;
+  font-weight: 500;
   display: flex;
   align-items: center;
   gap: 10px;
 }
 
 .error-message {
-  background: #fdf5f5;
-  color: #c95252;
-  border: 1px solid #fae3e3;
+  background: #fef2f2;
+  color: #b91c1c;
+  border: 1px solid #fecaca;
 }
 
-/* Tarjeta de Detalles del Proyecto */
+/* === TARJETA DE DETALLES === */
 .proyecto-detalles {
   margin-top: 24px;
+  animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .detalle-card {
   background: #ffffff;
   padding: 32px;
-  border-radius: 16px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.01);
-  border: 1px solid #f0eee9;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e5e7eb;
 }
 
 .card-header {
@@ -148,25 +175,23 @@
   gap: 12px;
   margin-bottom: 24px;
   padding-bottom: 16px;
-  border-bottom: 1px solid #f0eee9;
+  border-bottom: 1px solid #f3f4f6;
 }
 
 .header-icon {
-  color: #bfaea0; /* Acento Orbita */
-  font-size: 20px;
+  color: #3b82f6;
 }
 
 .detalle-card h3 {
   margin: 0;
-  color: #3b3530;
-  font-size: 18px;
+  color: #111827;
+  font-size: 1.15rem;
   font-weight: 600;
 }
 
-/* Grid para organizar la información simulando un Dashboard */
 .detalles-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 24px 32px;
 }
 
@@ -176,27 +201,43 @@
   gap: 6px;
 }
 
-/* La descripción ocupa todo el ancho disponible */
 .detalle-item.full-width {
   grid-column: 1 / -1; 
 }
 
 .detalle-label {
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: 600;
-  color: #8c857f;
+  color: #6b7280;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.05em;
 }
 
 .detalle-valor {
-  font-size: 15px;
-  color: #3b3530;
+  font-size: 0.95rem;
+  color: #111827;
   font-weight: 500;
 }
 
 .detalle-valor.descripcion {
-  color: #5c5550;
+  color: #4b5563;
   line-height: 1.6;
   font-weight: 400;
+  background: #f9fafb;
+  padding: 16px;
+  border-radius: 8px;
+  border: 1px solid #f3f4f6;
+}
+
+@keyframes slideUp { 
+  from { transform: translateY(20px); opacity: 0; } 
+  to { transform: translateY(0); opacity: 1; } 
+}
+
+@media (max-width: 768px) {
+  .main-content { padding: 20px; }
+  .proyecto-header { flex-direction: column; align-items: stretch; }
+  .header-left { justify-content: space-between; }
+  .header-right { justify-content: stretch; }
+  .header-right .btn-secundario { flex: 1; justify-content: center; }
 }

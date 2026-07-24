@@ -1,10 +1,10 @@
-import { Component, OnInit, OnDestroy, ChangeDetectorRef, ViewChild, ElementRef, Input } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef, ViewChild, ElementRef, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { jwtDecode } from 'jwt-decode';
 import { Subscription } from 'rxjs';
 import { ChatService } from '../Servicios/chats';
-import { ActivatedRoute, Router } from '@angular/router'
+import { ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'app-chat-personal',
@@ -14,62 +14,75 @@ import { ActivatedRoute, Router } from '@angular/router'
   styleUrls: ['./chatpersonal.css']
 })
 export class ChatPersonalComponente implements OnInit, OnDestroy {
- @ViewChild('scrollContainer') private scrollContainer!: ElementRef;
- @Input() idConversacion: string = '';
-@Input() nombreContacto: string = 'Contacto';
+  // === REFERENCIAS DOM ===
+  @ViewChild('scrollContainer') private scrollContainer!: ElementRef;
 
+  // === ENTRADAS Y SALIDAS ===
+  @Input() idConversacion: string = '';
+  @Input() nombreContacto: string = 'Contacto';
+  @Output() cerrarChat = new EventEmitter<void>();
+
+  // === ESTADO ===
   mensajes: any[] = [];
   nuevoMensaje: string = '';
   usuarioId!: number;
   contactoEnLinea: boolean = false; 
   cargando: boolean = false;
-  destinatarioId!: number;
-  //nombreContacto: string = ''; //Modificado
   idConversacionActual: string = '';
   private chatSub!: Subscription;
 
+  // === INYECCIÓN DE DEPENDENCIAS ===
   constructor(
     private chatService: ChatService,
     private route: ActivatedRoute,
-    private router: Router,
     private cdr: ChangeDetectorRef
   ) {}
 
+  // === CICLO DE VIDA ===
   ngOnInit() {
-    
-    /*const idParam = this.route.snapshot.paramMap.get('id');
-    if (idParam) {
-      this.idConversacionActual = idParam;
+    this.configurarIdentificadores();
+    this.obtenerUsuarioLocal();
+    this.inicializarWebSocket();
+    this.cargarHistorial();
+  }
+
+  ngAfterViewChecked() {
+    this.hacerScrollHaciaAbajo();
+  }
+
+  ngOnDestroy() {
+    if (this.chatSub) {
+      this.chatSub.unsubscribe();
     }
+    this.chatService.desconectarWebSocket();
+  }
 
-    this.nombreContacto = this.route.snapshot.queryParamMap.get('nombre') || 'Contacto';*/
-
-    // ESTA ES LA ÚNICA PARTE QUE CAMBIA
+  // === CONFIGURACIÓN INICIAL ===
+  private configurarIdentificadores() {
     const idParam = this.route.snapshot.paramMap.get('id');
-    if (idParam) {
-      this.idConversacionActual = idParam;
-    } else if (this.idConversacion) {
-      this.idConversacionActual = this.idConversacion;
-    }
+    this.idConversacionActual = idParam || this.idConversacion;
 
-    if (this.route.snapshot.queryParamMap.get('nombre')) {
-      this.nombreContacto = this.route.snapshot.queryParamMap.get('nombre') || 'Contacto';
+    const nombreParam = this.route.snapshot.queryParamMap.get('nombre');
+    if (nombreParam) {
+      this.nombreContacto = nombreParam;
     }
-    // FIN DEL CAMBIO
+  }
 
+  private obtenerUsuarioLocal() {
     const token = localStorage.getItem('token');
     if (token) {
-      const decodificado: any = jwtDecode(token);
-      this.usuarioId = Number(decodificado.sub); 
+      try {
+        const decodificado: any = jwtDecode(token);
+        this.usuarioId = Number(decodificado.sub); 
+      } catch (e) {}
     }
-    
-    this.chatService.conectarWebSocket();
+  }
 
+  // === WEBSOCKETS ===
+  private inicializarWebSocket() {
+    this.chatService.conectarWebSocket();
     this.chatSub = this.chatService.mensajesNuevos$.subscribe((msg) => {
-      // Si el mensaje es mío, ya lo agregué de forma optimista al enviarlo. Ignóralo.
-      if (msg.id_usuario_remitente === this.usuarioId) {
-        return;
-      }
+      if (msg.id_usuario_remitente === this.usuarioId) return;
 
       const mensajeFormateado = {
         ...msg,
@@ -83,18 +96,24 @@ export class ChatPersonalComponente implements OnInit, OnDestroy {
       this.mensajes.push(mensajeFormateado);
       this.cdr.detectChanges();
     });
-
-    this.cargarHistorial();
   }
 
-  ngAfterViewChecked() {
-    this.hacerScrollHaciaAbajo();
-  }
+  // === PETICIONES HTTP ===
+  cargarHistorial() {
+    if (!this.idConversacionActual) return;
 
-  hacerScrollHaciaAbajo(): void {
-    try {
-      this.scrollContainer.nativeElement.scrollTop = this.scrollContainer.nativeElement.scrollHeight;
-    } catch(err) { }
+    this.cargando = true;
+    this.chatService.obtenerHistorialCompleto(this.idConversacionActual).subscribe({
+      next: (mensajesDesdeBackend) => {
+        this.mensajes = mensajesDesdeBackend;
+        this.cargando = false;
+        this.cdr.detectChanges();
+        setTimeout(() => this.hacerScrollHaciaAbajo(), 100);
+      },
+      error: () => {
+        this.cargando = false;
+      }
+    });
   }
 
   enviarMensaje() {
@@ -106,56 +125,26 @@ export class ChatPersonalComponente implements OnInit, OnDestroy {
     const miNuevoMensaje = {
       contenido: textoMensaje,
       fecha_envio: new Date(),
+      id_usuario_remitente: this.usuarioId,
       remitente: { id_usuario: this.usuarioId, nombre: 'Yo' }
     };
+    
     this.mensajes.push(miNuevoMensaje);
+    this.hacerScrollHaciaAbajo();
 
-    this.chatService.enviarMensajeEnSala(this.idConversacionActual, textoMensaje)
-      .subscribe({
-        error: (err) => console.error('Error al enviar el mensaje:', err)
-      });
+    this.chatService.enviarMensajeEnSala(this.idConversacionActual, textoMensaje).subscribe({
+      error: () => {}
+    });
   }
 
-  /*cargarHistorial() {
-    this.cargando = true;
-    setTimeout(() => {
-      this.cargando = false;
-      this.nombreContacto = "Colaborador del Proyecto";
-      
-      // 3. FORZAR ACTUALIZACIÓN AL TERMINAR DE CARGAR (incluso en el setTimeout)
-      this.cdr.detectChanges(); 
-    }, 1000);
-  }*/
-
- //SOLO ESTE MÉTODO FUE MODIFICADO
-  cargarHistorial() {
-  if (!this.idConversacionActual) {
-    this.cargando = false;
-    return;
+  // === EVENTOS UI ===
+  emitirCierre() {
+    this.cerrarChat.emit();
   }
 
-  this.cargando = true;
-  this.chatService.obtenerHistorialCompleto(this.idConversacionActual).subscribe({
-    next: (mensajesDesdeBackend) => {
-      this.mensajes = mensajesDesdeBackend; // Aquí ya tienes tus datos
-      
-      this.cargando = false;
-      this.cdr.detectChanges(); // 3. FORZAR LA ACTUALIZACIÓN DE LA VISTA
-      
-      setTimeout(() => this.hacerScrollHaciaAbajo(), 100);
-    },
-    error: (error) => {
-      console.error('Error:', error);
-      this.cargando = false;
-    }
-  });
-}
-
-  ngOnDestroy() {
-    if (this.chatSub) {
-      this.chatSub.unsubscribe();
-    }
-    this.chatService.desconectarWebSocket();
+  private hacerScrollHaciaAbajo(): void {
+    try {
+      this.scrollContainer.nativeElement.scrollTop = this.scrollContainer.nativeElement.scrollHeight;
+    } catch(err) { }
   }
 }
-

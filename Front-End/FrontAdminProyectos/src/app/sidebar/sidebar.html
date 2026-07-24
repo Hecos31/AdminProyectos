@@ -1,62 +1,85 @@
 <div class="sidebar">
+  
+  <!-- CABECERA DE MARCA -->
   <div class="sidebar-header">
-    <div class="logo-mark">O</div>
+    <div class="logo-mark">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="4"></circle><line x1="21.17" y1="8" x2="12" y2="8"></line><line x1="3.95" y1="6.06" x2="8.54" y2="14"></line><line x1="10.88" y1="21.94" x2="15.46" y2="14"></line></svg>
+    </div>
     <span class="logo-text">Orbita</span>
   </div>
 
+  <!-- NAVEGACIÓN PRINCIPAL -->
   <nav class="sidebar-nav">
-    <div *ngIf="!modoProyecto" class="menu-global">
+    
+    <!-- MENU GLOBAL (Fuera de proyecto) -->
+    <div *ngIf="!modoProyecto" class="menu-global fade-in">
       <ul class="nav-list">
         <li class="nav-item">
           <a routerLink="/inicio" class="nav-link" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
-            <i class="fa-solid fa-house nav-icon"></i>
+            <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
             <span class="nav-text">Inicio</span>
           </a>
         </li>
         <li class="nav-item">
-          <button routerLink="/crear-proyecto" class="nav-link" routerLinkActive="active">
-            <i class="fa-solid fa-folder-plus nav-icon"></i>
-            <span class="nav-text"> + Nuevo Proyecto</span>
+          <a routerLink="/chats" class="nav-link" routerLinkActive="active">
+            <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+            <span class="nav-text">Chats</span>
+          </a>
+        </li>
+        <li class="nav-item separator"></li>
+        <li class="nav-item">
+          <button routerLink="/crear-proyecto" class="nav-link nav-btn-primary" routerLinkActive="active">
+            <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+            <span class="nav-text">Nuevo Proyecto</span>
           </button>
         </li>
-<li class="nav-item">
-        <a routerLink="/chats" class="nav-link" routerLinkActive="active">
-          <i class="fa-regular fa-comment-dots nav-icon"></i>
-          <span class="nav-text">Chats</span>
-        </a>
-      </li>
       </ul>
     </div>
 
-    <div *ngIf="modoProyecto" class="menu-proyecto">
+    <!-- MENU CONTEXTUAL DE PROYECTO -->
+    <div *ngIf="modoProyecto" class="menu-proyecto fade-in">
       <ul class="nav-list">
         <li class="nav-item" style="margin-bottom: 24px;">
-          <button routerLink="/inicio" class="nav-link">
-            <i class="fa-solid fa-arrow-left nav-icon"></i>
-            <span class="nav-text">Proyectos</span>
+          <button routerLink="/inicio" class="nav-link btn-back">
+            <svg class="nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+            <span class="nav-text">Mis Proyectos</span>
           </button>
         </li>
         <li class="nav-item">
           <a [routerLink]="['/proyecto', proyectoActivoId]" class="nav-link" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
-            <i class="fa-solid fa-border-all nav-icon"></i>
+            <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
             <span class="nav-text">Dashboard</span>
           </a>
         </li>
+        
         <li class="nav-item">
-          <a [routerLink]="['/proyecto', proyectoActivoId, 'calendario']" class="nav-link" routerLinkActive="active">
-            <i class="fa-regular fa-calendar nav-icon"></i>
-            <span class="nav-text">Calendario</span>
+          <a [routerLink]="['/proyecto', proyectoActivoId, 'tablon']" class="nav-link" routerLinkActive="active">
+            <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="9" y1="3" x2="9" y2="21"></line><line x1="15" y1="3" x2="15" y2="21"></line></svg>
+            <span class="nav-text">Tablón</span>
+          </a>
+        </li>
+        
+        <li class="nav-item">
+          <a [routerLink]="['/proyecto', proyectoActivoId, 'mis-actividades']" class="nav-link" routerLinkActive="active">
+            <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"></polyline><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
+            <span class="nav-text">Mis Actividades</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a [routerLink]="['/proyecto', proyectoActivoId, 'crearactividades']" class="nav-link" routerLinkActive="active">
+            <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+            <span class="nav-text">Crear Actividades</span>
           </a>
         </li>
         <li class="nav-item">
           <a [routerLink]="['/proyecto', proyectoActivoId, 'integrantes']" class="nav-link" routerLinkActive="active">
-            <i class="fa-solid fa-users nav-icon"></i>
+            <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
             <span class="nav-text">Colaboradores</span>
           </a>
         </li>
         <li class="nav-item">
           <a [routerLink]="['/proyecto', proyectoActivoId, 'configuracion']" class="nav-link" routerLinkActive="active">
-            <i class="fa-solid fa-gear nav-icon"></i>
+            <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
             <span class="nav-text">Configuración</span>
           </a>
         </li>
@@ -64,28 +87,32 @@
     </div>
   </nav>
 
+  <!-- SECCIÓN DE PERFIL INFERIOR -->
   <div class="user-profile-section">
     
-  <div class="user-popover" *ngIf="mostrarMenuUsuario">
-    <div class="popover-header">
-      <div class="popover-avatar">{{ (usuario?.nombre | slice:0:1) || 'U' }}</div>
-      <div class="popover-info">
-        <span class="popover-name">{{ usuario?.nombre || 'Usuario' }} {{ usuario?.apellido || '' }}</span>
-        <span class="popover-email">{{ usuario?.correo || 'correo@ejemplo.com' }}</span>
+    <!-- Popover Flotante -->
+    <div class="user-popover" *ngIf="mostrarMenuUsuario">
+      <div class="popover-header">
+        <div class="popover-avatar">{{ (usuario?.nombre | slice:0:1) || 'H' }}</div>
+        <div class="popover-info">
+          <span class="popover-name">{{ usuario?.nombre || 'Héctor' }} {{ usuario?.apellido || '' }}</span>
+          <span class="popover-email">{{ usuario?.correo || 'correo@ejemplo.com' }}</span>
+        </div>
+      </div>
+      <div class="popover-actions">
+        <button (click)="cerrarSesion()" class="popover-btn logout">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+          Cerrar Sesión
+        </button>
       </div>
     </div>
-    <div class="popover-actions">
-      <button (click)="cerrarSesion()" class="popover-btn logout">
-        <i class="fa-solid fa-arrow-right-from-bracket"></i> Cerrar Sesión
-      </button>
-    </div>
-  </div>
 
-  <button class="user-profile-btn" (click)="toggleMenuUsuario()" [class.active]="mostrarMenuUsuario">
-    <div class="user-avatar-mini">{{ (usuario?.nombre | slice:0:1) || 'U' }}</div>
-    <span class="user-name-truncate">{{ usuario?.correo || 'Usuario' }}</span>
-    <i class="fa-solid fa-chevron-up popover-chevron"></i>
-  </button>
-  
-</div>
+    <!-- Botón de Perfil -->
+    <button class="user-profile-btn" (click)="toggleMenuUsuario()" [class.active]="mostrarMenuUsuario">
+      <div class="user-avatar-mini">{{ (usuario?.nombre | slice:0:1) || 'H' }}</div>
+      <span class="user-name-truncate">{{ usuario?.correo || 'Usuario' }}</span>
+      <svg class="popover-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="18 15 12 9 6 15"></polyline></svg>
+    </button>
+    
+  </div>
 </div>

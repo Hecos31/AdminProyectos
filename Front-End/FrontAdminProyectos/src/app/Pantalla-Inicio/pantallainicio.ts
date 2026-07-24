@@ -1,4 +1,5 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+// === IMPORTACIONES ===
+import { Component, OnInit, ChangeDetectorRef, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { ApiServicio } from '../Servicios/api.servicio';
@@ -11,24 +12,28 @@ import { ApiServicio } from '../Servicios/api.servicio';
   styleUrls: ['./pantallainicio.css'] 
 })
 export class PantallaInicioComponente implements OnInit {
+  // === INYECCIÓN DE DEPENDENCIAS ===
+  private apiService = inject(ApiServicio);
+  private router = inject(Router);
+  private cdr = inject(ChangeDetectorRef);
+
+  // === ESTADO DEL COMPONENTE ===
   proyectos: any[] = [];
   usuario: any = null;
   cargando = true;
 
-  constructor(
-    private apiService: ApiServicio,
-    private router: Router,
-    private cdr: ChangeDetectorRef
-  ) {}
-
+  // === CICLO DE VIDA ===
   ngOnInit() {
     const usuarioStr = localStorage.getItem('usuario');
     if (usuarioStr) {
-      this.usuario = JSON.parse(usuarioStr);
+      try {
+        this.usuario = JSON.parse(usuarioStr);
+      } catch (e) {}
     }
     this.cargarProyectos();
   }
 
+  // === PETICIONES HTTP ===
   cargarProyectos() {
     this.cargando = true;
     this.apiService.obtenerProyectos().subscribe({
@@ -38,14 +43,14 @@ export class PantallaInicioComponente implements OnInit {
         this.cdr.detectChanges();
       },
       error: (error) => {
-        console.error('Error:', error);
+        console.error('Error al cargar proyectos:', error);
         this.cargando = false;
         this.cdr.detectChanges();
       }
     });
   }
 
-  // Método añadido para la navegación
+  // === NAVEGACIÓN Y SESIÓN ===
   crearProyecto() {
     this.router.navigate(['/crear-proyecto']);
   }

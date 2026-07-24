@@ -1,6 +1,5 @@
 <div class="k-container">
   
-  <!-- Sistema de Notificaciones Minimalista -->
   <div *ngIf="mensajeToast.texto" class="k-toast" [ngClass]="mensajeToast.tipo">
     {{ mensajeToast.texto }}
   </div>
@@ -13,7 +12,6 @@
     <button class="k-btn k-btn-outline" (click)="volverAlProyecto()">Regresar</button>
   </header>
 
-  <!-- MÓDULO DE CREACIÓN (CADDY DE IA + MANUAL) -->
   <section class="k-creation-panel">
     <div class="k-ai-box">
       <div class="k-ai-header">
@@ -21,7 +19,7 @@
         <span>Asistente de IA (Gemini)</span>
       </div>
       <div class="k-ai-input-wrapper">
-        <textarea [(ngModel)]="textoIA" placeholder="Describe la actividad. Ej: 'Diseñar la base de datos de usuarios para el próximo lunes, asígnalo a Héctor. Es crítico.'"></textarea>
+        <textarea [(ngModel)]="textoIA" class="k-input" placeholder="Describe la actividad. Ej: 'Diseñar la base de datos de usuarios para el próximo lunes, asígnalo a Héctor.'"></textarea>
         <button class="k-btn k-btn-primary" (click)="generarConIA()" [disabled]="cargandoIA">
           {{ cargandoIA ? 'Procesando...' : 'Autocompletar' }}
         </button>
@@ -32,11 +30,11 @@
       <div class="k-form-row">
         <div class="k-form-group flex-2">
           <label>Título de la actividad *</label>
-          <input type="text" [(ngModel)]="nuevaTarea.titulo" placeholder="Ej. Refactorización de API">
+          <input type="text" class="k-input" [(ngModel)]="nuevaTarea.titulo" placeholder="Ej. Refactorización de API">
         </div>
         <div class="k-form-group flex-1">
           <label>Responsable</label>
-          <select [(ngModel)]="nuevaTarea.id_usuario_asignado">
+          <select class="k-input" [(ngModel)]="nuevaTarea.id_usuario_asignado">
             <option [ngValue]="null">-- Sin asignar --</option>
             <option *ngFor="let c of colaboradores" [ngValue]="c.id_usuario">{{ c.nombre }} {{ c.apellido }}</option>
           </select>
@@ -46,14 +44,14 @@
       <div class="k-form-row">
         <div class="k-form-group flex-1">
           <label>Descripción detallada</label>
-          <textarea [(ngModel)]="nuevaTarea.descripcion" rows="2"></textarea>
+          <textarea class="k-input" [(ngModel)]="nuevaTarea.descripcion" rows="2"></textarea>
         </div>
       </div>
 
       <div class="k-form-row">
         <div class="k-form-group">
           <label>Nivel de Prioridad</label>
-          <select [(ngModel)]="nuevaTarea.prioridad">
+          <select class="k-input" [(ngModel)]="nuevaTarea.prioridad">
             <option value="Alta">Alta</option>
             <option value="Media">Media</option>
             <option value="Baja">Baja</option>
@@ -61,11 +59,11 @@
         </div>
         <div class="k-form-group">
           <label>Fecha Inicio</label>
-          <input type="date" [(ngModel)]="nuevaTarea.fecha_inicio" [min]="fechaMinima">
+          <input type="date" class="k-input" [(ngModel)]="nuevaTarea.fecha_inicio" [min]="fechaMinima">
         </div>
         <div class="k-form-group">
           <label>Fecha Límite</label>
-          <input type="date" [(ngModel)]="nuevaTarea.fecha_limite" [min]="fechaMinima">
+          <input type="date" class="k-input" [(ngModel)]="nuevaTarea.fecha_limite" [min]="fechaMinima">
         </div>
       </div>
       
@@ -75,7 +73,6 @@
     </div>
   </section>
 
-  <!-- TABLERO KANBAN (DRAG & DROP) -->
   <div class="k-board" cdkDropListGroup *ngIf="!cargando">
     
     <div class="k-column" *ngFor="let estado of estados">
@@ -84,22 +81,17 @@
         <span class="k-count">{{ columnas[estado].length }}</span>
       </div>
 
-      <!-- Zona de soltar (Drop List) -->
       <div class="k-drop-zone"
            cdkDropList
            [cdkDropListData]="columnas[estado]"
            (cdkDropListDropped)="onDrop($event, estado)">
            
-        <!-- Tarjeta Arrastrable (Drag Item) -->
-        <!-- Agregamos el evento (click) para llamar a abrirDetalle -->
         <div class="k-card" *ngFor="let tarea of columnas[estado]" cdkDrag (click)="abrirDetalle(tarea)">
 
-          <!-- Placeholder visual al arrastrar -->
           <div class="k-custom-placeholder" *cdkDragPlaceholder></div>
           
           <div class="k-card-header">
-            <span class="k-badge">{{ tarea.prioridad }}</span>
-            <!-- Detenemos el evento click para que la X no abra el modal accidentalmente -->
+            <span class="k-badge" [attr.data-prio]="tarea.prioridad.toLowerCase()">{{ tarea.prioridad }}</span>
             <button class="k-btn-icon" (click)="eliminarTarea(tarea.id_tarea); $event.stopPropagation()">×</button>
           </div>
           
@@ -112,7 +104,6 @@
               {{ tarea.fecha_limite | date:'MMM d' }}
             </div>
             
-            <!-- NUEVO: Selector de responsable integrado en la tarjeta -->
             <div class="k-assignee-selector">
               <select (change)="cambiarResponsable(tarea, $event)" (click)="$event.stopPropagation()">
                 <option [value]="'null'" [selected]="!tarea.usuario_asignado">Sin asignar</option>
@@ -126,7 +117,6 @@
           </div>
         </div>
         
-        <!-- Estado vacío -->
         <div class="k-empty-state" *ngIf="columnas[estado].length === 0">
           Soltar tareas aquí
         </div>
@@ -134,9 +124,11 @@
     </div>
   </div>
 
-  <div class="k-loading" *ngIf="cargando">Cargando infraestructura del tablero...</div>
+  <div class="k-loading-container" *ngIf="cargando">
+    <div class="spinner"></div>
+    <p>Cargando infraestructura del tablero...</p>
+  </div>
 
-    
 </div>
 
 <app-detalles-actividades 

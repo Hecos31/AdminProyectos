@@ -1,91 +1,70 @@
-import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { Injectable, inject } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
 import { Subject } from 'rxjs';
 import { environment } from '../../environments/environment';
-@Injectable({
-  providedIn: 'root'
-})
+
+@Injectable({ providedIn: 'root' })
 export class ChatService {
-  private socket!: WebSocket;
-  public mensajesNuevos$ = new Subject<any>();
   
+  // === DEPENDENCIAS Y VARIABLES ===
+  private http = inject(HttpClient);
   private apiUrl = environment.apiUrl;
   
-  constructor(private http: HttpClient) {}
+  private socket!: WebSocket;
+  public mensajesNuevos$ = new Subject<any>();
 
+  // ==========================================
+  //            CONEXIÓN WEBSOCKET
+  // ==========================================
   conectarWebSocket() {
     const token = localStorage.getItem('token'); 
     
     if (!token) {
-      console.error('No hay token disponible para el WebSocket');
+      console.error('CONEXIÓN RECHAZADA: No hay token disponible para el WebSocket.');
       return;
     }
+
     this.socket = new WebSocket(`${environment.wsUrl}/ws?token=${token}`);
 
     this.socket.onmessage = (event) => {
-      const mensaje = JSON.parse(event.data);
-      this.mensajesNuevos$.next(mensaje);
+      try {
+        const mensaje = JSON.parse(event.data);
+        this.mensajesNuevos$.next(mensaje);
+      } catch (e) {
+        console.error('Error parseando mensaje WS:', e);
+      }
     };
 
-    this.socket.onerror = (error) => {
-      console.error('Error en WebSocket:', error);
-    };
+    this.socket.onerror = (error) => console.error('Error de red en WebSocket:', error);
   }
 
   desconectarWebSocket() {
-    if (this.socket) {
+    if (this.socket && this.socket.readyState === WebSocket.OPEN) {
       this.socket.close();
     }
   }
 
-  enviarMensajeEnSala(idConversacion: string, contenido: string) {
-    const token = localStorage.getItem('token');
-    const headers = new HttpHeaders({ 'Authorization': `Bearer ${token}` });
+  // ==========================================
+  //            PETICIONES REST API
+  // ==========================================
+  // Nota: Igual que en ApiServicio, el token ahora lo pondrá el AuthInterceptor.
 
+  enviarMensajeEnSala(idConversacion: string, contenido: string) {
     return this.http.post(`${this.apiUrl}/mensajes/conversacion`, {
       id_conversacion: idConversacion,
       contenido: contenido
-    }, { headers });
+    });
   }
 
   obtenerContactos(idProyecto: number) {
-    const token = localStorage.getItem('access_token');
-    const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
-    
-    return this.http.get<any[]>(`${this.apiUrl}/proyectos/${idProyecto}/colaboradores`, { headers });
+    return this.http.get<any[]>(`${this.apiUrl}/proyectos/${idProyecto}/colaboradores`);
   }
-
 
   obtenerConversaciones() {
-    const token = localStorage.getItem('token'); 
-    
-    const headers = new HttpHeaders({
-      'Authorization': `Bearer ${token}`
-    });
-    
-    return this.http.get<any[]>(`${this.apiUrl}/mensajes/conversaciones`, { headers: headers });
+    return this.http.get<any[]>(`${this.apiUrl}/mensajes/conversaciones`);
   }
 
-
-  obtenerMensajes() {
-    const token = localStorage.getItem('token'); 
-    
-    const headers = new HttpHeaders({
-      'Authorization': `Bearer ${token}`
-    });
-    
-    return this.http.get<any[]>(`${this.apiUrl}/mensajes/conversaciones`, { headers: headers });
-  }
-
-  // En tu ChatService.ts
   obtenerHistorialCompleto(idConversacion: string) {
-  const token = localStorage.getItem('token');
-  
-  // Es vital agregar el encabezado Authorization
-  const headers = {
-    'Authorization': `Bearer ${token}`
-  };
-
-  return this.http.get<any[]>(`${this.apiUrl}/mensajes/historial/conversaciones/${idConversacion}`, { headers });
+    return this.http.get<any[]>(`${this.apiUrl}/mensajes/historial/conversaciones/${idConversacion}`);
   }
 }

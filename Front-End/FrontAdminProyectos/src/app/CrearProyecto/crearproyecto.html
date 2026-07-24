@@ -1,16 +1,18 @@
 <div class="crear-proyecto-container">
   
   <main class="main-content">
+    
     <div class="header-simple">
       <button (click)="cancelar()" class="btn-volver">
-        <i class="fa-solid fa-arrow-left"></i> Volver
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+        Volver
       </button>
       <h1>Crear Nuevo Proyecto</h1>
     </div>
 
     <div class="crear-proyecto-card">
       <div class="card-header">
-        <i class="fa-solid fa-folder-plus header-icon"></i>
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path><line x1="12" y1="11" x2="12" y2="17"></line><line x1="9" y1="14" x2="15" y2="14"></line></svg>
         <h3>Configuración Inicial</h3>
       </div>
       
@@ -24,6 +26,7 @@
             [(ngModel)]="proyecto.nombre" 
             name="nombre"
             required
+            class="k-input"
             placeholder="Ej. Diseño de Interfaz Orbita"
           >
         </div>
@@ -34,6 +37,7 @@
             id="descripcion"
             [(ngModel)]="proyecto.descripcion" 
             name="descripcion"
+            class="k-input"
             placeholder="Describe brevemente los objetivos del proyecto..."
             rows="3"
           ></textarea>
@@ -45,6 +49,7 @@
             <input 
               type="date" 
               id="fecha_inicio"
+              class="k-input"
               [(ngModel)]="proyecto.fecha_inicio" 
               name="fecha_inicio"
             >
@@ -55,6 +60,7 @@
             <input 
               type="date" 
               id="fecha_fin"
+              class="k-input"
               [(ngModel)]="proyecto.fecha_fin" 
               name="fecha_fin"
             >
@@ -64,7 +70,7 @@
         <div class="form-group">
           <label for="estado">Estado Inicial</label>
           <div class="select-wrapper">
-            <select id="estado" [(ngModel)]="proyecto.estado" name="estado">
+            <select id="estado" class="k-input" [(ngModel)]="proyecto.estado" name="estado">
               <option value="Activo">Activo</option>
               <option value="Pausado">Pausado</option>
               <option value="Finalizado">Finalizado</option>
@@ -73,18 +79,20 @@
         </div>
 
         <div *ngIf="errorMessage" class="alert error-message">
-          <i class="fa-solid fa-circle-exclamation"></i> {{ errorMessage }}
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+          {{ errorMessage }}
         </div>
 
         <div *ngIf="successMessage" class="alert success-message">
-          <i class="fa-solid fa-circle-check"></i> {{ successMessage }}
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+          {{ successMessage }}
         </div>
 
         <div class="form-actions">
-          <button type="button" (click)="cancelar()" class="btn-secundario">
+          <button type="button" (click)="cancelar()" class="btn btn-ghost">
             Cancelar
           </button>
-          <button type="submit" [disabled]="cargando || proyectoForm.invalid" class="btn-primario">
+          <button type="submit" [disabled]="cargando || proyectoForm.invalid" class="btn btn-primary">
             {{ cargando ? 'Creando entorno...' : 'Crear Proyecto' }}
           </button>
         </div>

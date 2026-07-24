@@ -3,35 +3,61 @@
     
     <header class="header-actions">
       <button (click)="volverAlProyecto()" class="btn-volver">
-        ← Volver al Proyecto
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+        Volver al Proyecto
       </button>
     </header>
 
     <div class="gestion-integrantes">
       <div class="card-header">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
         <h3>Colaboradores del Proyecto</h3>
       </div>
       
+      <!-- Formulario Agregar Colaborador -->
       <div class="agregar-integrante">
-        <input type="email" [(ngModel)]="nuevoColaborador.correo" placeholder="Email del colaborador" class="input-email">
-        <select [(ngModel)]="nuevoColaborador.rol" class="select-rol">
-          <option value="admin">Administrador</option>
-          <option value="editor">Editor</option>
-          <option value="colaborador">Colaborador</option>
-        </select>
-        <button (click)="agregarColaborador()" class="btn-agregar">Agregar</button>
+        <div class="input-group">
+          <input type="email" [(ngModel)]="nuevoColaborador.correo" placeholder="Correo electrónico del colaborador" class="k-input flex-1">
+          <select [(ngModel)]="nuevoColaborador.rol" class="k-input select-rol">
+            <option value="admin">Administrador</option>
+            <option value="editor">Editor</option>
+            <option value="colaborador">Colaborador</option>
+          </select>
+        </div>
+        <button (click)="agregarColaborador()" class="btn btn-primary">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+          Agregar
+        </button>
       </div>
 
-      <div *ngIf="successMessage" class="alert success-message">{{ successMessage }}</div>
-      <div *ngIf="errorMessage" class="alert error-message">{{ errorMessage }}</div>
+      <!-- Alertas -->
+      <div *ngIf="successMessage" class="alert success-message">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+        {{ successMessage }}
+      </div>
+      
+      <div *ngIf="errorMessage" class="alert error-message">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+        {{ errorMessage }}
+      </div>
 
-      <div *ngIf="cargando" class="loading-state">Cargando colaboradores...</div>
+      <!-- Estado de Carga -->
+      <div *ngIf="cargando" class="loading-state">
+        <div class="spinner"></div>
+        <span>Cargando colaboradores...</span>
+      </div>
 
+      <!-- Lista de Integrantes -->
       <div *ngIf="!cargando" class="lista-integrantes">
+        
         <div *ngFor="let colaborador of colaboradores" class="integrante-item">
+          
           <div class="integrante-info">
+            <div class="avatar-circle">
+              {{ (colaborador.nombre || colaborador.correo).charAt(0) | uppercase }}
+            </div>
             <div class="detalles">
-              <div class="nombre">{{ colaborador.nombre || colaborador.correo }}</div>
+              <div class="nombre">{{ colaborador.nombre || 'Usuario sin nombre' }}</div>
               <div class="email">{{ colaborador.correo }}</div>
             </div>
           </div>
@@ -40,22 +66,26 @@
             <select 
               [value]="colaborador.rol_nombre || 'colaborador'" 
               (change)="cambiarRol(colaborador.id_usuario, $any($event.target).value)" 
-              class="select-rol-mini"
+              class="k-input select-rol-mini"
             >
               <option value="admin">Administrador</option>
               <option value="editor">Editor</option>
               <option value="colaborador">Colaborador</option>
             </select>
             
-            <button (click)="eliminarColaborador(colaborador.id_usuario)" class="btn-eliminar">
-              Eliminar
+            <button (click)="eliminarColaborador(colaborador.id_usuario)" class="btn-icon btn-eliminar" title="Eliminar colaborador">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
             </button>
           </div>
         </div>
 
         <div *ngIf="colaboradores.length === 0" class="sin-integrantes">
-          No hay colaboradores en este proyecto
+          <div class="empty-icon">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+          </div>
+          <p>No hay colaboradores adicionales en este proyecto.</p>
         </div>
+        
       </div>
     </div>
   </main>

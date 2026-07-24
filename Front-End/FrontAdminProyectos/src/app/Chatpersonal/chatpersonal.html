@@ -1,4 +1,6 @@
-<div class="chat-personal-container">
+<div class="chat-floating-window">
+  
+  <!-- ENCABEZADO -->
   <div class="chat-header">
     <div class="chat-header-info">
       <div class="header-avatar">{{ (nombreContacto | slice:0:1) | uppercase }}</div>
@@ -9,8 +11,12 @@
         </span>
       </div>
     </div>
+    <button class="btn-cerrar" (click)="emitirCierre()" title="Cerrar chat">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+    </button>
   </div>
 
+  <!-- ÁREA DE MENSAJES -->
   <div class="chat-messages" #scrollContainer>
     <div *ngIf="cargando" class="loading-state">Cargando mensajes...</div>
     
@@ -32,6 +38,7 @@
     </div>
   </div>
 
+  <!-- ENTRADA DE TEXTO -->
   <div class="chat-input-area">
     <input 
       type="text" 
@@ -40,7 +47,8 @@
       (keyup.enter)="enviarMensaje()"
       class="chat-input">
     <button (click)="enviarMensaje()" [disabled]="!nuevoMensaje.trim()" class="btn-enviar">
-      Enviar
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
     </button>
   </div>
+
 </div>

@@ -1,4 +1,5 @@
-import { Component, ChangeDetectorRef } from '@angular/core'; // <-- 1. Importar ChangeDetectorRef
+// === IMPORTACIONES ===
+import { Component, ChangeDetectorRef, inject } from '@angular/core'; 
 import { Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
@@ -12,43 +13,41 @@ import { ApiServicio } from '../Servicios/api.servicio';
   styleUrls: ['./login.css']
 })
 export class LoginComponente {
+  // === INYECCIÓN DE DEPENDENCIAS ===
+  private apiService = inject(ApiServicio);
+  private router = inject(Router);
+  private cdr = inject(ChangeDetectorRef);
+
+  // === ESTADO DEL COMPONENTE ===
   credentials = {
     correo: '',
     password: ''
   };
+  
   errorMessage = '';
   cargando = false;
 
-  constructor(
-    private apiService: ApiServicio,
-    private router: Router,
-    private cdr: ChangeDetectorRef // <-- 2. Inyectarlo en el constructor
-  ) {}
-
+  // === MÉTODOS ===
   onSubmit() {
     this.cargando = true;
     this.errorMessage = '';
 
     this.apiService.login(this.credentials).subscribe({
       next: (response) => {
-        // 1. Guardamos el token de seguridad
         localStorage.setItem('token', response.access_token);
         
-        // 2. NUEVO: Guardamos los datos del usuario que ahora manda el backend
         if (response.usuario) {
           localStorage.setItem('usuario', JSON.stringify(response.usuario));
         }
         
         this.cargando = false;
         
-        // Empujamos la navegación al siguiente ciclo de eventos
         setTimeout(() => {
             this.router.navigate(['/inicio']);
         }, 0);
         
       },
       error: (error) => {
-        console.error('Error login:', error);
         this.errorMessage = error.error?.detail || 'Error al iniciar sesión';
         this.cargando = false;
         this.cdr.detectChanges(); 

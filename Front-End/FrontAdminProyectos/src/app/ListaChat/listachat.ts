@@ -1,9 +1,11 @@
-import { Component, OnInit, Output, EventEmitter, ChangeDetectorRef  } from '@angular/core';
+// === IMPORTACIONES ===
+import { Component, OnInit, Output, EventEmitter, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ChatService } from '../Servicios/chats';
 import { Router } from '@angular/router';
+import { ChatService } from '../Servicios/chats';
 
+// === INTERFACES ===
 export interface ChatPreview {
   id: string;
   nombre: string;
@@ -25,46 +27,49 @@ export interface ChatPreview {
   styleUrls: ['./listachat.css']
 })
 export class ListaChatComponente implements OnInit {
+  // === EVENTOS Y SALIDAS ===
   @Output() abrirChat = new EventEmitter<ChatPreview>();
+
+  // === ESTADO DEL COMPONENTE ===
   terminoBusqueda: string = '';
   tabActivo: string = 'todos';
   cargando: boolean = false;
   chatSeleccionado: ChatPreview | null = null;
+  
   chatsOriginales: ChatPreview[] = [];
   chatsFiltrados: ChatPreview[] = [];
 
+  // === INYECCIÓN DE DEPENDENCIAS ===
   constructor(
     private chatService: ChatService,
-    private router: Router ,
-    private cdr: ChangeDetectorRef //Agregue esto dado que es necesario puesto que no se actualiza la informacion 
-
+    private router: Router,
+    private cdr: ChangeDetectorRef 
   ) {}
 
+  // === CICLO DE VIDA ===
   ngOnInit() {
     this.cargarConversaciones();
   }
 
+  // === PETICIONES HTTP ===
   cargarConversaciones() {
     this.cargando = true;
     this.chatService.obtenerConversaciones().subscribe({
       next: (chatsDelBackend) => {
         this.chatsOriginales = chatsDelBackend;
         this.filtrarChats(); 
-        this.cargando = false; // Cambias la variable
-        this.cdr.detectChanges();  // Le dices a Angular que actualice la pantalla
+        this.cargando = false;
+        this.cdr.detectChanges(); 
       },
       error: (error) => {
         console.error('Error al cargar la lista de chats', error);
         this.cargando = false;
         this.cdr.detectChanges(); 
-
       }
     });
-
   }
 
-
-
+  // === LÓGICA DE FILTRADO Y TABS ===
   cambiarTab(tab: string) {
     this.tabActivo = tab;
     this.filtrarChats();
@@ -76,13 +81,15 @@ export class ListaChatComponente implements OnInit {
       const busqueda = this.terminoBusqueda.toLowerCase().trim();
       const coincideTexto = chat.nombre.toLowerCase().includes(busqueda) || 
                             (chat.ultimoMensaje?.contenido.toLowerCase().includes(busqueda) ?? false);
+      
       return coincideTab && coincideTexto;
     });
   }
 
+  // === SELECCIÓN Y NAVEGACIÓN ===
   seleccionarChat(chat: ChatPreview) {
     this.chatSeleccionado = chat;
-      this.abrirChat.emit(chat);  // AGREGE ESTA LÍNEA
+    this.abrirChat.emit(chat);
   }
 
   verChat(chat: any) {
@@ -90,9 +97,4 @@ export class ListaChatComponente implements OnInit {
       queryParams: { nombre: chat.nombre }
     });
   }
-
-  // cargarMas() {
-  //   console.log("Funcionalidad de paginación pendiente");
-  // }
 }
-

@@ -1,4 +1,5 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+// === IMPORTACIONES ===
+import { Component, OnInit, ChangeDetectorRef, inject } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { ApiServicio } from '../Servicios/api.servicio';
@@ -11,44 +12,44 @@ import { ApiServicio } from '../Servicios/api.servicio';
   styleUrls: ['./pantallaprincipalproyecto.css']
 })
 export class PantallaPrincipalProyectoComponente implements OnInit {
+  // === INYECCIÓN DE DEPENDENCIAS ===
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+  private apiService = inject(ApiServicio);
+  private cdr = inject(ChangeDetectorRef);
+
+  // === ESTADO DEL COMPONENTE ===
   proyectoId: number = 0;
   proyecto: any = null;
   cargando = true;
   errorMessage = '';
 
-  constructor(
-    private route: ActivatedRoute,
-    private router: Router,
-    private apiService: ApiServicio,
-    private cdr: ChangeDetectorRef
-  ) {}
-
+  // === CICLO DE VIDA ===
   ngOnInit() {
     this.proyectoId = Number(this.route.snapshot.params['id']);
-    console.log('📌 Proyecto ID principal:', this.proyectoId);
     this.cargarProyecto();
   }
 
+  // === PETICIONES HTTP ===
   cargarProyecto() {
     this.cargando = true;
     this.apiService.obtenerProyecto(this.proyectoId).subscribe({
       next: (data) => {
-        console.log('Proyecto:', data);
         this.proyecto = data;
         this.cargando = false;
         this.cdr.detectChanges();
       },
-      error: (error) => {
-        console.error('Error:', error);
-        this.errorMessage = 'Error al cargar el proyecto';
+      error: () => {
+        this.errorMessage = 'No se pudo cargar la información del proyecto.';
         this.cargando = false;
         this.cdr.detectChanges();
       }
     });
   }
 
+  // === NAVEGACIÓN ===
   irAConfiguracion() {
-    this.router.navigate([`/proyecto/${this.proyectoId}/configuracion/opcion`]);
+    this.router.navigate([`/proyecto/${this.proyectoId}/configuracion`]);
   }
 
   irACalendario() {

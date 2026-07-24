@@ -1,4 +1,5 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+// === IMPORTACIONES ===
+import { Component, OnInit, ChangeDetectorRef, inject } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -12,6 +13,13 @@ import { ApiServicio } from '../Servicios/api.servicio';
   styleUrls: ['./pantallaconfiguracion.css']
 })
 export class PantallaConfiguracionComponente implements OnInit {
+  // === INYECCIÓN DE DEPENDENCIAS ===
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+  private apiService = inject(ApiServicio);
+  private cdr = inject(ChangeDetectorRef);
+
+  // === ESTADO DEL COMPONENTE ===
   proyectoId: number = 0;
   proyecto: any = null;
   colaboradores: any[] = [];
@@ -25,22 +33,17 @@ export class PantallaConfiguracionComponente implements OnInit {
   errorMessage = '';
   successMessage = '';
 
+  // Mapeo de roles basado en IDs del backend
   rolesMap: any = { 'colaborador': 2, 'editor': 3, 'admin': 1 };
   rolesInvertidos: any = { 1: 'admin', 2: 'colaborador', 3: 'editor' };
 
-  constructor(
-    private route: ActivatedRoute,
-    private router: Router,
-    private apiService: ApiServicio,
-    private cdr: ChangeDetectorRef
-  ) {}
-
+  // === CICLO DE VIDA ===
   ngOnInit() {
     this.proyectoId = Number(this.route.snapshot.params['id']);
-    console.log('Proyecto ID desde URL:', this.proyectoId);
     this.cargarDatos();
   }
 
+  // === PETICIONES HTTP (LECTURA) ===
   cargarDatos() {
     this.apiService.obtenerProyecto(this.proyectoId).subscribe({
       next: (proyecto) => {
@@ -57,7 +60,6 @@ export class PantallaConfiguracionComponente implements OnInit {
   cargarColaboradores() {
     this.apiService.obtenerColaboradores(this.proyectoId).subscribe({
       next: (data) => {
-        console.log('Colaboradores recibidos:', data);
         this.colaboradores = Array.isArray(data) ? data : [];
         this.colaboradores.forEach(c => {
           c.rol_nombre = this.rolesInvertidos[c.id_rol] || 'colaborador';
@@ -65,8 +67,7 @@ export class PantallaConfiguracionComponente implements OnInit {
         this.cargando = false;
         this.cdr.detectChanges();
       },
-      error: (error) => {
-        console.error('Error cargando colaboradores:', error);
+      error: () => {
         this.colaboradores = [];
         this.cargando = false;
         this.cdr.detectChanges();
@@ -74,10 +75,10 @@ export class PantallaConfiguracionComponente implements OnInit {
     });
   }
 
+  // === PETICIONES HTTP (ESCRITURA) ===
   agregarColaborador() {
-    if (!this.nuevoColaborador.correo) {
-      this.errorMessage = 'Ingresa un correo válido';
-      setTimeout(() => this.errorMessage = '', 3000);
+    if (!this.nuevoColaborador.correo.trim()) {
+      this.mostrarError('Ingresa un correo válido');
       return;
     }
 
@@ -87,44 +88,35 @@ export class PantallaConfiguracionComponente implements OnInit {
       id_rol: this.rolesMap[this.nuevoColaborador.rol] || 2
     };
 
-    console.log('📤 Enviando colaborador:', data);
-
     this.apiService.agregarColaborador(data).subscribe({
-      next: (response) => {
-        console.log('Colaborador agregado:', response);
-        this.successMessage = 'Colaborador agregado exitosamente';
+      next: () => {
+        this.mostrarExito('Colaborador agregado exitosamente');
         this.nuevoColaborador = { correo: '', rol: 'colaborador' };
         this.cargarColaboradores();
-        setTimeout(() => this.successMessage = '', 3000);
       },
       error: (error) => {
-        console.error(' Error:', error);
         const mensaje = error.error?.detail || 'Error al agregar colaborador';
-        this.errorMessage = 'Error ' + mensaje;
-        setTimeout(() => this.errorMessage = '', 5000);
+        this.mostrarError('Error: ' + mensaje);
       }
     });
   }
 
   eliminarColaborador(id_usuario: number) {
-  if (!confirm('¿Estás seguro de eliminar este colaborador?')) return;
+    if (!confirm('¿Estás seguro de eliminar este colaborador del proyecto?')) return;
 
-  this.apiService.eliminarColaborador({ 
-    id_proyecto: this.proyectoId, 
-    id_usuario: id_usuario 
-  }).subscribe({
-    next: () => {
-      this.successMessage = 'Colaborador eliminado exitosamente';
-      this.cargarColaboradores(); // Recargamos la lista
-      setTimeout(() => this.successMessage = '', 3000);
-    },
-    error: (error) => {
-      console.error('Error al eliminar:', error);
-      this.errorMessage = 'Error al eliminar colaborador';
-      setTimeout(() => this.errorMessage = '', 3000);
-    }
-  });
-}
+    this.apiService.eliminarColaborador({ 
+      id_proyecto: this.proyectoId, 
+      id_usuario: id_usuario 
+    }).subscribe({
+      next: () => {
+        this.mostrarExito('Colaborador eliminado exitosamente');
+        this.cargarColaboradores();
+      },
+      error: () => {
+        this.mostrarError('Error al eliminar colaborador');
+      }
+    });
+  }
 
   cambiarRol(id_usuario: number, nuevoRol: string) {
     this.apiService.cambiarRolColaborador({
@@ -133,15 +125,24 @@ export class PantallaConfiguracionComponente implements OnInit {
       id_rol_nuevo: this.rolesMap[nuevoRol] || 2
     }).subscribe({
       next: () => {
-        this.successMessage = 'Rol actualizado';
+        this.mostrarExito('Rol actualizado correctamente');
         this.cargarColaboradores();
-        setTimeout(() => this.successMessage = '', 3000);
       },
       error: () => {
-        this.errorMessage = 'Error al cambiar rol';
-        setTimeout(() => this.errorMessage = '', 3000);
+        this.mostrarError('Error al cambiar el rol del colaborador');
       }
     });
+  }
+
+  // === UTILIDADES ===
+  mostrarError(mensaje: string) {
+    this.errorMessage = mensaje;
+    setTimeout(() => this.errorMessage = '', 4000);
+  }
+
+  mostrarExito(mensaje: string) {
+    this.successMessage = mensaje;
+    setTimeout(() => this.successMessage = '', 4000);
   }
 
   volverAlProyecto() {

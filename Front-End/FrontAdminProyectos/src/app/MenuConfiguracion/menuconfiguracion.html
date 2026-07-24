@@ -14,8 +14,13 @@
         (click)="irAOpcion(opcion)"
       >
         <div class="opcion-icono-wrapper">
-          <span class="opcion-icono">{{ opcion.icono }}</span>
+          <!-- Icono de Integrantes -->
+          <svg *ngIf="opcion.id === 'integrantes'" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+          
+          <!-- Icono de Eliminar (Peligro) -->
+          <svg *ngIf="opcion.id === 'eliminar'" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
         </div>
+        
         <div class="opcion-info">
           <h3>{{ opcion.nombre }}</h3>
           <p>{{ opcion.descripcion }}</p>

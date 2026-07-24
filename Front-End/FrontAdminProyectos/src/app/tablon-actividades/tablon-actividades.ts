@@ -1,3 +1,4 @@
+// === IMPORTACIONES ===
 import { Component, OnInit, inject } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { CommonModule } from '@angular/common';
@@ -12,14 +13,15 @@ import { DetallesActividades } from '../detalles-actividades/detalles-actividade
   templateUrl: './tablon-actividades.html',
   styleUrl: './tablon-actividades.css',
 })
-export class TablonActividades {
-  
-private route = inject(ActivatedRoute);
+export class TablonActividades implements OnInit {
+  // === INYECCIÓN DE DEPENDENCIAS ===
+  private route = inject(ActivatedRoute);
   private apiService = inject(ApiServicio);
 
-
+  // === ESTADO DEL COMPONENTE ===
   proyectoId!: number;
   cargando = true;
+  tareaSeleccionada: Tarea | null = null;
 
   columnas: Record<string, Tarea[]> = {
     'Pendiente por asignar': [],
@@ -29,15 +31,17 @@ private route = inject(ActivatedRoute);
   };
   estados = Object.keys(this.columnas);
 
+  // === CICLO DE VIDA ===
   ngOnInit() {
     this.proyectoId = Number(this.route.snapshot.params['id']);
     this.cargarTareas();
   }
 
+  // === PETICIONES HTTP ===
   cargarTareas() {
     this.apiService.obtenerTareas(this.proyectoId).subscribe({
       next: (data: Tarea[]) => {
-        this.estados.forEach(est => this.columnas[est] = []); // Limpiar
+        this.estados.forEach(est => this.columnas[est] = []);
         (data || []).forEach(tarea => {
           if (this.columnas[tarea.estado]) {
             this.columnas[tarea.estado].push(tarea);
@@ -45,19 +49,18 @@ private route = inject(ActivatedRoute);
         });
         this.cargando = false;
       },
-      error: () => this.cargando = false
+      error: () => {
+        this.cargando = false;
+      }
     });
   }
 
-  tareaSeleccionada: any | null = null;
-
-  abrirDetalle(tarea: any) {
+  // === GESTIÓN DE MODAL DE DETALLES ===
+  abrirDetalle(tarea: Tarea) {
     this.tareaSeleccionada = tarea;
   }
 
   cerrarDetalle() {
     this.tareaSeleccionada = null;
   }
-
-
 }
