@@ -42,9 +42,7 @@ export class LoginComponente {
         
         this.cargando = false;
         
-        setTimeout(() => {
-            this.router.navigate(['/inicio']);
-        }, 0);
+        window.location.href = '/inicio';
         
       },
       error: (error) => {

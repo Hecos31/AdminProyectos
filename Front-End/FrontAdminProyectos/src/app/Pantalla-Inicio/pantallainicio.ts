@@ -21,7 +21,21 @@ export class PantallaInicioComponente implements OnInit {
   proyectos: any[] = [];
   usuario: any = null;
   cargando = true;
+  
+  get inicialUsuario(): string {
+    if (this.usuario && this.usuario.nombre) {
+      return String(this.usuario.nombre).charAt(0).toUpperCase();
+    }
+    return 'U';
+  }
 
+  get nombreUsuario(): string {
+    if (this.usuario && this.usuario.nombre) {
+      return this.usuario.nombre;
+    }
+    return 'Usuario';
+  }
+  
   // === CICLO DE VIDA ===
   ngOnInit() {
     const usuarioStr = localStorage.getItem('usuario');
@@ -61,6 +75,7 @@ export class PantallaInicioComponente implements OnInit {
 
   cerrarSesion() {
     localStorage.clear();
-    this.router.navigate(['/login']);
+    sessionStorage.clear();
+    window.location.href = '/login';
   }
 }

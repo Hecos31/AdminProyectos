@@ -7,10 +7,10 @@ export const authGuard: CanActivateChildFn = (route, state) => {
   const router = inject(Router);
   const token = localStorage.getItem('token');
 
-  // Si hay token, lo dejamos pasar. 
+  // Si hay token, lo dejamos pasar.
   // (La seguridad real de si el token es válido o pirata la hace FastAPI en cada petición).
   if (token) {
-    return true; 
+    return true;
   }
 
   // Si no hay token, lo pateamos de vuelta al login

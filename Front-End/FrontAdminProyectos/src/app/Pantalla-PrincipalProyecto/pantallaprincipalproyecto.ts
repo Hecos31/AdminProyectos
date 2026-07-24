@@ -9,7 +9,7 @@ import { ApiServicio } from '../Servicios/api.servicio';
   standalone: true,
   imports: [CommonModule],
   templateUrl: './pantallaprincipalproyecto.html',
-  styleUrls: ['./pantallaprincipalproyecto.css']
+  styleUrls: ['./pantallaprincipalproyecto.css'],
 })
 export class PantallaPrincipalProyectoComponente implements OnInit {
   // === INYECCIÓN DE DEPENDENCIAS ===
@@ -43,7 +43,7 @@ export class PantallaPrincipalProyectoComponente implements OnInit {
         this.errorMessage = 'No se pudo cargar la información del proyecto.';
         this.cargando = false;
         this.cdr.detectChanges();
-      }
+      },
     });
   }
 

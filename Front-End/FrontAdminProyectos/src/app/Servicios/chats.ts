@@ -1,70 +1,80 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Subject } from 'rxjs';
-import { environment } from '../../environments/environment';
 
-@Injectable({ providedIn: 'root' })
+@Injectable({
+  providedIn: 'root',
+})
 export class ChatService {
-  
-  // === DEPENDENCIAS Y VARIABLES ===
   private http = inject(HttpClient);
-  private apiUrl = environment.apiUrl;
-  
+
+  private apiUrl = 'http://localhost:8000';
+  private wsUrl = 'ws://localhost:8000';
   private socket!: WebSocket;
+
   public mensajesNuevos$ = new Subject<any>();
 
-  // ==========================================
-  //            CONEXIÓN WEBSOCKET
-  // ==========================================
-  conectarWebSocket() {
-    const token = localStorage.getItem('token'); 
-    
-    if (!token) {
-      console.error('CONEXIÓN RECHAZADA: No hay token disponible para el WebSocket.');
-      return;
-    }
+  // Usamos el token que ya tienes guardado en localStorage
+  private getHeaders() {
+    const token = localStorage.getItem('token');
+    return new HttpHeaders({ Authorization: `Bearer ${token}` });
+  }
 
-    this.socket = new WebSocket(`${environment.wsUrl}/ws?token=${token}`);
+  conectarWebSocket() {
+    if (this.socket && this.socket.readyState === WebSocket.OPEN) return;
+
+    const token = localStorage.getItem('token');
+    if (!token) return;
+
+    // Tu backend espera el token como Query Parameter: ?token=...
+    this.socket = new WebSocket(`${this.wsUrl}/ws?token=${token}`);
 
     this.socket.onmessage = (event) => {
-      try {
-        const mensaje = JSON.parse(event.data);
-        this.mensajesNuevos$.next(mensaje);
-      } catch (e) {
-        console.error('Error parseando mensaje WS:', e);
-      }
+      const mensaje = JSON.parse(event.data);
+      this.mensajesNuevos$.next(mensaje);
     };
 
-    this.socket.onerror = (error) => console.error('Error de red en WebSocket:', error);
-  }
-
-  desconectarWebSocket() {
-    if (this.socket && this.socket.readyState === WebSocket.OPEN) {
-      this.socket.close();
-    }
-  }
-
-  // ==========================================
-  //            PETICIONES REST API
-  // ==========================================
-  // Nota: Igual que en ApiServicio, el token ahora lo pondrá el AuthInterceptor.
-
-  enviarMensajeEnSala(idConversacion: string, contenido: string) {
-    return this.http.post(`${this.apiUrl}/mensajes/conversacion`, {
-      id_conversacion: idConversacion,
-      contenido: contenido
-    });
-  }
-
-  obtenerContactos(idProyecto: number) {
-    return this.http.get<any[]>(`${this.apiUrl}/proyectos/${idProyecto}/colaboradores`);
+    this.socket.onclose = () => {
+      setTimeout(() => this.conectarWebSocket(), 3000); // Reconexión automática
+    };
   }
 
   obtenerConversaciones() {
-    return this.http.get<any[]>(`${this.apiUrl}/mensajes/conversaciones`);
+    return this.http.get<any[]>(`${this.apiUrl}/mensajes/conversaciones`, {
+      headers: this.getHeaders(),
+    });
   }
 
-  obtenerHistorialCompleto(idConversacion: string) {
-    return this.http.get<any[]>(`${this.apiUrl}/mensajes/historial/conversaciones/${idConversacion}`);
+  obtenerHistorial(idConversacion: string) {
+    return this.http.get<any[]>(
+      `${this.apiUrl}/mensajes/historial/conversaciones/${idConversacion}`,
+      { headers: this.getHeaders() }
+    );
+  }
+
+  enviarMensajeHTTP(idConversacion: string, contenido: string) {
+    // Apunta al endpoint de envío de tu mensajes.py
+    return this.http.post(
+      `${this.apiUrl}/mensajes/conversacion`,
+      {
+        id_conversacion: idConversacion,
+        contenido: contenido,
+      },
+      { headers: this.getHeaders() }
+    );
+  }
+
+  iniciarChatPorCorreo(correo: string) {
+    return this.http.post<any>(
+      `${this.apiUrl}/mensajes/iniciar-correo`,
+      { correo_destino: correo },
+      { headers: this.getHeaders() }
+    );
+  }
+
+  public abrirWidget$ = new Subject<void>();
+
+  solicitarAperturaWidget() {
+    this.abrirWidget$.next();
   }
 }

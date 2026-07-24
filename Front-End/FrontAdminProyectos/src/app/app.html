@@ -3,6 +3,10 @@
   <app-sidebar *ngIf="showSidebar"></app-sidebar>
   
   <main class="main-content" [class.with-sidebar]="showSidebar">
-    <router-outlet></router-outlet>
+    <app-navbar-proyecto></app-navbar-proyecto>
+    <div class="page-content">
+      <router-outlet></router-outlet>
+    </div>
   </main>
+  <app-chat-widget></app-chat-widget>
 </div>

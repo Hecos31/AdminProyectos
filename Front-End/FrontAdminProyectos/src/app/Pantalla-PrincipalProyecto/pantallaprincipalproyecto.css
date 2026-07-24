@@ -2,8 +2,8 @@
 .principal-container {
   display: flex;
   min-height: 100vh;
-  background-color: #fafafa; 
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  background-color: #fafafa;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
 }
 
 .main-content {
@@ -108,9 +108,18 @@
   letter-spacing: 0.02em;
 }
 
-.status-badge[data-status="activo"] { background: #dcfce7; color: #166534; }
-.status-badge[data-status="pausado"] { background: #fef3c7; color: #92400e; }
-.status-badge[data-status="finalizado"] { background: #f3f4f6; color: #4b5563; }
+.status-badge[data-status='activo'] {
+  background: #dcfce7;
+  color: #166534;
+}
+.status-badge[data-status='pausado'] {
+  background: #fef3c7;
+  color: #92400e;
+}
+.status-badge[data-status='finalizado'] {
+  background: #f3f4f6;
+  color: #4b5563;
+}
 
 /* === CARGA Y ALERTAS === */
 .loading-state {
@@ -133,9 +142,13 @@
   margin-bottom: 16px;
 }
 
-@keyframes spin { 
-  0% { transform: rotate(0deg); } 
-  100% { transform: rotate(360deg); } 
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 .alert {
@@ -202,7 +215,7 @@
 }
 
 .detalle-item.full-width {
-  grid-column: 1 / -1; 
+  grid-column: 1 / -1;
 }
 
 .detalle-label {
@@ -229,15 +242,33 @@
   border: 1px solid #f3f4f6;
 }
 
-@keyframes slideUp { 
-  from { transform: translateY(20px); opacity: 0; } 
-  to { transform: translateY(0); opacity: 1; } 
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }
 
 @media (max-width: 768px) {
-  .main-content { padding: 20px; }
-  .proyecto-header { flex-direction: column; align-items: stretch; }
-  .header-left { justify-content: space-between; }
-  .header-right { justify-content: stretch; }
-  .header-right .btn-secundario { flex: 1; justify-content: center; }
+  .main-content {
+    padding: 20px;
+  }
+  .proyecto-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .header-left {
+    justify-content: space-between;
+  }
+  .header-right {
+    justify-content: stretch;
+  }
+  .header-right .btn-secundario {
+    flex: 1;
+    justify-content: center;
+  }
 }

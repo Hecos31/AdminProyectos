@@ -9,7 +9,7 @@ import { ApiServicio } from '../Servicios/api.servicio';
   standalone: true,
   imports: [CommonModule],
   templateUrl: './menuconfiguracion.html',
-  styleUrls: ['./menuconfiguracion.css']
+  styleUrls: ['./menuconfiguracion.css'],
 })
 export class MenuConfiguracionComponente implements OnInit {
   // === INYECCIÓN DE DEPENDENCIAS ===
@@ -22,18 +22,18 @@ export class MenuConfiguracionComponente implements OnInit {
   proyectoNombre: string = '';
 
   opciones = [
-    { 
+    {
       id: 'integrantes',
-      nombre: 'Gestión de Integrantes', 
+      nombre: 'Gestión de Integrantes',
       descripcion: 'Agregar, remover o cambiar el rol de los colaboradores del proyecto.',
-      peligroso: false
+      peligroso: false,
     },
-    { 
+    {
       id: 'eliminar',
-      nombre: 'Eliminar Proyecto', 
+      nombre: 'Eliminar Proyecto',
       descripcion: 'Borrar permanentemente este proyecto y todas sus tareas asociadas.',
-      peligroso: true
-    }
+      peligroso: true,
+    },
   ];
 
   // === CICLO DE VIDA ===
@@ -45,20 +45,24 @@ export class MenuConfiguracionComponente implements OnInit {
   // === PETICIONES HTTP ===
   cargarNombreProyecto() {
     this.apiService.obtenerProyecto(Number(this.proyectoId)).subscribe({
-      next: (proyecto: any) => this.proyectoNombre = proyecto.nombre,
-      error: () => { /* opcional: manejar error */ }
+      next: (proyecto: any) => (this.proyectoNombre = proyecto.nombre),
+      error: () => {
+        /* opcional: manejar error */
+      },
     });
   }
 
   // === MÉTODOS ===
   irAOpcion(opcion: any) {
     if (opcion.peligroso && opcion.id === 'eliminar') {
-      const confirmacion = confirm(`¿Estás seguro de eliminar el proyecto "${this.proyectoNombre}"? Esta acción no se puede deshacer.`);
-      
+      const confirmacion = confirm(
+        `¿Estás seguro de eliminar el proyecto "${this.proyectoNombre}"? Esta acción no se puede deshacer.`
+      );
+
       if (confirmacion) {
         this.apiService.eliminarProyecto(Number(this.proyectoId)).subscribe({
           next: () => this.router.navigate(['/inicio']),
-          error: () => alert('Error de conexión al intentar eliminar el proyecto.')
+          error: () => alert('Error de conexión al intentar eliminar el proyecto.'),
         });
       }
     } else if (opcion.id === 'integrantes') {
