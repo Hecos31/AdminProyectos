@@ -26,6 +26,15 @@
       >
         Mis Actividades
       </a>
+      
+      <a
+        *ngIf="rolUsuario === 'admin'"
+        [routerLink]="['/proyecto', proyectoActivoId, 'crearactividades']"
+        class="tab-link"
+        routerLinkActive="active"
+      >
+        Gestionar actividades  
+      </a>
 
       <a
         *ngIf="rolUsuario === 'admin'"

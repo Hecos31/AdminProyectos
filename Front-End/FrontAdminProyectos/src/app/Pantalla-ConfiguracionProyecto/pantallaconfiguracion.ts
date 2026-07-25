@@ -34,8 +34,8 @@ export class PantallaConfiguracionComponente implements OnInit {
   successMessage = '';
 
   // Mapeo de roles basado en IDs del backend
-  rolesMap: any = { colaborador: 2, editor: 3, admin: 1 };
-  rolesInvertidos: any = { 1: 'admin', 2: 'colaborador', 3: 'editor' };
+  rolesMap: any = { colaborador: 2, admin: 1 };
+  rolesInvertidos: any = { 1: 'admin', 2: 'colaborador' };
 
   // === CICLO DE VIDA ===
   ngOnInit() {
