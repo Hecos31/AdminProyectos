@@ -1,4 +1,5 @@
-import { Component } from '@angular/core';
+// === IMPORTACIONES ===
+import { Component, inject } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
@@ -12,21 +13,23 @@ import { ApiServicio } from '../Servicios/api.servicio';
   styleUrls: ['./crearusuario.css']
 })
 export class CrearUsuarioComponente {
+  // === INYECCIÓN DE DEPENDENCIAS ===
+  private apiService = inject(ApiServicio);
+  private router = inject(Router);
+
+  // === ESTADO DEL COMPONENTE ===
   usuario = {
     nombre: '',
     apellido: '',
     correo: '',
     password: ''
   };
+  
   errorMessage = '';
   successMessage = '';
   cargando = false;
 
-  constructor(
-    private apiService: ApiServicio,
-    private router: Router
-  ) {}
-
+  // === MÉTODOS ===
   onSubmit() {
     this.cargando = true;
     this.errorMessage = '';

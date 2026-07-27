@@ -1,0 +1,222 @@
+.k-container {
+  max-width: 1600px;
+  margin: 0 auto;
+  padding: 32px 40px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  color: #111827;
+  background-color: #fafafa;
+  min-height: 100vh;
+}
+
+.k-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.k-header h2 { 
+  margin: 0 0 4px 0; 
+  font-size: 1.8rem; 
+  font-weight: 700; 
+  letter-spacing: -0.02em; 
+}
+
+.k-subtitle { 
+  color: #6b7280; 
+  font-size: 0.95rem; 
+}
+
+/* === TABLERO KANBAN === */
+.k-board {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.5rem;
+  align-items: flex-start;
+}
+
+.k-column {
+  background: #f3f4f6;
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  max-height: 75vh;
+  border: 1px solid #e5e7eb;
+}
+
+.k-column-header {
+  padding: 1rem 1rem 0.5rem 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.k-column-header h3 { 
+  margin: 0; 
+  font-size: 0.85rem; 
+  font-weight: 600; 
+  color: #4b5563; 
+  text-transform: uppercase; 
+  letter-spacing: 0.05em;
+}
+
+.k-count { 
+  background: #e5e7eb; 
+  padding: 0.2rem 0.6rem; 
+  border-radius: 12px; 
+  font-size: 0.75rem; 
+  color: #4b5563; 
+  font-weight: 600; 
+}
+
+.k-drop-zone {
+  padding: 0.75rem 1rem 1rem 1rem;
+  min-height: 150px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+/* === TARJETAS DE SOLO LECTURA === */
+.k-card {
+  background: white;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 0.75rem;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+  border: 1px solid #e5e7eb;
+  cursor: pointer; /* Indica que se puede hacer clic para ver detalles */
+  position: relative;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.k-card:hover {
+  border-color: #3b82f6;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+  transform: translateY(-2px);
+}
+
+.k-card-header { 
+  display: flex; 
+  justify-content: space-between; 
+  align-items: flex-start; 
+  margin-bottom: 0.75rem; 
+}
+
+.k-badge { 
+  padding: 0.2rem 0.5rem; 
+  border-radius: 4px; 
+  font-size: 0.7rem; 
+  font-weight: 700; 
+  letter-spacing: 0.02em; 
+  text-transform: uppercase; 
+}
+
+.k-badge[data-prio="alta"] { background: #fee2e2; color: #991b1b; }
+.k-badge[data-prio="media"] { background: #fef3c7; color: #92400e; }
+.k-badge[data-prio="baja"] { background: #dcfce7; color: #166534; }
+
+.k-card-title { 
+  margin: 0 0 0.5rem 0; 
+  font-size: 0.95rem; 
+  font-weight: 600; 
+  line-height: 1.3; 
+  color: #111827; 
+}
+
+.k-card-desc { 
+  margin: 0 0 1rem 0; 
+  font-size: 0.85rem; 
+  color: #6b7280; 
+  display: -webkit-box; 
+  -webkit-line-clamp: 2; 
+  -webkit-box-orient: vertical; 
+  overflow: hidden; 
+  line-height: 1.4;
+}
+
+.k-card-footer { 
+  display: flex; 
+  justify-content: space-between; 
+  align-items: center; 
+  border-top: 1px solid #f3f4f6; 
+  padding-top: 0.75rem; 
+}
+
+.k-date { 
+  display: flex; 
+  align-items: center; 
+  gap: 4px; 
+  font-size: 0.75rem; 
+  color: #6b7280; 
+  font-weight: 500; 
+}
+
+.k-avatar { 
+  background: #111827; 
+  color: white; 
+  border-radius: 50%; 
+  width: 24px; 
+  height: 24px; 
+  display: flex; 
+  align-items: center; 
+  justify-content: center; 
+  font-size: 0.7rem; 
+  font-weight: 700; 
+}
+
+.k-unassigned { 
+  font-size: 0.75rem; 
+  color: #9ca3af; 
+  font-style: italic; 
+}
+
+.k-empty-state { 
+  text-align: center; 
+  color: #9ca3af; 
+  font-size: 0.85rem; 
+  padding: 2rem 0; 
+  border: 2px dashed #d1d5db; 
+  border-radius: 8px; 
+  background: rgba(255,255,255,0.5); 
+}
+
+/* === ESTADOS GENERALES === */
+.k-loading { 
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem; 
+  color: #6b7280; 
+  font-size: 0.95rem; 
+}
+
+.spinner {
+  border: 3px solid #f3f4f6;
+  border-top: 3px solid #3b82f6;
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  animation: spin 1s linear infinite;
+  margin-bottom: 1rem;
+}
+
+@keyframes spin { 
+  0% { transform: rotate(0deg); } 
+  100% { transform: rotate(360deg); } 
+}
+
+@media (max-width: 1024px) {
+  .k-board {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .k-container { padding: 20px; }
+  .k-board {
+    grid-template-columns: 1fr;
+  }
+}

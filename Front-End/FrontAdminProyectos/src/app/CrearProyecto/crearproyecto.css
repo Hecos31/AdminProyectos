@@ -1,9 +1,9 @@
-/* Contenedor adaptado para convivir con el menú lateral */
 .crear-proyecto-container {
   display: flex;
   min-height: 100vh;
-  background-color: #f7f6f4;
-  font-family: 'Inter', sans-serif;
+  background-color: #fafafa;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  color: #111827;
 }
 
 .main-content {
@@ -11,10 +11,9 @@
   padding: 40px;
   display: flex;
   flex-direction: column;
-  align-items: center; /* Centra el contenido horizontalmente */
+  align-items: center;
 }
 
-/* Cabecera simple fuera de la tarjeta */
 .header-simple {
   width: 100%;
   max-width: 650px;
@@ -27,40 +26,37 @@
 
 .header-simple h1 {
   margin: 0;
-  font-size: 26px;
-  color: #3b3530;
-  font-family: 'Outfit', sans-serif;
+  font-size: 24px;
   font-weight: 700;
+  letter-spacing: -0.02em;
 }
 
 .btn-volver {
   background: transparent;
-  border: 1px solid #f13434;
-  color: #f13434;
-  font-size: 14px;
-  font-weight: 500;
+  border: 1px solid #d1d5db;
+  color: #4b5563;
+  font-size: 0.85rem;
+  font-weight: 600;
   cursor: pointer;
-  padding: 8px 16px;
-  border-radius: 8px;
+  padding: 6px 12px;
+  border-radius: 6px;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   transition: all 0.2s ease;
 }
 
 .btn-volver:hover {
-  background: #fdfdfc;
-  color: #ff0000;
-  border-color: #f13434;
+  background: #f3f4f6;
+  color: #111827;
 }
 
-/* Tarjeta principal del formulario */
 .crear-proyecto-card {
   background: #ffffff;
   padding: 32px;
-  border-radius: 16px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.01);
-  border: 1px solid #f0eee9;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e5e7eb;
   width: 100%;
   max-width: 650px;
 }
@@ -71,68 +67,57 @@
   gap: 12px;
   margin-bottom: 24px;
   padding-bottom: 16px;
-  border-bottom: 1px solid #f0eee9;
-}
-
-.header-icon {
-  color: #bfaea0;
-  font-size: 20px;
+  border-bottom: 1px solid #f3f4f6;
+  color: #4b5563;
 }
 
 .card-header h3 {
   margin: 0;
-  color: #3b3530;
-  font-size: 18px;
+  font-size: 1.1rem;
   font-weight: 600;
+  color: #111827;
 }
 
-/* Estilos de formulario consistentes con Orbita */
 .form-group {
-  margin-bottom: 24px;
+  margin-bottom: 20px;
 }
 
 .form-group label {
   display: block;
+  font-size: 0.85rem;
   font-weight: 600;
-  color: #5c5550;
+  color: #374151;
   margin-bottom: 8px;
-  font-size: 13px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
 }
 
 .required {
-  color: #c95252;
+  color: #ef4444;
 }
 
-.form-group input,
-.form-group textarea,
-.form-group select {
+.k-input {
   width: 100%;
-  padding: 12px 14px;
-  background-color: #fcfcfb;
-  border: 1px solid #e3e0da;
-  border-radius: 8px;
-  font-size: 14px;
-  color: #333;
+  padding: 0.6rem 0.8rem;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  background-color: #fff;
+  font-size: 0.95rem;
+  color: #111827;
+  font-family: inherit;
+  transition: all 0.2s ease;
   box-sizing: border-box;
-  transition: border-color 0.3s ease, box-shadow 0.3s ease;
-  font-family: 'Inter', sans-serif;
 }
 
-.form-group textarea {
-  resize: vertical;
-}
-
-.form-group input:focus,
-.form-group textarea:focus,
-.form-group select:focus {
+.k-input:focus {
   outline: none;
-  border-color: #c4b5a5;
-  box-shadow: 0 0 0 3px rgba(196, 181, 165, 0.2);
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
-/* Envoltorio para personalizar ligeramente el select */
+textarea.k-input {
+  resize: vertical;
+  min-height: 80px;
+}
+
 .select-wrapper {
   position: relative;
 }
@@ -140,83 +125,83 @@
 .form-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 20px;
+  gap: 1.5rem;
 }
 
-/* Alertas estilo Orbita */
 .alert {
-  padding: 14px;
-  border-radius: 8px;
+  padding: 12px 16px;
+  border-radius: 6px;
   margin-bottom: 24px;
-  font-size: 14px;
+  font-size: 0.9rem;
+  font-weight: 500;
   display: flex;
   align-items: center;
   gap: 10px;
 }
 
 .error-message {
-  background: #fdf5f5;
-  color: #c95252;
-  border: 1px solid #fae3e3;
+  background: #fef2f2;
+  color: #b91c1c;
+  border: 1px solid #fecaca;
 }
 
 .success-message {
-  background: #f2fbf5;
-  color: #3b8755;
-  border: 1px solid #e1f5e8;
+  background: #f0fdf4;
+  color: #15803d;
+  border: 1px solid #bbf7d0;
 }
 
-/* Botones de acción alineados a la derecha */
 .form-actions {
   display: flex;
   justify-content: flex-end;
   gap: 12px;
   margin-top: 32px;
   padding-top: 24px;
-  border-top: 1px solid #f0eee9;
+  border-top: 1px solid #f3f4f6;
 }
 
-.btn-secundario {
-  padding: 10px 20px;
-  border: 1px solid #e3e0da;
-  border-radius: 8px;
-  background: transparent;
-  color: #5c5550;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.btn-secundario:hover {
-  background: #fdfdfc;
-  border-color: #bfaea0;
-}
-
-.btn-primario {
-  padding: 10px 24px;
-  background: #bfaea0; /* Café claro/Beige oscuro */
-  color: #ffffff;
-  border: none;
-  border-radius: 8px;
-  font-size: 14px;
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.6rem 1.2rem;
+  border-radius: 6px;
+  font-size: 0.9rem;
   font-weight: 600;
   cursor: pointer;
-  transition: background-color 0.3s ease;
+  border: none;
+  transition: all 0.15s ease;
 }
 
-.btn-primario:hover:not(:disabled) {
-  background: #a89586;
+.btn-primary {
+  background: #111827;
+  color: white;
 }
 
-.btn-primario:disabled {
-  opacity: 0.6;
+.btn-primary:hover:not(:disabled) {
+  background: #000000;
+  transform: translateY(-1px);
+}
+
+.btn-primary:disabled {
+  background: #9ca3af;
   cursor: not-allowed;
+  transform: none;
+}
+
+.btn-ghost {
+  background: transparent;
+  color: #4b5563;
+  border: 1px solid #d1d5db;
+}
+
+.btn-ghost:hover {
+  background: #f3f4f6;
+  color: #111827;
 }
 
 @media (max-width: 768px) {
   .main-content {
-    margin-left: 0;
     padding: 20px;
   }
   

@@ -1,22 +1,28 @@
 <div class="chat-list-container">
+  
+  <!-- Encabezado y Búsqueda -->
   <div class="chat-list-header">
     <div class="header-top">
       <h2>Conversaciones</h2>
       <span class="chat-count">{{ chatsFiltrados.length }}</span>
     </div>
+    
     <div class="chat-search">
+      <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
       <input 
         type="text" 
         placeholder="Buscar conversaciones..." 
         [(ngModel)]="terminoBusqueda"
         (input)="filtrarChats()"
         class="search-input">
+      
       <button *ngIf="terminoBusqueda.length > 0" class="clear-search" (click)="terminoBusqueda = ''; filtrarChats()">
-        ✕
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
       </button>
     </div>
   </div>
 
+  <!-- Pestañas de Filtro -->
   <div class="chat-tabs">
     <button class="tab-btn" [class.active]="tabActivo === 'todos'" (click)="cambiarTab('todos')">Todos</button>
     <button class="tab-btn" [class.active]="tabActivo === 'proyectos'" (click)="cambiarTab('proyectos')">Proyectos</button>
@@ -24,14 +30,24 @@
     <button class="tab-btn" [class.active]="tabActivo === 'actividades'" (click)="cambiarTab('actividades')">Actividades</button>
   </div>
 
+  <!-- Lista de Resultados -->
   <div class="chat-list">
-    <div *ngIf="cargando" class="loading-state">Cargando conversaciones...</div>
+    
+    <div *ngIf="cargando" class="loading-state">
+      <div class="spinner"></div>
+      <span>Cargando conversaciones...</span>
+    </div>
 
     <div *ngIf="!cargando && chatsFiltrados.length === 0" class="empty-chats">
       <p>No hay conversaciones disponibles.</p>
     </div>
 
-    <div *ngFor="let chat of chatsFiltrados" class="chat-item" (click)="seleccionarChat(chat)" [class.active]="chat.id === chatSeleccionado?.id">
+    <!-- Iteración de Chats -->
+    <div *ngFor="let chat of chatsFiltrados" 
+         class="chat-item" 
+         (click)="seleccionarChat(chat)" 
+         [class.active]="chat.id === chatSeleccionado?.id">
+         
       <div class="chat-avatar">
         <span class="avatar-text">{{ (chat.nombre | slice:0:1) | uppercase }}</span>
         <span class="status-indicator" [class.online]="chat.enLinea"></span>
@@ -47,6 +63,8 @@
           <span *ngIf="chat.noLeidos > 0" class="badge-no-leidos">{{ chat.noLeidos }}</span>
         </div>
       </div>
+      
     </div>
   </div>
+
 </div>

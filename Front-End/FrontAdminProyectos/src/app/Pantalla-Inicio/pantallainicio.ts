@@ -1,4 +1,5 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+// === IMPORTACIONES ===
+import { Component, OnInit, ChangeDetectorRef, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { ApiServicio } from '../Servicios/api.servicio';
@@ -11,26 +12,44 @@ import { ApiServicio } from '../Servicios/api.servicio';
   styleUrls: ['./pantallainicio.css'] 
 })
 export class PantallaInicioComponente implements OnInit {
+  // === INYECCIÓN DE DEPENDENCIAS ===
+  private apiService = inject(ApiServicio);
+  private router = inject(Router);
+  private cdr = inject(ChangeDetectorRef);
+
+  // === ESTADO DEL COMPONENTE ===
   proyectos: any[] = [];
   notificaciones: any[] = []; // <-- Nueva lista para las notificaciones
   usuario: any = null;
   cargando = true;
+  
+  get inicialUsuario(): string {
+    if (this.usuario && this.usuario.nombre) {
+      return String(this.usuario.nombre).charAt(0).toUpperCase();
+    }
+    return 'U';
+  }
 
-  constructor(
-    private apiService: ApiServicio,
-    private router: Router,
-    private cdr: ChangeDetectorRef
-  ) {}
-
+  get nombreUsuario(): string {
+    if (this.usuario && this.usuario.nombre) {
+      return this.usuario.nombre;
+    }
+    return 'Usuario';
+  }
+  
+  // === CICLO DE VIDA ===
   ngOnInit() {
     const usuarioStr = localStorage.getItem('usuario');
     if (usuarioStr) {
-      this.usuario = JSON.parse(usuarioStr);
+      try {
+        this.usuario = JSON.parse(usuarioStr);
+      } catch (e) {}
     }
     this.cargarProyectos();
     this.cargarNotificaciones(); // <-- La llamamos al arrancar
   }
 
+  // === PETICIONES HTTP ===
   cargarProyectos() {
     this.cargando = true;
     this.apiService.obtenerProyectos().subscribe({
@@ -47,24 +66,7 @@ export class PantallaInicioComponente implements OnInit {
     });
   }
 
-  // <-- Nuevo método para consumir tu endpoint del Backend
-  cargarNotificaciones() {
-    // 1. Obtenemos al usuario de la memoria
-const usuarioStr = localStorage.getItem('usuario');
-if (usuarioStr) {
-  const usuario = JSON.parse(usuarioStr);
-  
-  // 2. Ahora sí le pasamos el id_usuario a la función
-  this.apiService.obtenerNotificaciones(usuario.id_usuario).subscribe({
-    next: (data) => {
-      console.log('Notificaciones cargadas en inicio:', data);
-      // this.notificaciones = data; // (Si tienes una variable para guardarlas aquí)
-    },
-    error: (err) => console.error('Error al cargar notificaciones en inicio', err)
-  });
-}
-  }
-
+  // Método añadido para la navegación
   crearProyecto() {
     this.router.navigate(['/crear-proyecto']);
   }
@@ -75,6 +77,7 @@ if (usuarioStr) {
 
   cerrarSesion() {
     localStorage.clear();
-    this.router.navigate(['/login']);
+    sessionStorage.clear();
+    window.location.href = '/login';
   }
 }

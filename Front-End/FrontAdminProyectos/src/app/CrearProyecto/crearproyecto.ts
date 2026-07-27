@@ -1,4 +1,5 @@
-import { Component } from '@angular/core';
+// === IMPORTACIONES ===
+import { Component, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
@@ -12,6 +13,11 @@ import { ApiServicio } from '../Servicios/api.servicio';
   styleUrls: ['./crearproyecto.css']
 })
 export class CrearProyectoComponente {
+  // === INYECCIÓN DE DEPENDENCIAS ===
+  private apiService = inject(ApiServicio);
+  private router = inject(Router);
+
+  // === ESTADO DEL COMPONENTE ===
   proyecto = {
     nombre: '',
     descripcion: '',
@@ -19,17 +25,14 @@ export class CrearProyectoComponente {
     fecha_fin: '',
     estado: 'Activo'
   };
+
   errorMessage = '';
   successMessage = '';
   cargando = false;
 
-  constructor(
-    private apiService: ApiServicio,
-    private router: Router
-  ) {}
-
+  // === MÉTODOS ===
   onSubmit() {
-    if (!this.proyecto.nombre) {
+    if (!this.proyecto.nombre.trim()) {
       this.errorMessage = 'El nombre del proyecto es obligatorio';
       return;
     }
@@ -38,37 +41,22 @@ export class CrearProyectoComponente {
     this.errorMessage = '';
     this.successMessage = '';
 
-    // Construir el objeto base para enviar al backend
     const proyectoData: any = {
       nombre: this.proyecto.nombre,
       estado: this.proyecto.estado
     };
 
-    // Agregar la descripción si existe
-    if (this.proyecto.descripcion) {
-      proyectoData.descripcion = this.proyecto.descripcion;
-    }
-    if (this.proyecto.fecha_inicio) {
-      proyectoData.fecha_inicio = `${this.proyecto.fecha_inicio}T00:00:00Z`;
-    }
-    
-    if (this.proyecto.fecha_fin) {
-      proyectoData.fecha_fin = `${this.proyecto.fecha_fin}T00:00:00Z`;
-    }
-
-    console.log('Enviando proyecto:', proyectoData);
+    if (this.proyecto.descripcion) proyectoData.descripcion = this.proyecto.descripcion;
+    if (this.proyecto.fecha_inicio) proyectoData.fecha_inicio = `${this.proyecto.fecha_inicio}T00:00:00Z`;
+    if (this.proyecto.fecha_fin) proyectoData.fecha_fin = `${this.proyecto.fecha_fin}T00:00:00Z`;
 
     this.apiService.crearProyecto(proyectoData).subscribe({
-      next: (response) => {
-        console.log('Proyecto creado:', response);
+      next: () => {
         this.successMessage = 'Proyecto creado exitosamente';
         this.cargando = false;
-        setTimeout(() => {
-          this.router.navigate(['/inicio']);
-        }, 1500);
+        setTimeout(() => this.router.navigate(['/inicio']), 1500);
       },
       error: (error) => {
-        console.error('Error:', error);
         this.errorMessage = error.error?.detail || 'Error al crear proyecto';
         this.cargando = false;
       }

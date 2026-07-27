@@ -1,67 +1,72 @@
-import { Component, Input } from '@angular/core';
-import { Router } from '@angular/router';
+// === IMPORTACIONES ===
+import { Component, OnInit, inject } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { ApiServicio } from '../Servicios/api.servicio';
 
 @Component({
   selector: 'app-menu-configuracion',
   standalone: true,
   imports: [CommonModule],
   templateUrl: './menuconfiguracion.html',
-  styleUrls: ['./menuconfiguracion.css']
+  styleUrls: ['./menuconfiguracion.css'],
 })
-export class MenuConfiguracionComponente {
-  @Input() proyectoId: string = '';
-  @Input() proyectoNombre: string = '';
+export class MenuConfiguracionComponente implements OnInit {
+  // === INYECCIÓN DE DEPENDENCIAS ===
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+  private apiService = inject(ApiServicio);
+
+  // === ESTADO ===
+  proyectoId: string = '';
+  proyectoNombre: string = '';
 
   opciones = [
-    { 
-      icono: '👥', 
-      nombre: 'Integrantes', 
-      ruta: 'integrantes',
-      descripcion: 'Agregar o quitar miembros del proyecto'
+    {
+      id: 'integrantes',
+      nombre: 'Gestión de Integrantes',
+      descripcion: 'Agregar, remover o cambiar el rol de los colaboradores del proyecto.',
+      peligroso: false,
     },
-    { 
-      icono: '📋', 
-      nombre: 'Configuración General', 
-      ruta: 'configuracion',
-      descripcion: 'Configurar opciones del proyecto'
+    {
+      id: 'eliminar',
+      nombre: 'Eliminar Proyecto',
+      descripcion: 'Borrar permanentemente este proyecto y todas sus tareas asociadas.',
+      peligroso: true,
     },
-    { 
-      icono: '🏷️', 
-      nombre: 'Etiquetas y Categorías', 
-      ruta: 'etiquetas',
-      descripcion: 'Administrar etiquetas del proyecto'
-    },
-    { 
-      icono: '🔔', 
-      nombre: 'Notificaciones', 
-      ruta: 'notificaciones',
-      descripcion: 'Configurar alertas y notificaciones'
-    },
-    { 
-      icono: '📊', 
-      nombre: 'Reportes', 
-      ruta: 'reportes',
-      descripcion: 'Generar reportes del proyecto'
-    },
-    { 
-      icono: '🗑️', 
-      nombre: 'Eliminar Proyecto', 
-      ruta: 'eliminar',
-      descripcion: 'Eliminar proyecto permanentemente',
-      peligroso: true
-    }
   ];
 
-  constructor(private router: Router) {}
+  // === CICLO DE VIDA ===
+  ngOnInit() {
+    this.proyectoId = this.route.snapshot.params['id'];
+    this.cargarNombreProyecto();
+  }
 
+  // === PETICIONES HTTP ===
+  cargarNombreProyecto() {
+    this.apiService.obtenerProyecto(Number(this.proyectoId)).subscribe({
+      next: (proyecto: any) => (this.proyectoNombre = proyecto.nombre),
+      error: () => {
+        /* opcional: manejar error */
+      },
+    });
+  }
+
+  // === MÉTODOS ===
   irAOpcion(opcion: any) {
-    if (opcion.peligroso) {
-      if (confirm(`¿Estás seguro de eliminar el proyecto "${this.proyectoNombre}"?`)) {
-        this.router.navigate([`/proyecto/${this.proyectoId}/configuracion/${opcion.ruta}`]);
+    if (opcion.peligroso && opcion.id === 'eliminar') {
+      const confirmacion = confirm(
+        `¿Estás seguro de eliminar el proyecto "${this.proyectoNombre}"? Esta acción no se puede deshacer.`
+      );
+
+      if (confirmacion) {
+        this.apiService.eliminarProyecto(Number(this.proyectoId)).subscribe({
+          next: () => this.router.navigate(['/inicio']),
+          error: () => alert('Error de conexión al intentar eliminar el proyecto.'),
+        });
       }
-    } else {
-      this.router.navigate([`/proyecto/${this.proyectoId}/configuracion/${opcion.ruta}`]);
+    } else if (opcion.id === 'integrantes') {
+      this.router.navigate([`/proyecto/${this.proyectoId}/integrantes`]);
     }
   }
 }

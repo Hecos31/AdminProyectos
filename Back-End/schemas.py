@@ -141,3 +141,6 @@ class AITareaResponse(BaseModel):
     prioridad: str
     id_usuario_asignado: Optional[int] = None
     fecha_limite: Optional[str] = None
+    
+class IniciarChatCorreoRequest(BaseModel):
+    correo_destino: str

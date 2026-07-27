@@ -1,46 +1,43 @@
-/* Contenedor principal alineado con el resto de la app */
+/* === CONTENEDOR PRINCIPAL === */
 .inicio-container {
   display: flex;
   min-height: 100vh;
-  background-color: #f7f6f4; /* Gris cálido / off-white */
-  font-family: 'Inter', sans-serif;
+  background-color: #fafafa; 
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
 
-/* Ajuste para el menú lateral estrecho (Floating Vertical Rail) */
 .main-content {
   flex: 1;
-  padding: 20px;
+  padding: 32px 40px;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
-/* Cabecera limpia y minimalista */
+/* === ENCABEZADO === */
 .header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 24px 32px;
-  background: #ffffff;
-  border-radius: 16px;
-  margin-bottom: 32px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.02);
-  border: 1px solid #f0eee9;
-  height: 30px;
+  margin-bottom: 40px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid #e5e7eb;
 }
 
 .header-title h1 {
   margin: 0 0 4px 0;
-  font-size: 26px;
-  color: #3b3530; /* Charcoal/Café oscuro */
-  font-family: 'Outfit', sans-serif;
+  font-size: 1.8rem;
+  color: #111827;
   font-weight: 700;
+  letter-spacing: -0.02em;
 }
 
-.header-title .subtitle {
+.subtitle {
   margin: 0;
-  color: #8c857f;
-  font-size: 14px;
+  color: #6b7280;
+  font-size: 0.95rem;
 }
 
-/* Info del usuario y avatar */
+/* === INFO DEL USUARIO === */
 .user-info {
   display: flex;
   align-items: center;
@@ -50,56 +47,75 @@
 .user-avatar {
   width: 40px;
   height: 40px;
-  background-color: #bfaea0; /* Café claro Orbita */
+  background-color: #111827;
   color: white;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 600;
-  font-size: 16px;
+  font-size: 1.1rem;
 }
 
 .user-name {
-  color: #5c5550;
-  font-weight: 500;
-  font-size: 15px;
+  color: #374151;
+  font-weight: 600;
+  font-size: 0.95rem;
 }
 
-/* Botón de cierre de sesión sutil para no robar atención */
-.btn-logout {
-  padding: 8px 16px;
+.btn-icon {
   background: transparent;
-  color: #a89586;
-  border: 1px solid #e3e0da;
+  border: 1px solid #e5e7eb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
   border-radius: 8px;
   cursor: pointer;
-  font-weight: 500;
   transition: all 0.2s ease;
+  color: #6b7280;
 }
 
 .btn-logout:hover {
-  background: #fdf5f5;
-  color: #c95252; /* Rojo suave solo al pasar el mouse */
-  border-color: #fae3e3;
+  background-color: #fef2f2;
+  color: #ef4444;
+  border-color: #fecaca;
 }
 
-/* Estado de carga */
-.loading {
-  text-align: center;
+/* === ESTADO DE CARGA === */
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   padding: 80px 20px;
-  color: #8c857f;
-  font-size: 15px;
+  color: #6b7280;
+  font-size: 0.95rem;
 }
 
-/* Grid de proyectos */
+.spinner {
+  border: 3px solid #f3f4f6;
+  border-top: 3px solid #3b82f6;
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  animation: spin 1s linear infinite;
+  margin-bottom: 16px;
+}
+
+@keyframes spin { 
+  0% { transform: rotate(0deg); } 
+  100% { transform: rotate(360deg); } 
+}
+
+/* === GRID DE PROYECTOS === */
 .proyectos-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
   gap: 24px;
 }
 
-/* Tarjetas de proyecto planas y limpias */
+/* === TARJETAS DE PROYECTO === */
 .proyecto-card {
   background: #ffffff;
   border-radius: 12px;
@@ -107,15 +123,16 @@
   display: flex;
   flex-direction: column;
   cursor: pointer;
-  border: 1px solid #f0eee9;
-  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.01);
+  border: 1px solid #e5e7eb;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  min-height: 180px;
 }
 
 .proyecto-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 12px 25px rgba(0, 0, 0, 0.04);
-  border-color: #e3e0da;
+  transform: translateY(-4px);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  border-color: #d1d5db;
 }
 
 .proyecto-info {
@@ -126,47 +143,60 @@
 
 .proyecto-info h3 {
   margin: 0 0 8px 0;
-  font-size: 18px;
-  color: #3b3530;
+  font-size: 1.15rem;
+  color: #111827;
   font-weight: 600;
+  line-height: 1.3;
 }
 
 .proyecto-info p {
   margin: 0 0 24px 0;
-  color: #8c857f;
-  font-size: 14px;
+  color: #6b7280;
+  font-size: 0.9rem;
   line-height: 1.5;
-  flex-grow: 1; /* Empuja los metadatos hacia abajo */
+  flex-grow: 1;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
-/* Metadatos (Fecha y Estado) tipo "Pill" o etiquetas */
+/* === METADATOS === */
 .proyecto-meta {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-top: 1px solid #f0eee9;
+  border-top: 1px solid #f3f4f6;
   padding-top: 16px;
 }
 
 .meta-item {
-  font-size: 12px;
-  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8rem;
+  font-weight: 600;
 }
 
 .meta-item.date {
-  color: #a89586;
+  color: #9ca3af;
 }
 
 .meta-item.status {
-  background: #f4f1ed;
-  color: #7a6e65;
   padding: 4px 10px;
   border-radius: 20px;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  font-size: 0.7rem;
 }
 
-/* Tarjeta especial para "Nuevo Proyecto" */
+.meta-item.status[data-status="activo"] { background: #dcfce7; color: #166534; }
+.meta-item.status[data-status="pausado"] { background: #fef3c7; color: #92400e; }
+.meta-item.status[data-status="finalizado"] { background: #f3f4f6; color: #4b5563; }
+
+/* === TARJETA NUEVO PROYECTO === */
 .proyecto-card.nuevo {
-  border: 2px dashed #e3e0da;
+  border: 2px dashed #d1d5db;
   background: transparent;
   justify-content: center;
   align-items: center;
@@ -175,22 +205,34 @@
 }
 
 .proyecto-card.nuevo:hover {
-  border-color: #bfaea0;
-  background: #ffffff;
+  border-color: #3b82f6;
+  background: #eff6ff;
 }
 
 .proyecto-icono-nuevo {
-  font-size: 32px;
-  color: #bfaea0;
+  color: #9ca3af;
   margin-bottom: 12px;
-  font-weight: 300;
+  transition: color 0.2s ease;
+}
+
+.proyecto-card.nuevo:hover .proyecto-icono-nuevo {
+  color: #2563eb;
 }
 
 .proyecto-card.nuevo h3 {
-  color: #5c5550;
+  color: #374151;
   margin-bottom: 4px;
 }
 
 .proyecto-card.nuevo p {
   margin: 0;
+  color: #9ca3af;
+}
+
+/* === RESPONSIVE === */
+@media (max-width: 768px) {
+  .main-content { padding: 20px; }
+  .header { flex-direction: column; align-items: flex-start; gap: 20px; }
+  .user-info { width: 100%; justify-content: space-between; }
+  .proyectos-grid { grid-template-columns: 1fr; }
 }

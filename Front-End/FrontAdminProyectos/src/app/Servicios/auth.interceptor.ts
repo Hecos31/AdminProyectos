@@ -5,22 +5,16 @@ import { catchError } from 'rxjs/operators';
 import { throwError } from 'rxjs';
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
-  const injector = inject(Injector);
+  const token = localStorage.getItem('token');
 
-  return next(req).pipe(
-    catchError((error: HttpErrorResponse) => {
-      
-      // Solo actuamos si es 401 Y NO estamos intentando iniciar sesión
-      if (error.status === 401 && !req.url.includes('/login')) {
-        
-        localStorage.clear();
-        
-        // Obtenemos el Router de forma segura solo en el momento que lo necesitamos
-        const router = injector.get(Router);
-        router.navigate(['/login']);
+  if (token) {
+    const authReq = req.clone({
+      setHeaders: {
+        Authorization: `Bearer ${token}`
       }
-      
-      return throwError(() => error);
-    })
-  );
+    });
+    return next(authReq);
+  }
+
+  return next(req);
 };

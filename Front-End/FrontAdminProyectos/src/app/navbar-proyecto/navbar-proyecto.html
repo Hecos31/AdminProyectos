@@ -1,0 +1,73 @@
+<div class="top-navbar" *ngIf="modoProyecto && proyectoActivoId">
+  <div class="navbar-content">
+    <div class="nav-tabs">
+      <a
+        [routerLink]="['/proyecto', proyectoActivoId]"
+        class="tab-link"
+        routerLinkActive="active"
+        [routerLinkActiveOptions]="{ exact: true }"
+      >
+        Dashboard
+      </a>
+
+      <!-- Rutas corregidas exactamente a como las tienes -->
+      <a
+        [routerLink]="['/proyecto', proyectoActivoId, 'tablon']"
+        class="tab-link"
+        routerLinkActive="active"
+      >
+        Tablón
+      </a>
+
+      <a
+        [routerLink]="['/proyecto', proyectoActivoId, 'mis-actividades']"
+        class="tab-link"
+        routerLinkActive="active"
+      >
+        Mis Actividades
+      </a>
+      
+      <a
+        *ngIf="rolUsuario === 'admin'"
+        [routerLink]="['/proyecto', proyectoActivoId, 'crearactividades']"
+        class="tab-link"
+        routerLinkActive="active"
+      >
+        Gestionar actividades  
+      </a>
+
+      <a
+        *ngIf="rolUsuario === 'admin'"
+        [routerLink]="['/proyecto', proyectoActivoId, 'integrantes']"
+        class="tab-link"
+        routerLinkActive="active"
+      >
+        Colaboradores
+      </a>
+
+      <!-- === PESTAÑA PROTEGIDA === -->
+      <!-- Sólo se dibuja en el HTML si la API confirmó que eres admin (id_rol === 1) -->
+      <a
+        *ngIf="rolUsuario === 'admin'"
+        [routerLink]="['/proyecto', proyectoActivoId, 'configuracion']"
+        class="tab-link config-tab"
+        routerLinkActive="active"
+      >
+        <svg
+          width="14"
+          height="14"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <circle cx="12" cy="12" r="3"></circle>
+          <path
+            d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"
+          ></path>
+        </svg>
+        Configuración
+      </a>
+    </div>
+  </div>
+</div>

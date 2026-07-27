@@ -1,91 +1,80 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Subject } from 'rxjs';
-import { environment } from '../../environments/environment';
+
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class ChatService {
+  private http = inject(HttpClient);
+
+  private apiUrl = 'http://localhost:8000';
+  private wsUrl = 'ws://localhost:8000';
   private socket!: WebSocket;
+
   public mensajesNuevos$ = new Subject<any>();
-  
-  private apiUrl = environment.apiUrl;
-  
-  constructor(private http: HttpClient) {}
+
+  // Usamos el token que ya tienes guardado en localStorage
+  private getHeaders() {
+    const token = localStorage.getItem('token');
+    return new HttpHeaders({ Authorization: `Bearer ${token}` });
+  }
 
   conectarWebSocket() {
-    const token = localStorage.getItem('token'); 
-    
-    if (!token) {
-      console.error('No hay token disponible para el WebSocket');
-      return;
-    }
-    this.socket = new WebSocket(`${environment.wsUrl}/ws?token=${token}`);
+    if (this.socket && this.socket.readyState === WebSocket.OPEN) return;
+
+    const token = localStorage.getItem('token');
+    if (!token) return;
+
+    // Tu backend espera el token como Query Parameter: ?token=...
+    this.socket = new WebSocket(`${this.wsUrl}/ws?token=${token}`);
 
     this.socket.onmessage = (event) => {
       const mensaje = JSON.parse(event.data);
       this.mensajesNuevos$.next(mensaje);
     };
 
-    this.socket.onerror = (error) => {
-      console.error('Error en WebSocket:', error);
+    this.socket.onclose = () => {
+      setTimeout(() => this.conectarWebSocket(), 3000); // Reconexión automática
     };
   }
 
-  desconectarWebSocket() {
-    if (this.socket) {
-      this.socket.close();
-    }
-  }
-
-  enviarMensajeEnSala(idConversacion: string, contenido: string) {
-    const token = localStorage.getItem('token');
-    const headers = new HttpHeaders({ 'Authorization': `Bearer ${token}` });
-
-    return this.http.post(`${this.apiUrl}/mensajes/conversacion`, {
-      id_conversacion: idConversacion,
-      contenido: contenido
-    }, { headers });
-  }
-
-  obtenerContactos(idProyecto: number) {
-    const token = localStorage.getItem('access_token');
-    const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
-    
-    return this.http.get<any[]>(`${this.apiUrl}/proyectos/${idProyecto}/colaboradores`, { headers });
-  }
-
-
   obtenerConversaciones() {
-    const token = localStorage.getItem('token'); 
-    
-    const headers = new HttpHeaders({
-      'Authorization': `Bearer ${token}`
+    return this.http.get<any[]>(`${this.apiUrl}/mensajes/conversaciones`, {
+      headers: this.getHeaders(),
     });
-    
-    return this.http.get<any[]>(`${this.apiUrl}/mensajes/conversaciones`, { headers: headers });
   }
 
-
-  obtenerMensajes() {
-    const token = localStorage.getItem('token'); 
-    
-    const headers = new HttpHeaders({
-      'Authorization': `Bearer ${token}`
-    });
-    
-    return this.http.get<any[]>(`${this.apiUrl}/mensajes/conversaciones`, { headers: headers });
+  obtenerHistorial(idConversacion: string) {
+    return this.http.get<any[]>(
+      `${this.apiUrl}/mensajes/historial/conversaciones/${idConversacion}`,
+      { headers: this.getHeaders() }
+    );
   }
 
-  // En tu ChatService.ts
-  obtenerHistorialCompleto(idConversacion: string) {
-  const token = localStorage.getItem('token');
-  
-  // Es vital agregar el encabezado Authorization
-  const headers = {
-    'Authorization': `Bearer ${token}`
-  };
+  enviarMensajeHTTP(idConversacion: string, contenido: string) {
+    // Apunta al endpoint de envío de tu mensajes.py
+    return this.http.post(
+      `${this.apiUrl}/mensajes/conversacion`,
+      {
+        id_conversacion: idConversacion,
+        contenido: contenido,
+      },
+      { headers: this.getHeaders() }
+    );
+  }
 
-  return this.http.get<any[]>(`${this.apiUrl}/mensajes/historial/conversaciones/${idConversacion}`, { headers });
+  iniciarChatPorCorreo(correo: string) {
+    return this.http.post<any>(
+      `${this.apiUrl}/mensajes/iniciar-correo`,
+      { correo_destino: correo },
+      { headers: this.getHeaders() }
+    );
+  }
+
+  public abrirWidget$ = new Subject<void>();
+
+  solicitarAperturaWidget() {
+    this.abrirWidget$.next();
   }
 }
