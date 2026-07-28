@@ -32,6 +32,14 @@ export class SidebarComponente implements OnInit {
     return 'Usuario';
   }
 
+  get apellidoUsuario(): string {
+    if (this.usuario && this.usuario.apellido) {
+      return this.usuario.apellido;
+    }
+    return '...';
+  }
+
+
   // Metodo para que en el logo lo regrese al inicio 
   irAInicio() {
     this.router.navigate(['/inicio']);

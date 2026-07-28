@@ -19,7 +19,7 @@ def login(login_data: LoginRequest, db: Session = Depends(get_db)):
         {"sub": str(usuario.id_usuario), "email": usuario.correo}, 
         timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     )
-    return {"access_token": token, "token_type": "bearer", "usuario": {"id_usuario": usuario.id_usuario}}
+    return {"access_token": token, "token_type": "bearer", "usuario": {"id_usuario": usuario.id_usuario, "nombre": usuario.nombre, "apellido": usuario.apellido, "correo": usuario.correo}}
 
 @router.post("/CrearUsuarios", response_model=UsuarioResponse, status_code=status.HTTP_201_CREATED)
 def crear_usuario(usuario_in: UsuarioCreate, db: Session = Depends(get_db)):

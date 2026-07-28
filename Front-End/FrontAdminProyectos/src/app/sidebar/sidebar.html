@@ -94,11 +94,9 @@
   <div class="user-profile-section">
     <div class="user-popover" *ngIf="mostrarMenuUsuario">
       <div class="popover-header">
-        <!-- Inicial dinámica en mayúscula -->
         <div class="popover-avatar">{{ inicialUsuario }}</div>
         <div class="popover-info">
-          <!-- Nombre y correo dinámicos -->
-          <span class="popover-name">{{ nombreUsuario }}</span>
+          <span class="popover-name">{{ nombreUsuario }} {{ apellidoUsuario }}</span>
           <span class="popover-email">{{ usuario?.correo || 'correo@ejemplo.com' }}</span>
         </div>
       </div>
@@ -128,7 +126,10 @@
     >
       <!-- Inicial dinámica -->
       <div class="user-avatar-mini">{{ inicialUsuario }}</div>
-      <span class="user-name-truncate">{{ usuario?.correo || 'Usuario' }}</span>
+      
+      <!-- AQUI ESTÁ LA CORRECCIÓN: Ahora mostramos el nombre en lugar del correo -->
+      <span class="user-name-truncate">{{ nombreUsuario }} {{ apellidoUsuario }}</span>
+      
       <svg
         class="popover-chevron"
         width="14"

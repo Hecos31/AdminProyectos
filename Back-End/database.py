@@ -5,8 +5,8 @@ from sqlalchemy.orm import sessionmaker
 from motor.motor_asyncio import AsyncIOMotorClient
 
 # --- POSTGRESQL ---
-password = urllib.parse.quote_plus("1234")
-DATABASE_URL = f"postgresql://postgres:{password}@localhost:5432/AdminProyectosBD"
+password = urllib.parse.quote_plus("s0p0rt3")
+DATABASE_URL = f"postgresql://postgres:{password}@localhost:5432/ProdAdmin"
 
 engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
