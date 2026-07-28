@@ -22,3 +22,288 @@
   }
 }
 
+/* ============================================
+   ESTILOS GLOBALES - CORREGIR SCROLL
+   ============================================ */
+
+/* Reset y configuración base */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  width: 100%;
+  max-width: 100%;
+  min-height: 100vh;
+  overflow-x: hidden; /* ← EVITA SCROLL HORIZONTAL GLOBAL */
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  background: #f7fafc;
+  color: #2d3748;
+}
+
+/* ============================================
+   LAYOUT PRINCIPAL - Sidebar + Contenido
+   ============================================ */
+
+/* Este es el contenedor que envuelve sidebar + contenido */
+.app-layout {
+  display: flex;
+  width: 100%;
+  max-width: 100%;
+  min-height: 100vh;
+  overflow: auto; /* ← CAMBIADO: Scroll SOLO si el contenido lo requiere */
+}
+
+/* Área principal (donde va el contenido) */
+.main-area {
+  flex: 1;
+  min-width: 0; /* ← CLAVE: permite que el contenido se encoja */
+  max-width: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: auto; /* ← CAMBIADO: Scroll SOLO si el contenido lo requiere */
+}
+
+/* Contenedor de páginas */
+.page-container {
+  flex: 1;
+  width: 100%;
+  max-width: 100%;
+  overflow: auto; /* ← CAMBIADO: Scroll SOLO si el contenido lo requiere */
+  padding: 0;
+}
+
+/* ============================================
+   SIDEBAR - Fijo y sin desbordar
+   ============================================ */
+
+.sidebar {
+  width: 240px;
+  min-width: 240px;
+  max-width: 240px;
+  height: 100vh;
+  background: #1a202c;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  position: sticky;
+  top: 0;
+  overflow-y: auto; /* ← Scroll VERTICAL si es necesario */
+  overflow-x: hidden; /* ← SIN scroll horizontal */
+  flex-shrink: 0; /* ← No se encoge */
+  z-index: 100;
+}
+
+/* ============================================
+   NAVBAR DE PROYECTO - Responsive sin desbordar
+   ============================================ */
+
+.top-navbar {
+  width: 100%;
+  max-width: 100%;
+  background: white;
+  border-bottom: 1px solid #e2e8f0;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  overflow: auto; /* ← CAMBIADO: Scroll SOLO si el contenido lo requiere */
+}
+
+.navbar-content {
+  width: 100%;
+  max-width: 100%;
+  padding: 0 1rem;
+  box-sizing: border-box;
+  overflow: auto; /* ← CAMBIADO: Scroll SOLO si el contenido lo requiere */
+}
+
+.nav-tabs {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  flex-wrap: wrap; /* ← Permite que los tabs bajen a nueva línea */
+  padding: 0.5rem 0;
+  width: 100%;
+}
+
+.tab-link {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #4a5568;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: all 0.2s;
+  flex-shrink: 0; /* ← No se encoge */
+}
+
+/* ============================================
+   CONTENIDO DE PÁGINAS - Scroll solo cuando sea necesario
+   ============================================ */
+
+/* Pantalla de inicio */
+.inicio-container,
+.principal-container,
+.k-container,
+.configuracion-container {
+  width: 100%;
+  max-width: 100%;
+  min-height: calc(100vh - 60px);
+  overflow: auto; /* ← CAMBIADO: Scroll SOLO si el contenido lo requiere */
+  padding: 0;
+}
+
+/* Contenido principal de cada página */
+.main-content {
+  width: 100%;
+  max-width: 100%;
+  padding: 1.5rem 2rem;
+  box-sizing: border-box;
+  overflow: auto; /* ← CAMBIADO: Scroll SOLO si el contenido lo requiere */
+}
+
+/* ============================================
+   GRIDS Y TARJETAS - Responsive
+   ============================================ */
+
+.proyectos-grid,
+.detalles-grid {
+  display: grid;
+  width: 100%;
+  gap: 1.25rem;
+}
+
+.proyectos-grid {
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+}
+
+.detalles-grid {
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+}
+
+/* Tarjetas que no se desbordan */
+.proyecto-card,
+.detalle-card,
+.k-card {
+  min-width: 0; /* ← CLAVE */
+  max-width: 100%;
+  overflow: hidden;
+  word-break: break-word;
+  box-sizing: border-box;
+}
+
+/* ============================================
+   TEXTO LARGO - Evita desbordamiento
+   ============================================ */
+
+h1, h2, h3, h4, p, span, .titulo, .descripcion {
+  max-width: 100%;
+  word-break: break-word;
+  overflow-wrap: break-word;
+}
+
+/* ============================================
+   SCROLLBAR PERSONALIZADO (OPCIONAL)
+   ============================================ */
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px; /* ← Altura para scroll horizontal */
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e0;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #a0aec0;
+}
+
+/* ============================================
+   RESPONSIVE - Ajustes para móvil
+   ============================================ */
+
+@media (max-width: 768px) {
+  .sidebar {
+    width: 56px;
+    min-width: 56px;
+    max-width: 56px;
+  }
+  
+  .sidebar .logo-text,
+  .sidebar .nav-text,
+  .sidebar .user-name-truncate,
+  .sidebar .popover-chevron {
+    display: none !important;
+  }
+  
+  .sidebar .sidebar-header {
+    padding: 0.75rem;
+    justify-content: center;
+  }
+  
+  .sidebar .nav-link {
+    padding: 0.5rem;
+    justify-content: center;
+  }
+  
+  .sidebar .user-profile-btn {
+    padding: 0.5rem;
+    justify-content: center;
+  }
+  
+  .sidebar .user-avatar-mini {
+    margin: 0;
+  }
+  
+  .main-content {
+    padding: 0.75rem 1rem;
+  }
+  
+  .nav-tabs {
+    flex-wrap: wrap;
+  }
+  
+  .tab-link {
+    padding: 0.4rem 0.75rem;
+    font-size: 0.75rem;
+  }
+  
+  .proyectos-grid,
+  .detalles-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .main-content {
+    padding: 0.5rem;
+  }
+  
+  .proyecto-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.5rem;
+  }
+  
+  .header-left {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .header-right {
+    justify-content: flex-start;
+  }
+}
