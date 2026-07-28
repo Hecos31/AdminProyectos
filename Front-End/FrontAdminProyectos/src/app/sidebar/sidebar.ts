@@ -32,6 +32,11 @@ export class SidebarComponente implements OnInit {
     return 'Usuario';
   }
 
+  // Metodo para que en el logo lo regrese al inicio 
+  irAInicio() {
+    this.router.navigate(['/inicio']);
+  }
+
   ngOnInit() {
     const usuarioStr = localStorage.getItem('usuario');
     if (usuarioStr) {
