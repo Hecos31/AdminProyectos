@@ -32,6 +32,14 @@ export class SidebarComponente implements OnInit {
     return 'Usuario';
   }
 
+  get apellidoUsuario(): string {
+    if (this.usuario && this.usuario.apellido) {
+      return this.usuario.apellido;
+    }
+    return '...';
+  }
+
+
   ngOnInit() {
     const usuarioStr = localStorage.getItem('usuario');
     if (usuarioStr) {

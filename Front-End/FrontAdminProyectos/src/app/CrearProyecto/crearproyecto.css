@@ -118,16 +118,133 @@ textarea.k-input {
   min-height: 80px;
 }
 
-.select-wrapper {
-  position: relative;
+/* === INVITAR COLABORADORES === */
+.agregar-integrante { 
+  display: flex; 
+  gap: 12px; 
+  margin-bottom: 24px; 
+  align-items: center;
 }
 
-.form-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1.5rem;
+.input-correo {
+  flex: 1; /* Toma todo el espacio disponible sobrante */
 }
 
+.select-rol { 
+  width: 160px; /* Ancho fijo para mantener simetría */
+}
+
+.btn-agregar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.lista-integrantes { 
+  display: flex; 
+  flex-direction: column; 
+}
+
+.integrante-item { 
+  display: flex; 
+  justify-content: space-between; 
+  align-items: center; 
+  padding: 16px 0; 
+  border-bottom: 1px solid #e5e7eb; 
+}
+
+.integrante-item:last-child {
+  border-bottom: none;
+}
+
+.integrante-info {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.avatar-circle { 
+  width: 40px; 
+  height: 40px; 
+  background: #f3f4f6; 
+  border-radius: 50%; 
+  display: flex; 
+  align-items: center; 
+  justify-content: center; 
+  font-weight: 600; 
+  color: #4b5563; 
+  font-size: 1rem;
+}
+
+.detalles {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.nombre { 
+  font-weight: 600; 
+  color: #111827; 
+  font-size: 0.95rem;
+}
+
+.email { 
+  font-size: 0.85rem; 
+  color: #6b7280;
+}
+
+.integrante-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.badge-rol {
+  font-size: 0.85rem;
+  color: #4b5563;
+  background: #f9fafb;
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: 1px solid #e5e7eb;
+}
+
+.btn-icon {
+  background: transparent;
+  border: 1px solid transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-eliminar { color: #9ca3af; }
+.btn-eliminar:hover { background: #fef2f2; color: #ef4444; border-color: #fecaca; }
+
+/* Comportamiento responsivo para pantallas pequeñas */
+@media (max-width: 768px) {
+  .agregar-integrante { 
+    flex-direction: column; 
+    align-items: stretch; 
+  }
+  .select-rol { 
+    width: 100%; 
+  }
+  .integrante-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .integrante-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+}
+
+/* === ALERTAS Y BOTONES === */
 .alert {
   padding: 12px 16px;
   border-radius: 6px;
@@ -139,17 +256,8 @@ textarea.k-input {
   gap: 10px;
 }
 
-.error-message {
-  background: #fef2f2;
-  color: #b91c1c;
-  border: 1px solid #fecaca;
-}
-
-.success-message {
-  background: #f0fdf4;
-  color: #15803d;
-  border: 1px solid #bbf7d0;
-}
+.error-message { background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; }
+.success-message { background: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0; }
 
 .form-actions {
   display: flex;
@@ -173,39 +281,15 @@ textarea.k-input {
   transition: all 0.15s ease;
 }
 
-.btn-primary {
-  background: #111827;
-  color: white;
-}
+.btn-primary { background: #111827; color: white; }
+.btn-primary:hover:not(:disabled) { background: #000000; transform: translateY(-1px); }
+.btn-primary:disabled { background: #9ca3af; cursor: not-allowed; transform: none; }
 
-.btn-primary:hover:not(:disabled) {
-  background: #000000;
-  transform: translateY(-1px);
-}
-
-.btn-primary:disabled {
-  background: #9ca3af;
-  cursor: not-allowed;
-  transform: none;
-}
-
-.btn-ghost {
-  background: transparent;
-  color: #4b5563;
-  border: 1px solid #d1d5db;
-}
-
-.btn-ghost:hover {
-  background: #f3f4f6;
-  color: #111827;
-}
+.btn-ghost { background: transparent; color: #4b5563; border: 1px solid #d1d5db; }
+.btn-ghost:hover { background: #f3f4f6; color: #111827; }
 
 @media (max-width: 768px) {
-  .main-content {
-    padding: 20px;
-  }
-  
-  .form-row {
-    grid-template-columns: 1fr;
-  }
+  .main-content { padding: 20px; }
+  .agregar-integrante { flex-direction: column; align-items: stretch; }
+  .input-group { flex-direction: column; }
 }

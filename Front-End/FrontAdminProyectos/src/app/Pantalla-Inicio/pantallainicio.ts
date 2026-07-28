@@ -35,6 +35,13 @@ export class PantallaInicioComponente implements OnInit {
     }
     return 'Usuario';
   }
+
+  get apellidoUsuario(): string {
+    if (this.usuario && this.usuario.apellido) {
+      return this.usuario.apellido;
+    }
+    return '...';
+  }
   
   // === CICLO DE VIDA ===
   ngOnInit() {
