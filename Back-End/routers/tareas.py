@@ -194,3 +194,5 @@ def eliminar_tarea(
         raise HTTPException(status_code=500, detail="Error interno al eliminar la tarea.")
 
     return {"mensaje": f"La tarea con ID {id_tarea} fue eliminada correctamente."}
+
+

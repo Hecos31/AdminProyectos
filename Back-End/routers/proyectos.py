@@ -376,3 +376,68 @@ def eliminar_proyecto(
 
     return {"mensaje": f"El proyecto {proyecto_del.id_proyecto} y todos sus datos relacionados fueron eliminados correctamente."}
 
+@router.get("/{id_proyecto}/mis-tareas", response_model=List[TareaResponse])
+def obtener_mis_tareas_proyecto(
+    id_proyecto: int,
+    db: Session = Depends(get_db),
+    id_usuario_actual: int = Depends(obtener_usuario_actual)
+):
+    # Verificar que el usuario forme parte del proyecto
+    rol = obtener_rol_en_proyecto(
+        id_proyecto,
+        id_usuario_actual,
+        db
+    )
+
+    if rol is None:
+        raise HTTPException(
+            status_code=403,
+            detail="No tienes acceso a este proyecto."
+        )
+
+    # Obtener solamente las tareas asignadas al usuario autenticado
+    tareas_db = (
+        db.query(TareaDB)
+        .join(
+            TareaAsignadaDB,
+            TareaAsignadaDB.id_tarea == TareaDB.id_tarea
+        )
+        .filter(
+            TareaDB.id_proyecto == id_proyecto,
+            TareaAsignadaDB.id_usuario == id_usuario_actual
+        )
+        .distinct()
+        .all()
+    )
+
+    # Obtener los datos del usuario autenticado una sola vez
+    usuario = (
+        db.query(UsuarioDB)
+        .filter(UsuarioDB.id_usuario == id_usuario_actual)
+        .first()
+    )
+
+    usuario_data = None
+
+    if usuario:
+        usuario_data = {
+            "id_usuario": usuario.id_usuario,
+            "nombre": usuario.nombre,
+            "apellido": usuario.apellido,
+            "correo": usuario.correo
+        }
+
+    resultado = []
+
+    for tarea in tareas_db:
+        # Obtener solamente las columnas reales del modelo,
+        # evitando incluir _sa_instance_state
+        tarea_dict = {
+            columna.name: getattr(tarea, columna.name)
+            for columna in tarea.__table__.columns
+        }
+
+        tarea_dict["usuario_asignado"] = usuario_data
+        resultado.append(tarea_dict)
+
+    return resultado

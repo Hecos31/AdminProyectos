@@ -5,12 +5,11 @@ import { environment } from '../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class ApiServicio {
-  
   // === DEPENDENCIAS ===
   private http = inject(HttpClient);
   private apiUrl = environment.apiUrl;
 
-  // Nota: Ya no inyectamos headers manualmente. El AuthInterceptor (que crearemos) 
+  // Nota: Ya no inyectamos headers manualmente. El AuthInterceptor (que crearemos)
   // interceptará todas estas llamadas y les pondrá el token automáticamente.
 
   // ==========================================
@@ -54,7 +53,11 @@ export class ApiServicio {
     return this.http.get(`${this.apiUrl}/proyectos/${proyectoId}/colaboradores`);
   }
 
-  agregarColaborador(data: { id_proyecto: number; correo_colaborador: string; id_rol: number }): Observable<any> {
+  agregarColaborador(data: {
+    id_proyecto: number;
+    correo_colaborador: string;
+    id_rol: number;
+  }): Observable<any> {
     return this.http.post(`${this.apiUrl}/proyectos/colaboradores`, data);
   }
 
@@ -62,7 +65,11 @@ export class ApiServicio {
     return this.http.delete(`${this.apiUrl}/proyectos/colaboradores`, { body: data });
   }
 
-  cambiarRolColaborador(data: { id_proyecto: number; id_usuario: number; id_rol_nuevo: number }): Observable<any> {
+  cambiarRolColaborador(data: {
+    id_proyecto: number;
+    id_usuario: number;
+    id_rol_nuevo: number;
+  }): Observable<any> {
     return this.http.put(`${this.apiUrl}/proyectos/colaboradores`, data);
   }
 
@@ -91,6 +98,10 @@ export class ApiServicio {
 
   asignarTarea(id_tarea: number, id_usuario_asignado: number | null): Observable<any> {
     return this.http.patch(`${this.apiUrl}/tareas/${id_tarea}/asignar`, { id_usuario_asignado });
+  }
+
+  obtenerMisTareasProyecto(idProyecto: number) {
+    return this.http.get<any[]>(`${this.apiUrl}/proyectos/${idProyecto}/mis-tareas`);
   }
 
   // ==========================================

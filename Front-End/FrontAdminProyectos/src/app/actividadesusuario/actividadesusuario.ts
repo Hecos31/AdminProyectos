@@ -18,7 +18,6 @@ export class Actividadesusuario implements OnInit {
 
   // Variables de estado
   proyectoId!: number;
-  miIdUsuario!: number;
   cargando = true;
   tareaExpandidaId: number | null = null;
 
@@ -29,68 +28,106 @@ export class Actividadesusuario implements OnInit {
 
   ngOnInit() {
     this.proyectoId = Number(this.route.snapshot.params['id']);
-    this.miIdUsuario = Number(localStorage.getItem('id_usuario')) || 1;
     this.cargarMisTareas();
   }
 
-  // Petición HTTP para obtener y clasificar tareas del usuario
+  // Petición HTTP para obtener y clasificar las tareas del usuario autenticado
   cargarMisTareas() {
-    this.apiService.obtenerTareas(this.proyectoId).subscribe({
-      next: (todasLasTareas: Tarea[]) => {
-        const misTareas = todasLasTareas.filter(t => t.usuario_asignado?.id_usuario === this.miIdUsuario);
+    this.cargando = true;
 
-        this.misTareasNuevas = misTareas.filter(t => t.estado === 'Asignada');
-        this.misTareasProgreso = misTareas.filter(t => t.estado === 'En progreso');
-        this.misTareasTerminadas = misTareas.filter(t => t.estado === 'Concluida');
+    this.apiService.obtenerMisTareasProyecto(this.proyectoId).subscribe({
+      next: (misTareas: Tarea[]) => {
+        this.misTareasNuevas = misTareas.filter(
+          t => t.estado === 'Asignada'
+        );
+
+        this.misTareasProgreso = misTareas.filter(
+          t => t.estado === 'En progreso'
+        );
+
+        this.misTareasTerminadas = misTareas.filter(
+          t => t.estado === 'Concluida'
+        );
 
         this.cargando = false;
       },
-      error: () => {
+      error: error => {
+        console.error(
+          'Error al obtener las tareas del usuario:',
+          error
+        );
+
         this.cargando = false;
-      }
+      },
     });
   }
 
   // Control de estado UI para el acordeón
   toggleDetalles(id_tarea: number) {
-    this.tareaExpandidaId = this.tareaExpandidaId === id_tarea ? null : id_tarea;
+    this.tareaExpandidaId =
+      this.tareaExpandidaId === id_tarea
+        ? null
+        : id_tarea;
   }
 
   // Petición HTTP para actualizar estado con actualización optimista de la UI
-  cambiarEstado(tarea: Tarea, nuevoEstado: string, evento: Event) {
+  cambiarEstado(
+    tarea: Tarea,
+    nuevoEstado: string,
+    evento: Event
+  ) {
     evento.stopPropagation();
     this.tareaExpandidaId = null;
 
     // Actualización optimista
     this.moverTareaLocalmente(tarea, nuevoEstado);
 
-    this.apiService.cambiarEstadoTarea(tarea.id_tarea, nuevoEstado).subscribe({
-      next: () => {},
-      error: () => {
-        // Rollback en caso de error
-        this.cargarMisTareas();
-        alert('Error de conexión al actualizar la tarea');
-      }
-    });
+    this.apiService
+      .cambiarEstadoTarea(tarea.id_tarea, nuevoEstado)
+      .subscribe({
+        next: () => {},
+        error: () => {
+          // Rollback en caso de error
+          this.cargarMisTareas();
+          alert('Error de conexión al actualizar la tarea');
+        },
+      });
   }
 
   // Lógica interna para mover tareas en memoria sin recargar peticiones HTTP
-  private moverTareaLocalmente(tarea: Tarea, nuevoEstado: string) {
+  private moverTareaLocalmente(
+    tarea: Tarea,
+    nuevoEstado: string
+  ) {
     // Eliminar de la lista actual
-    this.misTareasNuevas = this.misTareasNuevas.filter(t => t.id_tarea !== tarea.id_tarea);
-    this.misTareasProgreso = this.misTareasProgreso.filter(t => t.id_tarea !== tarea.id_tarea);
-    this.misTareasTerminadas = this.misTareasTerminadas.filter(t => t.id_tarea !== tarea.id_tarea);
+    this.misTareasNuevas = this.misTareasNuevas.filter(
+      t => t.id_tarea !== tarea.id_tarea
+    );
+
+    this.misTareasProgreso = this.misTareasProgreso.filter(
+      t => t.id_tarea !== tarea.id_tarea
+    );
+
+    this.misTareasTerminadas =
+      this.misTareasTerminadas.filter(
+        t => t.id_tarea !== tarea.id_tarea
+      );
 
     // Actualizar propiedad y agregar a la nueva lista
-    const tareaActualizada = { ...tarea, estado: nuevoEstado };
-    
+    const tareaActualizada = {
+      ...tarea,
+      estado: nuevoEstado,
+    };
+
     switch (nuevoEstado) {
       case 'Asignada':
         this.misTareasNuevas.unshift(tareaActualizada);
         break;
+
       case 'En progreso':
         this.misTareasProgreso.unshift(tareaActualizada);
         break;
+
       case 'Concluida':
         this.misTareasTerminadas.unshift(tareaActualizada);
         break;
