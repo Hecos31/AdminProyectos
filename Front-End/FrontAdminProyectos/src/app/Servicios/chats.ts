@@ -8,8 +8,8 @@ import { Subject } from 'rxjs';
 export class ChatService {
   private http = inject(HttpClient);
 
-  private apiUrl = 'http://localhost:8000';
-  private wsUrl = 'ws://localhost:8000';
+  private apiUrl = 'http://192.168.50.134:8000';
+  private wsUrl = 'ws://192.168.50.134:8000';
   private socket!: WebSocket;
 
   public mensajesNuevos$ = new Subject<any>();

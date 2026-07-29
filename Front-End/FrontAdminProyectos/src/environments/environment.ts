@@ -1,6 +1,6 @@
 // src/environments/environment.ts
 export const environment = {
   production: true,
-  apiUrl: 'https://paying-anagram-bauble.ngrok-free.dev',
-  wsUrl: 'wss://paying-anagram-bauble.ngrok-free.dev'
+  apiUrl: 'http://192.168.50.134:8000',
+  wsUrl: 'ws://192.168.50.134:8000'
 };

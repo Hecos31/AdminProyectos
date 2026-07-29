@@ -9,9 +9,6 @@ export class ApiServicio {
   private http = inject(HttpClient);
   private apiUrl = environment.apiUrl;
 
-  // Nota: Ya no inyectamos headers manualmente. El AuthInterceptor (que crearemos)
-  // interceptará todas estas llamadas y les pondrá el token automáticamente.
-
   // ==========================================
   //         ZONA PÚBLICA (AUTENTICACIÓN)
   // ==========================================

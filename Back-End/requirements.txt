@@ -1,0 +1,19 @@
+# Servidor y Framework Web
+fastapi
+uvicorn[standard]
+
+# Base de Datos SQL y MongoDB
+sqlalchemy
+motor
+pymongo
+
+# Autenticación y Seguridad
+python-jose[cryptography]
+bcrypt
+
+# Utilidades de Datos y Entorno
+pydantic[email]
+python-dotenv
+
+# IA de Google
+google-genai
