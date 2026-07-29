@@ -1,5 +1,5 @@
 <div class="inicio-container">
-  <main class="main-content">
+  <main class="inicio-main">
     <!-- ENCABEZADO -->
     <header class="header">
       <div class="header-title">
@@ -39,7 +39,13 @@
     <!-- GRID DE PROYECTOS -->
     <div *ngIf="!cargando" class="proyectos-grid">
       <!-- Tarjeta Crear Nuevo -->
-      <div class="proyecto-card nuevo" (click)="crearProyecto()">
+      <div
+        class="proyecto-card nuevo"
+        (click)="crearProyecto()"
+        role="button"
+        tabindex="0"
+        (keydown.enter)="crearProyecto()"
+      >
         <div class="proyecto-icono-nuevo">
           <svg
             width="32"
@@ -62,6 +68,9 @@
         *ngFor="let proyecto of proyectos"
         class="proyecto-card"
         (click)="irAProyecto(proyecto.id_proyecto)"
+        role="button"
+        tabindex="0"
+        (keydown.enter)="irAProyecto(proyecto.id_proyecto)"
       >
         <div class="proyecto-info">
           <h3>{{ proyecto.nombre }}</h3>

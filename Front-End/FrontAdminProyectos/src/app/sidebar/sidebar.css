@@ -1,17 +1,15 @@
+/* === sidebar.css === */
 /* === ESTRUCTURA PRINCIPAL === */
 .sidebar {
-  width: 260px;
-  height: 100vh;
+  width: 100%;
+  height: 100%;
   background: #ffffff;
   color: #4b5563;
   display: flex;
   flex-direction: column;
-  position: fixed;
-  left: 0;
-  top: 0;
-  z-index: 1000;
   border-right: 1px solid #e5e7eb;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  overflow: hidden;
 }
 
 /* === CABECERA === */
@@ -25,12 +23,14 @@
 .logo-mark {
   width: 32px;
   height: 32px;
-  background-color: #111827;
+  background: linear-gradient(135deg, #1e293b 0%, #111827 100%);
   color: white;
   border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
+  box-shadow: 0 2px 4px rgba(17, 24, 39, 0.15);
+  flex-shrink: 0;
 }
 
 .logo-text {
@@ -38,14 +38,16 @@
   font-weight: 700;
   color: #111827;
   letter-spacing: -0.02em;
+  white-space: nowrap;
 }
 
 /* === NAVEGACIÓN === */
 .sidebar-nav {
   flex: 1;
-  padding: 16px;
+  padding: 16px 16px 16px 20px;
   overflow-y: auto;
-  scrollbar-width: none; 
+  overflow-x: hidden;
+  scrollbar-width: none;
 }
 .sidebar-nav::-webkit-scrollbar { display: none; }
 
@@ -56,6 +58,10 @@
   display: flex;
   flex-direction: column;
   gap: 4px;
+}
+
+.nav-item {
+  position: relative;
 }
 
 .nav-item.separator {
@@ -84,7 +90,8 @@
 
 .nav-icon {
   color: #9ca3af;
-  transition: color 0.15s ease;
+  transition: color 0.15s ease, transform 0.15s ease;
+  flex-shrink: 0;
 }
 
 .nav-link:hover {
@@ -94,6 +101,12 @@
 
 .nav-link:hover .nav-icon {
   color: #4b5563;
+  transform: scale(1.05);
+}
+
+.nav-link:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
 }
 
 /* Estado Activo */
@@ -101,6 +114,19 @@
   background: #eff6ff;
   color: #1d4ed8;
   font-weight: 600;
+  position: relative;
+}
+
+.nav-link.active::before {
+  content: '';
+  position: absolute;
+  left: -16px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 20px;
+  background: #2563eb;
+  border-radius: 0 3px 3px 0;
 }
 
 .nav-link.active .nav-icon {
@@ -132,6 +158,7 @@
   position: relative;
   padding: 16px;
   border-top: 1px solid #e5e7eb;
+  flex-shrink: 0;
 }
 
 .user-profile-btn {
@@ -150,6 +177,11 @@
 
 .user-profile-btn:hover, .user-profile-btn.active {
   background: #f3f4f6;
+}
+
+.user-profile-btn:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
 }
 
 .user-avatar-mini {
@@ -179,6 +211,7 @@
 .popover-chevron {
   color: #9ca3af;
   transition: transform 0.2s ease;
+  flex-shrink: 0;
 }
 
 .user-profile-btn.active .popover-chevron {
@@ -225,12 +258,14 @@
   justify-content: center;
   font-weight: 600;
   font-size: 1.25rem;
+  flex-shrink: 0;
 }
 
 .popover-info {
   display: flex;
   flex-direction: column;
   gap: 2px;
+  min-width: 0;
 }
 
 .popover-name {
@@ -266,6 +301,11 @@
   transition: all 0.15s ease;
 }
 
+.popover-btn:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
+}
+
 .popover-btn.logout {
   color: #b91c1c;
 }
@@ -284,6 +324,43 @@
   to { opacity: 1; }
 }
 
+/* ============================================
+   RESPONSIVE - Colapso en móvil
+   ============================================ */
+@media (max-width: 768px) {
+  .sidebar-header {
+    justify-content: center;
+    padding: 16px 8px;
+  }
 
+  .logo-text,
+  .nav-text,
+  .user-name-truncate,
+  .popover-chevron {
+    display: none;
+  }
 
+  .sidebar-nav {
+    padding: 16px 8px;
+  }
 
+  .nav-link.active::before {
+    left: -8px;
+  }
+
+  .nav-link,
+  .user-profile-btn {
+    justify-content: center;
+    padding: 10px;
+  }
+
+  .user-avatar-mini {
+    margin: 0;
+  }
+
+  .user-popover {
+    left: 8px;
+    width: calc(100vw - 32px);
+    max-width: 260px;
+  }
+}

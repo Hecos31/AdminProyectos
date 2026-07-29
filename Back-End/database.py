@@ -5,7 +5,7 @@ from sqlalchemy.orm import sessionmaker
 from motor.motor_asyncio import AsyncIOMotorClient
 
 # --- POSTGRESQL ---
-password = urllib.parse.quote_plus("s0p0rt3")
+password = urllib.parse.quote_plus("H3cos31!")
 DATABASE_URL = f"postgresql://postgres:{password}@localhost:5432/ProdAdmin"
 
 engine = create_engine(DATABASE_URL)
@@ -20,6 +20,7 @@ def get_db():
         db.close()
 
 # --- MONGODB ---
-MONGO_URL = "mongodb://bran:bran123456@localhost:27017/?authSource=admin"
+MONGO_URL = "mongodb://localhost:27017"
 client = AsyncIOMotorClient(MONGO_URL)
 db_mongo = client.chat_db
+

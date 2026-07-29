@@ -1,14 +1,7 @@
 <div class="sidebar">
-  <div class="sidebar-header" (click)="irAInicio()" style="cursor: pointer;" >   <!-- === SECCIÓN PARA QUE DE CLIC Y LO LLEVE AL INICIO === -->
+  <div class="sidebar-header" (click)="irAInicio()" style="cursor: pointer;">
     <div class="logo-mark">
-      <svg
-        width="20"
-        height="20"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="2.5"
-      >
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
         <circle cx="12" cy="12" r="10"></circle>
         <circle cx="12" cy="12" r="4"></circle>
         <line x1="21.17" y1="8" x2="12" y2="8"></line>
@@ -28,16 +21,9 @@
             class="nav-link"
             routerLinkActive="active"
             [routerLinkActiveOptions]="{ exact: true }"
+            title="Inicio"
           >
-            <svg
-              class="nav-icon"
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-            >
+            <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
               <polyline points="9 22 9 12 15 12 15 22"></polyline>
             </svg>
@@ -49,16 +35,9 @@
             (click)="abrirChat()"
             class="nav-link"
             style="width: 100%; border: none; background: transparent; text-align: left"
+            title="Chats"
           >
-            <svg
-              class="nav-icon"
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-            >
+            <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
             </svg>
             <span class="nav-text">Chats</span>
@@ -70,16 +49,9 @@
             routerLink="/crear-proyecto"
             class="nav-link nav-btn-primary"
             routerLinkActive="active"
+            title="Nuevo Proyecto"
           >
-            <svg
-              class="nav-icon"
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-            >
+            <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <line x1="12" y1="5" x2="12" y2="19"></line>
               <line x1="5" y1="12" x2="19" y2="12"></line>
             </svg>
@@ -90,7 +62,6 @@
     </div>
   </nav>
 
-  <!-- === SECCIÓN DE PERFIL CORREGIDA === -->
   <div class="user-profile-section">
     <div class="user-popover" *ngIf="mostrarMenuUsuario">
       <div class="popover-header">
@@ -102,14 +73,7 @@
       </div>
       <div class="popover-actions">
         <button (click)="cerrarSesion()" class="popover-btn logout">
-          <svg
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-          >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
             <polyline points="16 17 21 12 16 7"></polyline>
             <line x1="21" y1="12" x2="9" y2="12"></line>
@@ -120,27 +84,16 @@
     </div>
 
     <button
-      class="user-profile-btn"
-      (click)="toggleMenuUsuario()"
-      [class.active]="mostrarMenuUsuario"
-    >
-      <!-- Inicial dinámica -->
-      <div class="user-avatar-mini">{{ inicialUsuario }}</div>
-      
-      <!-- AQUI ESTÁ LA CORRECCIÓN: Ahora mostramos el nombre en lugar del correo -->
-      <span class="user-name-truncate">{{ nombreUsuario }} {{ apellidoUsuario }}</span>
-      
-      <svg
-        class="popover-chevron"
-        width="14"
-        height="14"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="2"
-      >
-        <polyline points="18 15 12 9 6 15"></polyline>
-      </svg>
-    </button>
+  class="user-profile-btn"
+  (click)="toggleMenuUsuario()"
+  [class.active]="mostrarMenuUsuario"
+  [title]="nombreUsuario + ' ' + apellidoUsuario"
+>
+  <div class="user-avatar-mini">{{ inicialUsuario }}</div>
+  <span class="user-name-truncate">{{ nombreUsuario }} {{ apellidoUsuario }}</span>
+  <svg class="popover-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+    <polyline points="18 15 12 9 6 15"></polyline>
+  </svg>
+</button>
   </div>
 </div>

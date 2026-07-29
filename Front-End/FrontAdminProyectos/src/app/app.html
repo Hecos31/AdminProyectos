@@ -1,10 +1,9 @@
-<div class="app-container">
-  <!-- Sidebar GLOBAL - siempre visible después del login -->
+<div class="app-container" [class.with-sidebar]="showSidebar">
   <app-sidebar *ngIf="showSidebar"></app-sidebar>
-  
-  <main class="main-content" [class.with-sidebar]="showSidebar">
+
+  <main class="app-main">
     <app-navbar-proyecto></app-navbar-proyecto>
-    <div class="page-content">
+    <div class="app-page">
       <router-outlet></router-outlet>
     </div>
   </main>
