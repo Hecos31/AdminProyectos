@@ -10,7 +10,12 @@ app = FastAPI(title="API AdminProyectos")
 # Configuración de CORS para permitir solicitudes desde el frontend Angular 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:4200"],
+    # Agrega la IP de tu red local a la lista de permitidos
+    allow_origins=[
+        "http://localhost:4200",
+        "http://192.168.50.134:4200" 
+        "http://192.168.100.70:4200"
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

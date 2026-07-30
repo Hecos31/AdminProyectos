@@ -6,7 +6,7 @@ from motor.motor_asyncio import AsyncIOMotorClient
 
 # --- POSTGRESQL ---
 password = urllib.parse.quote_plus("H3cos31!")
-DATABASE_URL = f"postgresql://postgres:{password}@localhost:5432/ProdAdmin"
+DATABASE_URL = f"postgresql://postgres:{password}@host.docker.internal:5432/ProdAdmin"
 
 engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
@@ -20,7 +20,7 @@ def get_db():
         db.close()
 
 # --- MONGODB ---
-MONGO_URL = "mongodb://localhost:27017"
+MONGO_URL = "mongodb://host.docker.internal:27017"
 client = AsyncIOMotorClient(MONGO_URL)
 db_mongo = client.chat_db
 

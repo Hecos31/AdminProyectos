@@ -17,3 +17,5 @@ python-dotenv
 
 # IA de Google
 google-genai
+
+psycopg2-binary

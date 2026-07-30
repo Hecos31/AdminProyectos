@@ -1,10 +1,8 @@
-# ETAPA 1: Construcción
+# ETAPA 1: Construcción (Usando Node 22)
 FROM node:22-alpine as build
 WORKDIR /app
 
-# 1. Evitar que Angular haga preguntas interactivas en la terminal
 ENV NG_CLI_ANALYTICS=false
-# 2. Darle hasta 4GB de memoria a Node para evitar que se asfixie al compilar
 ENV NODE_OPTIONS="--max-old-space-size=4096"
 
 COPY package*.json ./
@@ -12,12 +10,16 @@ RUN npm install
 
 COPY . .
 
-# 3. Compilar en silencio (sin barra de progreso que a veces rompe los logs de Alpine)
 RUN npx ng build --configuration production --progress=false
 
 # ETAPA 2: Servidor
 FROM nginx:alpine
+
+# 1. Copiamos los archivos de Angular
 COPY --from=build /app/dist/FrontAdminProyectos/browser /usr/share/nginx/html
+
+# 2. Copiamos tu nueva configuración de Nginx para arreglar el error 404
+COPY nginx.conf /etc/nginx/conf.d/default.conf
 
 EXPOSE 80
 CMD ["nginx", "-g", "daemon off;"]
