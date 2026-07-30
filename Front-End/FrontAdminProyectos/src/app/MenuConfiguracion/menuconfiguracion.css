@@ -1,132 +1,584 @@
-.menu-configuracion-container {
-  display: flex;
-  height: 88vh;
-  max-height: 88vh;
-  background-color: #fafafa;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+/* =========================================================
+   HOST
+========================================================= */
+
+:host {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  min-height: 100%;
+}
+
+
+/* =========================================================
+   PÁGINA
+========================================================= */
+
+.settings-page {
+  width: 100%;
+  min-width: 0;
+  min-height: 100%;
+
+  color: var(--app-text);
+  background: var(--app-background);
+
+  transition:
+    color var(--app-transition),
+    background-color var(--app-transition);
 }
 
 .main-content {
-  flex: 1;
-  padding: 40px;
+  width: 100%;
   max-width: 1100px;
-  margin: 0 auto;
+  min-width: 0;
 }
 
-.header-simple {
-  margin-bottom: 32px;
+
+/* =========================================================
+   CABECERA PRINCIPAL
+========================================================= */
+
+.settings-header {
+  display: flex;
+  width: 100%;
+  min-width: 0;
+
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+
+  padding: 24px;
+  margin-bottom: 28px;
+
+  color: var(--app-text);
+  background: var(--app-surface);
+
+  border: 1px solid var(--app-border);
+  border-radius: var(--app-radius);
+
+  box-shadow: var(--app-shadow);
+
+  transition:
+    color var(--app-transition),
+    background-color var(--app-transition),
+    border-color var(--app-transition);
 }
 
-.header-simple h2 {
-  margin: 0 0 6px 0;
-  font-size: 1.75rem;
-  color: #111827;
+.header-main {
+  display: flex;
+  min-width: 0;
+  flex: 1 1 auto;
+
+  align-items: center;
+  gap: 14px;
+}
+
+.header-icon {
+  display: inline-flex;
+  width: 48px;
+  height: 48px;
+
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 48px;
+
+  color: var(--app-primary);
+  background: var(--app-primary-soft);
+
+  border: 1px solid var(--app-primary-border);
+  border-radius: 12px;
+}
+
+.header-copy {
+  min-width: 0;
+}
+
+.header-eyebrow,
+.section-eyebrow {
+  display: block;
+  margin-bottom: 4px;
+
+  color: var(--app-primary);
+
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.header-copy h1 {
+  margin: 0;
+
+  color: var(--app-text);
+
+  font-size: 1.6rem;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  line-height: 1.25;
+
+  overflow-wrap: anywhere;
+}
+
+.proyecto-nombre {
+  max-width: 650px;
+  margin: 6px 0 0;
+
+  color: var(--app-text-muted);
+
+  font-size: 0.86rem;
+  font-weight: 400;
+  line-height: 1.5;
+
+  overflow-wrap: anywhere;
+}
+
+
+/* =========================================================
+   SECCIÓN DE OPCIONES
+========================================================= */
+
+.settings-section {
+  width: 100%;
+  min-width: 0;
+}
+
+.section-header {
+  width: 100%;
+  min-width: 0;
+  margin-bottom: 16px;
+}
+
+.section-header h2 {
+  margin: 0;
+
+  color: var(--app-text);
+
+  font-size: 1.15rem;
   font-weight: 700;
   letter-spacing: -0.02em;
 }
 
-.proyecto-nombre {
-  margin: 0;
-  color: #6b7280;
-  font-size: 0.95rem;
-  font-weight: 500;
-}
+.section-header p {
+  max-width: 650px;
+  margin: 5px 0 0;
 
-.opciones-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 24px;
-}
+  color: var(--app-text-muted);
 
-.opcion-card {
-  background: #ffffff;
-  border: 1px solid #e5e7eb;
-  border-radius: 12px;
-  padding: 24px;
-  display: flex;
-  align-items: flex-start;
-  gap: 20px;
-  cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-}
-
-.opcion-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-  border-color: #3b82f6;
-}
-
-.opcion-icono-wrapper {
-  width: 48px;
-  height: 48px;
-  background-color: #f3f4f6;
-  border-radius: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 1px solid #e5e7eb;
-  flex-shrink: 0;
-  color: #4b5563;
-  transition: all 0.2s ease;
-}
-
-.opcion-card:hover .opcion-icono-wrapper {
-  background-color: #eff6ff;
-  color: #2563eb;
-  border-color: #bfdbfe;
-}
-
-.opcion-info {
-  flex: 1;
-}
-
-.opcion-info h3 {
-  margin: 0 0 6px 0;
-  font-size: 1.05rem;
-  color: #111827;
-  font-weight: 600;
-}
-
-.opcion-info p {
-  margin: 0;
-  color: #6b7280;
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   line-height: 1.5;
 }
 
-/* === ESTADOS PELIGROSOS (ELIMINAR) === */
+
+/* =========================================================
+   GRID
+========================================================= */
+
+.opciones-grid {
+  display: grid;
+  width: 100%;
+  min-width: 0;
+
+  grid-template-columns:
+    repeat(
+      auto-fit,
+      minmax(
+        min(100%, 320px),
+        1fr
+      )
+    );
+
+  gap: 16px;
+}
+
+
+/* =========================================================
+   TARJETAS DE OPCIÓN
+========================================================= */
+
+.opcion-card {
+  display: grid;
+  width: 100%;
+  min-width: 0;
+  min-height: 150px;
+
+  grid-template-columns:
+    auto
+    minmax(0, 1fr)
+    auto;
+
+  align-items: center;
+  gap: 16px;
+
+  padding: 20px;
+
+  color: var(--app-text);
+  text-align: left;
+
+  background: var(--app-surface);
+
+  border: 1px solid var(--app-border);
+  border-radius: var(--app-radius);
+
+  box-shadow: var(--app-shadow-small);
+
+  cursor: pointer;
+
+  transition:
+    color var(--app-transition-fast),
+    background-color var(--app-transition-fast),
+    border-color var(--app-transition-fast),
+    box-shadow var(--app-transition-fast);
+}
+
+.opcion-card:hover {
+  background: var(--app-surface-hover);
+  border-color: var(--app-primary-border);
+  box-shadow: var(--app-shadow);
+}
+
+.opcion-card:focus-visible {
+  outline: 2px solid var(--app-primary);
+  outline-offset: 3px;
+}
+
+
+/* =========================================================
+   ICONO DE OPCIÓN
+========================================================= */
+
+.opcion-icono-wrapper {
+  display: inline-flex;
+  width: 48px;
+  height: 48px;
+
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 48px;
+
+  color: var(--app-primary);
+  background: var(--app-primary-soft);
+
+  border: 1px solid var(--app-primary-border);
+  border-radius: 11px;
+
+  transition:
+    color var(--app-transition-fast),
+    background-color var(--app-transition-fast),
+    border-color var(--app-transition-fast);
+}
+
+.opcion-card:hover .opcion-icono-wrapper {
+  background: var(--app-surface);
+  border-color: var(--app-primary);
+}
+
+
+/* =========================================================
+   INFORMACIÓN
+========================================================= */
+
+.opcion-info {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+}
+
+.opcion-label {
+  margin-bottom: 4px;
+
+  color: var(--app-primary);
+
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.065em;
+  text-transform: uppercase;
+}
+
+.opcion-title {
+  min-width: 0;
+
+  color: var(--app-text);
+
+  font-size: 1rem;
+  font-weight: 650;
+  line-height: 1.4;
+
+  overflow-wrap: anywhere;
+}
+
+.opcion-description {
+  min-width: 0;
+  margin-top: 5px;
+
+  color: var(--app-text-muted);
+
+  font-size: 0.78rem;
+  line-height: 1.5;
+
+  overflow-wrap: anywhere;
+}
+
+.opcion-action {
+  display: inline-flex;
+  width: 34px;
+  height: 34px;
+
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 34px;
+
+  color: var(--app-text-subtle);
+  background: var(--app-surface-secondary);
+
+  border: 1px solid var(--app-border);
+  border-radius: 9px;
+
+  transition:
+    color var(--app-transition-fast),
+    background-color var(--app-transition-fast),
+    border-color var(--app-transition-fast);
+}
+
+.opcion-card:hover .opcion-action {
+  color: var(--app-primary);
+  background: var(--app-primary-soft);
+  border-color: var(--app-primary-border);
+}
+
+
+/* =========================================================
+   OPCIÓN PELIGROSA
+========================================================= */
+
 .opcion-card.peligroso {
-  border-color: #fee2e2;
+  border-color: var(--app-danger);
+  border-color: rgba(220, 38, 38, 0.35);
 }
 
 .opcion-card.peligroso .opcion-icono-wrapper {
-  background-color: #fef2f2;
-  border-color: #fecaca;
-  color: #ef4444;
+  color: var(--app-danger);
+  background: var(--app-danger-soft);
+
+  border-color: var(--app-danger);
+  border-color: rgba(220, 38, 38, 0.35);
+}
+
+.opcion-card.peligroso .opcion-title {
+  color: var(--app-danger);
+}
+
+.danger-label {
+  color: var(--app-danger);
+}
+
+.opcion-card.peligroso .opcion-action {
+  color: var(--app-danger);
+  background: var(--app-danger-soft);
+
+  border-color: var(--app-danger);
+  border-color: rgba(220, 38, 38, 0.25);
 }
 
 .opcion-card.peligroso:hover {
-  border-color: #ef4444;
-  box-shadow: 0 10px 15px -3px rgba(239, 68, 68, 0.15);
+  background: var(--app-danger-soft);
+
+  border-color: var(--app-danger);
+
+  box-shadow:
+    0 4px 14px rgba(220, 38, 38, 0.12);
 }
 
 .opcion-card.peligroso:hover .opcion-icono-wrapper {
-  background-color: #ef4444;
-  color: #ffffff;
-  border-color: #ef4444;
+  color: var(--app-text-inverse);
+  background: var(--app-danger);
+  border-color: var(--app-danger);
 }
 
-.opcion-card.peligroso .opcion-info h3 {
-  color: #b91c1c;
+.opcion-card.peligroso:hover .opcion-action {
+  color: var(--app-text-inverse);
+  background: var(--app-danger);
+  border-color: var(--app-danger);
 }
+
+
+/* =========================================================
+   AVISO DE SEGURIDAD
+========================================================= */
+
+.security-notice {
+  display: flex;
+  width: 100%;
+  min-width: 0;
+
+  align-items: flex-start;
+  gap: 12px;
+
+  padding: 16px;
+  margin-top: 24px;
+
+  color: var(--app-text-secondary);
+  background: var(--app-surface-secondary);
+
+  border: 1px solid var(--app-border);
+  border-radius: var(--app-radius-small);
+}
+
+.security-icon {
+  display: inline-flex;
+  width: 38px;
+  height: 38px;
+
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 38px;
+
+  color: var(--app-warning);
+  background: var(--app-warning-soft);
+
+  border-radius: 9px;
+}
+
+.security-notice > div {
+  min-width: 0;
+}
+
+.security-notice strong {
+  display: block;
+
+  color: var(--app-text);
+
+  font-size: 0.82rem;
+  font-weight: 650;
+}
+
+.security-notice p {
+  margin: 4px 0 0;
+
+  color: var(--app-text-muted);
+
+  font-size: 0.74rem;
+  line-height: 1.5;
+
+  overflow-wrap: anywhere;
+}
+
+
+/* =========================================================
+   TABLETS
+========================================================= */
 
 @media (max-width: 768px) {
-  .main-content {
+  .settings-header {
     padding: 20px;
   }
 
   .opciones-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+
+/* =========================================================
+   MÓVILES
+========================================================= */
+
+@media (max-width: 520px) {
+  .settings-header {
+    padding: 18px 16px;
+  }
+
+  .header-main {
+    align-items: flex-start;
+    gap: 11px;
+  }
+
+  .header-icon {
+    width: 42px;
+    height: 42px;
+    flex-basis: 42px;
+  }
+
+  .header-copy h1 {
+    font-size: 1.28rem;
+  }
+
+  .proyecto-nombre {
+    font-size: 0.8rem;
+  }
+
+  .opcion-card {
+    min-height: 0;
+
+    grid-template-columns:
+      auto
+      minmax(0, 1fr);
+
+    align-items: flex-start;
+    gap: 13px;
+
+    padding: 17px 15px;
+  }
+
+  .opcion-icono-wrapper {
+    width: 42px;
+    height: 42px;
+    flex-basis: 42px;
+  }
+
+  .opcion-action {
+    grid-column: 2;
+    justify-self: flex-end;
+
+    width: 30px;
+    height: 30px;
+    margin-top: 4px;
+  }
+
+  .security-notice {
+    padding: 14px;
+  }
+}
+
+
+/* =========================================================
+   PANTALLAS MUY PEQUEÑAS
+========================================================= */
+
+@media (max-width: 360px) {
+  .header-icon {
+    display: none;
+  }
+
+  .opcion-card {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .opcion-icono-wrapper {
+    width: 40px;
+    height: 40px;
+  }
+
+  .opcion-action {
+    grid-column: 1;
+  }
+
+  .security-notice {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+
+
+/* =========================================================
+   ACCESIBILIDAD
+========================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+  .settings-page,
+  .settings-header,
+  .opcion-card,
+  .opcion-icono-wrapper,
+  .opcion-action {
+    transition: none;
   }
 }

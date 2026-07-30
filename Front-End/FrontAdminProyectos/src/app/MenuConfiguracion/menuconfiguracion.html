@@ -1,56 +1,257 @@
-<div class="menu-configuracion-container">
-  <main class="main-content">
-    <header class="header-simple">
-      <h2>Configuración del Proyecto</h2>
-      <p class="proyecto-nombre">{{ proyectoNombre || 'Gestiona las opciones de tu entorno' }}</p>
-    </header>
+<div class="settings-page page-shell">
+  <main class="main-content page-content">
 
-    <div class="opciones-grid">
-      <div
-        *ngFor="let opcion of opciones"
-        class="opcion-card"
-        [class.peligroso]="opcion.peligroso"
-        (click)="irAOpcion(opcion)"
-      >
-        <div class="opcion-icono-wrapper">
-          <!-- Icono de Integrantes -->
+    <!-- =====================================================
+         CABECERA
+    ====================================================== -->
+    <header class="settings-header">
+
+      <div class="header-main">
+
+        <span class="header-icon" aria-hidden="true">
           <svg
-            *ngIf="opcion.id === 'integrantes'"
-            width="22"
-            height="22"
+            width="23"
+            height="23"
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
             stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
           >
-            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-            <circle cx="9" cy="7" r="4"></circle>
-            <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-          </svg>
+            <circle cx="12" cy="12" r="3"></circle>
 
-          <!-- Icono de Eliminar (Peligro) -->
-          <svg
-            *ngIf="opcion.id === 'eliminar'"
-            width="22"
-            height="22"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-          >
-            <polyline points="3 6 5 6 21 6"></polyline>
             <path
-              d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"
+              d="M19.4 15a1.65 1.65 0 0 0
+                 .33 1.82l.06.06a2 2 0 0 1
+                 0 2.83 2 2 0 0 1-2.83 0
+                 l-.06-.06a1.65 1.65 0 0 0
+                 -1.82-.33 1.65 1.65 0 0 0
+                 -1 1.51V21a2 2 0 0 1-2 2
+                 2 2 0 0 1-2-2v-.09A1.65
+                 1.65 0 0 0 9 19.4a1.65
+                 1.65 0 0 0-1.82.33l-.06.06
+                 a2 2 0 0 1-2.83 0 2 2 0 0 1
+                 0-2.83l.06-.06a1.65 1.65
+                 0 0 0 .33-1.82 1.65 1.65
+                 0 0 0-1.51-1H3a2 2 0 0 1
+                 -2-2 2 2 0 0 1 2-2h.09A1.65
+                 1.65 0 0 0 4.6 9a1.65
+                 1.65 0 0 0-.33-1.82l-.06-.06
+                 a2 2 0 0 1 0-2.83 2 2 0 0 1
+                 2.83 0l.06.06a1.65 1.65
+                 0 0 0 1.82.33H9a1.65 1.65
+                 0 0 0 1-1.51V3a2 2 0 0 1
+                 2-2 2 2 0 0 1 2 2v.09a1.65
+                 1.65 0 0 0 1 1.51 1.65
+                 1.65 0 0 0 1.82-.33l.06-.06
+                 a2 2 0 0 1 2.83 0 2 2 0 0 1
+                 0 2.83l-.06.06a1.65 1.65
+                 0 0 0-.33 1.82V9a1.65
+                 1.65 0 0 0 1.51 1H21a2 2
+                 0 0 1 2 2 2 2 0 0 1-2 2
+                 h-.09a1.65 1.65 0 0 0-1.51 1z"
             ></path>
           </svg>
+        </span>
+
+
+        <div class="header-copy">
+          <span class="header-eyebrow">
+            Administración del proyecto
+          </span>
+
+          <h1>Configuración</h1>
+
+          <p class="proyecto-nombre">
+            {{
+              proyectoNombre ||
+              'Gestiona las opciones y permisos de tu entorno'
+            }}
+          </p>
         </div>
 
-        <div class="opcion-info">
-          <h3>{{ opcion.nombre }}</h3>
-          <p>{{ opcion.descripcion }}</p>
+      </div>
+
+    </header>
+
+
+    <!-- =====================================================
+         OPCIONES GENERALES
+    ====================================================== -->
+    <section class="settings-section">
+
+      <div class="section-header">
+        <div>
+          <span class="section-eyebrow">
+            Opciones disponibles
+          </span>
+
+          <h2>Administración general</h2>
+
+          <p>
+            Selecciona una opción para modificar la configuración del
+            proyecto.
+          </p>
         </div>
       </div>
-    </div>
+
+
+      <div class="opciones-grid">
+
+        <button
+          type="button"
+          *ngFor="let opcion of opciones"
+          class="opcion-card"
+          [class.peligroso]="opcion.peligroso"
+          (click)="irAOpcion(opcion)"
+          [attr.aria-label]="
+            opcion.nombre + '. ' + opcion.descripcion
+          "
+        >
+
+          <!-- ICONO -->
+          <span class="opcion-icono-wrapper" aria-hidden="true">
+
+            <!-- INTEGRANTES -->
+            <svg
+              *ngIf="opcion.id === 'integrantes'"
+              width="22"
+              height="22"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path
+                d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"
+              ></path>
+
+              <circle cx="9" cy="7" r="4"></circle>
+
+              <path
+                d="M23 21v-2a4 4 0 0 0-3-3.87"
+              ></path>
+
+              <path
+                d="M16 3.13a4 4 0 0 1 0 7.75"
+              ></path>
+            </svg>
+
+
+            <!-- ELIMINAR -->
+            <svg
+              *ngIf="opcion.id === 'eliminar'"
+              width="22"
+              height="22"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <polyline points="3 6 5 6 21 6"></polyline>
+
+              <path
+                d="M19 6l-1 14H6L5 6"
+              ></path>
+
+              <path d="M8 6V4h8v2"></path>
+
+              <line x1="10" y1="10" x2="10" y2="16"></line>
+              <line x1="14" y1="10" x2="14" y2="16"></line>
+            </svg>
+
+          </span>
+
+
+          <!-- INFORMACIÓN -->
+          <span class="opcion-info">
+
+            <span
+              class="opcion-label"
+              *ngIf="!opcion.peligroso"
+            >
+              Configuración
+            </span>
+
+            <span
+              class="opcion-label danger-label"
+              *ngIf="opcion.peligroso"
+            >
+              Zona de riesgo
+            </span>
+
+            <strong class="opcion-title">
+              {{ opcion.nombre }}
+            </strong>
+
+            <span class="opcion-description">
+              {{ opcion.descripcion }}
+            </span>
+
+          </span>
+
+
+          <!-- INDICADOR -->
+          <span class="opcion-action" aria-hidden="true">
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+          </span>
+
+        </button>
+
+      </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         AVISO DE SEGURIDAD
+    ====================================================== -->
+    <aside class="security-notice">
+
+      <span class="security-icon" aria-hidden="true">
+        <svg
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+          <line x1="12" y1="8" x2="12" y2="12"></line>
+          <line x1="12" y1="16" x2="12.01" y2="16"></line>
+        </svg>
+      </span>
+
+      <div>
+        <strong>Acciones administrativas</strong>
+
+        <p>
+          Algunas opciones pueden modificar los permisos del equipo o
+          eliminar información del proyecto. Revisa cada acción antes de
+          confirmarla.
+        </p>
+      </div>
+
+    </aside>
+
   </main>
 </div>

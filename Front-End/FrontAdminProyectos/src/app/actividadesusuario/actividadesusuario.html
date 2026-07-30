@@ -1,180 +1,716 @@
-<div class="workspace-container">
-
-  <header class="workspace-header">
-    <div>
-      <h1>Mi Espacio de Trabajo</h1>
-      <p class="subtitle">Gestiona tus responsabilidades actuales</p>
-    </div>
-
-    <div class="stats-panel" *ngIf="!cargando">
-      <div class="stat-box">
-        <span class="stat-number">{{ misTareasNuevas.length }}</span>
-        <span class="stat-label">Por Empezar</span>
-      </div>
-      <div class="stat-box active">
-        <span class="stat-number text-blue">{{ misTareasProgreso.length }}</span>
-        <span class="stat-label">En Progreso</span>
-      </div>
-      <div class="stat-box">
-        <span class="stat-number text-green">{{ misTareasTerminadas.length }}</span>
-        <span class="stat-label">Terminadas</span>
-      </div>
-    </div>
-  </header>
-
-  <!-- Indicador Skeleton -->
-  <div *ngIf="cargando" class="skeleton-container">
-    <div class="skeleton-row"></div>
-    <div class="skeleton-row"></div>
-    <div class="skeleton-row"></div>
-  </div>
-
-  <div class="task-lists-container" *ngIf="!cargando">
-
-    <!-- EN PROGRESO -->
-    <div class="list-section" *ngIf="misTareasProgreso.length > 0">
-      <h3 class="section-title text-blue">
-        <span class="indicator-dot dot-blue"></span> Trabajando Actualmente
-      </h3>
-
-      <div
-        class="task-row active-task"
-        *ngFor="let t of misTareasProgreso"
-        [attr.data-prio]="t.prioridad.toLowerCase()"
-        (click)="toggleDetalles(t.id_tarea)"
-        [class.expanded]="tareaExpandidaId === t.id_tarea"
-        role="button"
-        tabindex="0"
-        (keydown.enter)="toggleDetalles(t.id_tarea)"
-      >
-        <div class="task-summary">
-          <div class="task-title-group">
-            <span class="task-title">{{ t.titulo }}</span>
-          </div>
-          <div class="task-summary-right">
-            <span class="badge" [attr.data-prio]="t.prioridad.toLowerCase()">{{ t.prioridad }}</span>
-            <svg class="chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <polyline points="6 9 12 15 18 9"></polyline>
-            </svg>
-          </div>
-        </div>
-
-        <div class="task-details" *ngIf="tareaExpandidaId === t.id_tarea">
-          <p class="task-desc">{{ t.descripcion || 'Sin descripción detallada.' }}</p>
-
-          <div class="task-meta">
-            <span *ngIf="t.fecha_limite">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-              Entrega: {{ t.fecha_limite | date:'mediumDate' }}
-            </span>
-          </div>
-
-          <div class="task-actions">
-            <button class="btn btn-success" (click)="cambiarEstado(t, 'Concluida', $event)">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
-              Marcar como Completada
-            </button>
-            <button class="btn btn-ghost" (click)="cambiarEstado(t, 'Asignada', $event)">
-              Pausar
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- POR EMPEZAR -->
-    <div class="list-section" *ngIf="misTareasNuevas.length > 0">
-      <h3 class="section-title">
-        <span class="indicator-dot dot-gray"></span> Por Empezar
-      </h3>
-
-      <div
-        class="task-row"
-        *ngFor="let t of misTareasNuevas"
-        [attr.data-prio]="t.prioridad.toLowerCase()"
-        (click)="toggleDetalles(t.id_tarea)"
-        [class.expanded]="tareaExpandidaId === t.id_tarea"
-        role="button"
-        tabindex="0"
-        (keydown.enter)="toggleDetalles(t.id_tarea)"
-      >
-        <div class="task-summary">
-          <div class="task-title-group">
-            <span class="task-title">{{ t.titulo }}</span>
-          </div>
-          <div class="task-summary-right">
-            <span class="badge" [attr.data-prio]="t.prioridad.toLowerCase()">{{ t.prioridad }}</span>
-            <svg class="chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <polyline points="6 9 12 15 18 9"></polyline>
-            </svg>
-          </div>
-        </div>
-
-        <div class="task-details" *ngIf="tareaExpandidaId === t.id_tarea">
-          <p class="task-desc">{{ t.descripcion || 'Sin descripción detallada.' }}</p>
-          <div class="task-meta">
-            <span *ngIf="t.fecha_limite">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-              Entrega: {{ t.fecha_limite | date:'mediumDate' }}
-            </span>
-          </div>
-          <div class="task-actions">
-            <button class="btn btn-primary" (click)="cambiarEstado(t, 'En progreso', $event)">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
-              Iniciar Tarea
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- TERMINADAS -->
-    <div class="list-section" *ngIf="misTareasTerminadas.length > 0">
-      <h3 class="section-title text-gray">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
-        Historial Reciente
-      </h3>
-
-      <div
-        class="task-row completed"
-        *ngFor="let t of misTareasTerminadas"
-        (click)="toggleDetalles(t.id_tarea)"
-        [class.expanded]="tareaExpandidaId === t.id_tarea"
-        role="button"
-        tabindex="0"
-        (keydown.enter)="toggleDetalles(t.id_tarea)"
-      >
-        <div class="task-summary">
-          <div class="task-title-group">
-            <span class="task-title">{{ t.titulo }}</span>
-          </div>
-          <svg class="chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <polyline points="6 9 12 15 18 9"></polyline>
+<div class="workspace-page page-shell">
+  <main class="workspace-container page-content">
+    <!-- =====================================================
+         CABECERA
+    ====================================================== -->
+    <header class="workspace-header">
+      <div class="workspace-heading">
+        <span class="workspace-icon" aria-hidden="true">
+          <svg
+            width="23"
+            height="23"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M9 11l3 3L22 4"></path>
+            <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
           </svg>
+        </span>
+
+        <div class="workspace-title">
+          <span class="workspace-eyebrow"> Espacio personal </span>
+
+          <h1>Mis actividades</h1>
+
+          <p>Consulta tus responsabilidades y mantén actualizado tu progreso.</p>
+        </div>
+      </div>
+
+      <!-- RESUMEN DE ACTIVIDADES -->
+      <div class="stats-panel" *ngIf="!cargando">
+        <div class="stat-item">
+          <span class="stat-icon stat-pending" aria-hidden="true">
+            <svg
+              width="17"
+              height="17"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <circle cx="12" cy="12" r="9"></circle>
+              <polyline points="12 7 12 12 16 14"></polyline>
+            </svg>
+          </span>
+
+          <div class="stat-content">
+            <strong>{{ misTareasNuevas.length }}</strong>
+            <span>Por empezar</span>
+          </div>
         </div>
 
-        <div class="task-details" *ngIf="tareaExpandidaId === t.id_tarea">
-          <p class="task-desc">{{ t.descripcion || 'Sin descripción detallada.' }}</p>
-          <div class="task-actions">
-            <button class="btn btn-ghost" (click)="cambiarEstado(t, 'En progreso', $event)">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
-              Reabrir Tarea
-            </button>
+        <div class="stat-item">
+          <span class="stat-icon stat-progress" aria-hidden="true">
+            <svg
+              width="17"
+              height="17"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <polygon points="5 3 19 12 5 21 5 3"></polygon>
+            </svg>
+          </span>
+
+          <div class="stat-content">
+            <strong>{{ misTareasProgreso.length }}</strong>
+            <span>En progreso</span>
+          </div>
+        </div>
+
+        <div class="stat-item">
+          <span class="stat-icon stat-completed" aria-hidden="true">
+            <svg
+              width="17"
+              height="17"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.2"
+            >
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+          </span>
+
+          <div class="stat-content">
+            <strong>{{ misTareasTerminadas.length }}</strong>
+            <span>Terminadas</span>
           </div>
         </div>
       </div>
+    </header>
+
+    <!-- =====================================================
+         CARGA
+    ====================================================== -->
+    <div *ngIf="cargando" class="skeleton-container" aria-label="Cargando actividades">
+      <div class="skeleton-focus"></div>
+
+      <div class="skeleton-section-title"></div>
+
+      <div class="skeleton-row"></div>
+      <div class="skeleton-row"></div>
+      <div class="skeleton-row"></div>
     </div>
 
-    <!-- VACÍO -->
-    <div class="empty-workspace" *ngIf="misTareasNuevas.length === 0 && misTareasProgreso.length === 0 && misTareasTerminadas.length === 0">
-      <div class="empty-icon">
-        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-          <path d="M20 6L9 17l-5-5"></path>
+    <ng-container *ngIf="!cargando">
+      <!-- ===================================================
+           TAREA PRINCIPAL EN PROGRESO
+      ==================================================== -->
+      <section class="workspace-section focus-section" *ngIf="misTareasProgreso.length > 0">
+        <div class="section-header">
+          <div class="section-heading">
+            <span class="section-icon section-icon-progress">
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <polygon points="5 3 19 12 5 21 5 3"></polygon>
+              </svg>
+            </span>
+
+            <div>
+              <span class="section-eyebrow"> Actividad actual </span>
+
+              <h2>Trabajando ahora</h2>
+            </div>
+          </div>
+
+          <span class="section-status status-progress">
+            <span class="status-dot"></span>
+            En progreso
+          </span>
+        </div>
+
+        <article
+          class="focus-card"
+          [class.expanded]="tareaExpandidaId === misTareasProgreso[0].id_tarea"
+        >
+          <button
+            type="button"
+            class="focus-toggle"
+            (click)="toggleDetalles(misTareasProgreso[0].id_tarea)"
+            [attr.aria-expanded]="tareaExpandidaId === misTareasProgreso[0].id_tarea"
+          >
+            <span class="focus-task-icon" aria-hidden="true">
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <polygon points="5 3 19 12 5 21 5 3"></polygon>
+              </svg>
+            </span>
+
+            <span class="focus-content">
+              <span class="task-meta">
+                <span
+                  class="priority-badge"
+                  [attr.data-prio]="
+                    (misTareasProgreso[0].prioridad || 'sin-prioridad').toLowerCase()
+                  "
+                >
+                  {{ misTareasProgreso[0].prioridad || 'Sin prioridad' }}
+                </span>
+
+                <span class="task-date" *ngIf="misTareasProgreso[0].fecha_limite">
+                  <svg
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
+                    <rect x="3" y="4" width="18" height="18" rx="2"></rect>
+
+                    <line x1="16" y1="2" x2="16" y2="6"></line>
+                    <line x1="8" y1="2" x2="8" y2="6"></line>
+                    <line x1="3" y1="10" x2="21" y2="10"></line>
+                  </svg>
+
+                  {{ misTareasProgreso[0].fecha_limite | date : 'd MMMM, y' }}
+                </span>
+              </span>
+
+              <strong class="focus-title">
+                {{ misTareasProgreso[0].titulo }}
+              </strong>
+
+              <span class="focus-preview">
+                {{
+                  misTareasProgreso[0].descripcion ||
+                    'Esta actividad no cuenta con una descripción detallada.'
+                }}
+              </span>
+            </span>
+
+            <span class="expand-control">
+              <span>Detalles</span>
+
+              <svg
+                class="chevron"
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
+            </span>
+          </button>
+
+          <div
+            class="task-details focus-details"
+            *ngIf="tareaExpandidaId === misTareasProgreso[0].id_tarea"
+          >
+            <div class="details-content">
+              <span class="details-label"> Descripción </span>
+
+              <p class="task-description">
+                {{
+                  misTareasProgreso[0].descripcion ||
+                    'Esta actividad no cuenta con una descripción detallada.'
+                }}
+              </p>
+            </div>
+
+            <div class="task-actions">
+              <button
+                type="button"
+                class="btn btn-success"
+                (click)="cambiarEstado(misTareasProgreso[0], 'Concluida', $event)"
+              >
+                <svg
+                  width="15"
+                  height="15"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2.4"
+                >
+                  <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+
+                Completar
+              </button>
+
+              <button
+                type="button"
+                class="btn btn-secondary"
+                (click)="cambiarEstado(misTareasProgreso[0], 'Asignada', $event)"
+              >
+                <svg
+                  width="15"
+                  height="15"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <rect x="6" y="4" width="4" height="16"></rect>
+                  <rect x="14" y="4" width="4" height="16"></rect>
+                </svg>
+
+                Pausar
+              </button>
+            </div>
+          </div>
+        </article>
+      </section>
+
+      <!-- ===================================================
+           OTRAS ACTIVIDADES EN PROGRESO
+      ==================================================== -->
+      <section class="workspace-section" *ngIf="misTareasProgreso.length > 1">
+        <div class="section-header">
+          <div class="section-heading">
+            <span class="section-icon section-icon-progress">
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <polygon points="5 3 19 12 5 21 5 3"></polygon>
+              </svg>
+            </span>
+
+            <div>
+              <h2>También en progreso</h2>
+              <p>Otras actividades que ya comenzaste.</p>
+            </div>
+          </div>
+
+          <span class="section-count">
+            {{ misTareasProgreso.length - 1 }}
+          </span>
+        </div>
+
+        <div class="task-list">
+          <article
+            class="task-card task-card-progress"
+            *ngFor="let t of misTareasProgreso.slice(1)"
+            [class.expanded]="tareaExpandidaId === t.id_tarea"
+          >
+            <button
+              type="button"
+              class="task-toggle"
+              (click)="toggleDetalles(t.id_tarea)"
+              [attr.aria-expanded]="tareaExpandidaId === t.id_tarea"
+            >
+              <span
+                class="priority-line"
+                [attr.data-prio]="(t.prioridad || 'sin-prioridad').toLowerCase()"
+              ></span>
+
+              <span class="task-main">
+                <span class="task-title-row">
+                  <strong class="task-title">
+                    {{ t.titulo }}
+                  </strong>
+
+                  <span
+                    class="priority-badge"
+                    [attr.data-prio]="(t.prioridad || 'sin-prioridad').toLowerCase()"
+                  >
+                    {{ t.prioridad || 'Sin prioridad' }}
+                  </span>
+                </span>
+
+                <span class="task-preview">
+                  {{ t.descripcion || 'Esta actividad no cuenta con una descripción detallada.' }}
+                </span>
+              </span>
+
+              <span class="task-side">
+                <span class="task-date" *ngIf="t.fecha_limite">
+                  <svg
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
+                    <rect x="3" y="4" width="18" height="18" rx="2"></rect>
+
+                    <line x1="16" y1="2" x2="16" y2="6"></line>
+                    <line x1="8" y1="2" x2="8" y2="6"></line>
+                    <line x1="3" y1="10" x2="21" y2="10"></line>
+                  </svg>
+
+                  {{ t.fecha_limite | date : 'd MMM' }}
+                </span>
+
+                <svg
+                  class="chevron"
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
+              </span>
+            </button>
+
+            <div class="task-details" *ngIf="tareaExpandidaId === t.id_tarea">
+              <div class="details-content">
+                <span class="details-label"> Descripción </span>
+
+                <p class="task-description">
+                  {{ t.descripcion || 'Esta actividad no cuenta con una descripción detallada.' }}
+                </p>
+              </div>
+
+              <div class="task-actions">
+                <button
+                  type="button"
+                  class="btn btn-success"
+                  (click)="cambiarEstado(t, 'Concluida', $event)"
+                >
+                  <svg
+                    width="15"
+                    height="15"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2.4"
+                  >
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                  </svg>
+
+                  Completar
+                </button>
+
+                <button
+                  type="button"
+                  class="btn btn-secondary"
+                  (click)="cambiarEstado(t, 'Asignada', $event)"
+                >
+                  Pausar
+                </button>
+              </div>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <!-- ===================================================
+           ACTIVIDADES POR EMPEZAR
+      ==================================================== -->
+      <section class="workspace-section" *ngIf="misTareasNuevas.length > 0">
+        <div class="section-header">
+          <div class="section-heading">
+            <span class="section-icon section-icon-pending">
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <circle cx="12" cy="12" r="9"></circle>
+                <polyline points="12 7 12 12 16 14"></polyline>
+              </svg>
+            </span>
+
+            <div>
+              <h2>Por empezar</h2>
+              <p>Responsabilidades que esperan tu atención.</p>
+            </div>
+          </div>
+
+          <span class="section-count">
+            {{ misTareasNuevas.length }}
+          </span>
+        </div>
+
+        <div class="task-list">
+          <article
+            class="task-card"
+            *ngFor="let t of misTareasNuevas"
+            [class.expanded]="tareaExpandidaId === t.id_tarea"
+          >
+            <button
+              type="button"
+              class="task-toggle"
+              (click)="toggleDetalles(t.id_tarea)"
+              [attr.aria-expanded]="tareaExpandidaId === t.id_tarea"
+            >
+              <span
+                class="priority-line"
+                [attr.data-prio]="(t.prioridad || 'sin-prioridad').toLowerCase()"
+              ></span>
+
+              <span class="task-main">
+                <span class="task-title-row">
+                  <strong class="task-title">
+                    {{ t.titulo }}
+                  </strong>
+
+                  <span
+                    class="priority-badge"
+                    [attr.data-prio]="(t.prioridad || 'sin-prioridad').toLowerCase()"
+                  >
+                    {{ t.prioridad || 'Sin prioridad' }}
+                  </span>
+                </span>
+
+                <span class="task-preview">
+                  {{ t.descripcion || 'Esta actividad no cuenta con una descripción detallada.' }}
+                </span>
+              </span>
+
+              <span class="task-side">
+                <span class="task-date" *ngIf="t.fecha_limite">
+                  <svg
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
+                    <rect x="3" y="4" width="18" height="18" rx="2"></rect>
+
+                    <line x1="16" y1="2" x2="16" y2="6"></line>
+                    <line x1="8" y1="2" x2="8" y2="6"></line>
+                    <line x1="3" y1="10" x2="21" y2="10"></line>
+                  </svg>
+
+                  {{ t.fecha_limite | date : 'd MMM' }}
+                </span>
+
+                <svg
+                  class="chevron"
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
+              </span>
+            </button>
+
+            <div class="task-details" *ngIf="tareaExpandidaId === t.id_tarea">
+              <div class="details-content">
+                <span class="details-label"> Descripción </span>
+
+                <p class="task-description">
+                  {{ t.descripcion || 'Esta actividad no cuenta con una descripción detallada.' }}
+                </p>
+              </div>
+
+              <div class="task-actions">
+                <button
+                  type="button"
+                  class="btn btn-primary"
+                  (click)="cambiarEstado(t, 'En progreso', $event)"
+                >
+                  <svg
+                    width="15"
+                    height="15"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
+                    <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                  </svg>
+
+                  Iniciar actividad
+                </button>
+              </div>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <!-- ===================================================
+           ACTIVIDADES TERMINADAS
+      ==================================================== -->
+      <section class="workspace-section completed-section" *ngIf="misTareasTerminadas.length > 0">
+        <div class="section-header">
+          <div class="section-heading">
+            <span class="section-icon section-icon-completed">
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.3"
+              >
+                <polyline points="20 6 9 17 4 12"></polyline>
+              </svg>
+            </span>
+
+            <div>
+              <h2>Terminadas</h2>
+              <p>Historial reciente de actividades completadas.</p>
+            </div>
+          </div>
+
+          <span class="section-count">
+            {{ misTareasTerminadas.length }}
+          </span>
+        </div>
+
+        <div class="task-list">
+          <article
+            class="task-card task-card-completed"
+            *ngFor="let t of misTareasTerminadas"
+            [class.expanded]="tareaExpandidaId === t.id_tarea"
+          >
+            <button
+              type="button"
+              class="task-toggle"
+              (click)="toggleDetalles(t.id_tarea)"
+              [attr.aria-expanded]="tareaExpandidaId === t.id_tarea"
+            >
+              <span class="completed-icon" aria-hidden="true">
+                <svg
+                  width="15"
+                  height="15"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2.5"
+                >
+                  <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+              </span>
+
+              <span class="task-main">
+                <span class="task-title-row">
+                  <strong class="task-title">
+                    {{ t.titulo }}
+                  </strong>
+
+                  <span class="completed-badge"> Terminada </span>
+                </span>
+
+                <span class="task-preview">
+                  {{ t.descripcion || 'Esta actividad no cuenta con una descripción detallada.' }}
+                </span>
+              </span>
+
+              <span class="task-side">
+                <svg
+                  class="chevron"
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
+              </span>
+            </button>
+
+            <div class="task-details" *ngIf="tareaExpandidaId === t.id_tarea">
+              <div class="details-content">
+                <span class="details-label"> Descripción </span>
+
+                <p class="task-description">
+                  {{ t.descripcion || 'Esta actividad no cuenta con una descripción detallada.' }}
+                </p>
+              </div>
+
+              <div class="task-actions">
+                <button
+                  type="button"
+                  class="btn btn-secondary"
+                  (click)="cambiarEstado(t, 'En progreso', $event)"
+                >
+                  <svg
+                    width="15"
+                    height="15"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
+                    <path d="M3 12a9 9 0 1 0 3-6.7"></path>
+                    <polyline points="3 4 3 10 9 10"></polyline>
+                  </svg>
+
+                  Reabrir actividad
+                </button>
+              </div>
+            </div>
+          </article>
+        </div>
+      </section>
+    </ng-container>
+
+    <!-- =====================================================
+         SIN ACTIVIDADES
+    ====================================================== -->
+    <section
+      class="empty-workspace"
+      *ngIf="
+        !cargando &&
+        misTareasNuevas.length === 0 &&
+        misTareasProgreso.length === 0 &&
+        misTareasTerminadas.length === 0
+      "
+    >
+      <span class="empty-icon" aria-hidden="true">
+        <svg
+          width="38"
+          height="38"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.8"
+        >
+          <path d="M9 11l3 3L22 4"></path>
+          <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
         </svg>
-      </div>
-      <h3>Todo al día</h3>
-      <p>No tienes tareas asignadas en este proyecto actualmente.</p>
-    </div>
+      </span>
 
-  </div>
+      <span class="empty-label"> Trabajo completado </span>
+
+      <h2>Todo está al día</h2>
+
+      <p>Actualmente no tienes actividades asignadas dentro de este proyecto.</p>
+    </section>
+  </main>
 </div>

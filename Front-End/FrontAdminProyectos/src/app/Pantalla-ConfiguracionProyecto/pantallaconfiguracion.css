@@ -1,137 +1,613 @@
-.configuracion-container { 
-  display: flex; 
-  height: 88vh;
-  max-height: 88vh; 
-  background-color: #fafafa; 
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+/* =========================================================
+   HOST
+========================================================= */
+
+:host {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  min-height: 100%;
 }
 
-.main-content { 
-  flex: 1; 
-  padding: 40px; 
-  max-width: 900px; 
-  margin: 0 auto; 
+
+/* =========================================================
+   PÁGINA
+========================================================= */
+
+.collaborators-page {
+  width: 100%;
+  min-width: 0;
+  min-height: 100%;
+
+  color: var(--app-text);
+  background: var(--app-background);
+
+  transition:
+    color var(--app-transition),
+    background-color var(--app-transition);
 }
 
-.header-actions { 
-  margin-bottom: 32px; 
+.main-content {
+  width: 100%;
+  max-width: 1100px;
+  min-width: 0;
 }
 
-.btn-volver { 
-  background: transparent; 
-  border: 1px solid #d1d5db; 
-  color: #4b5563; 
-  padding: 8px 16px; 
-  border-radius: 6px; 
-  cursor: pointer; 
-  transition: all 0.2s ease;
+
+/* =========================================================
+   TEXTO PARA LECTORES DE PANTALLA
+========================================================= */
+
+.sr-only {
+  position: absolute;
+
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+
+  overflow: hidden;
+
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+
+  border: 0;
+}
+
+
+/* =========================================================
+   CABECERA PRINCIPAL
+========================================================= */
+
+.page-header {
   display: flex;
+  width: 100%;
+  min-width: 0;
+
   align-items: center;
-  gap: 8px;
-  font-size: 0.9rem;
-  font-weight: 600;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 24px;
+
+  padding: 24px;
+  margin-bottom: 24px;
+
+  color: var(--app-text);
+  background: var(--app-surface);
+
+  border: 1px solid var(--app-border);
+  border-radius: var(--app-radius);
+
+  box-shadow: var(--app-shadow);
+
+  transition:
+    color var(--app-transition),
+    background-color var(--app-transition),
+    border-color var(--app-transition);
 }
 
-.btn-volver:hover { 
-  background: #f3f4f6; 
-  color: #111827; 
-}
-
-.gestion-integrantes { 
-  background: white; 
-  padding: 32px; 
-  border-radius: 12px; 
-  border: 1px solid #e5e7eb; 
-  box-shadow: 0 1px 3px rgba(0,0,0,0.05); 
-}
-
-.card-header { 
-  display: flex; 
-  align-items: center; 
-  gap: 12px; 
-  margin-bottom: 24px; 
-  border-bottom: 1px solid #f3f4f6; 
-  padding-bottom: 16px; 
-  color: #111827;
-}
-
-.card-header h3 {
-  margin: 0;
-  font-size: 1.25rem;
-  font-weight: 600;
-  letter-spacing: -0.01em;
-}
-
-/* === FORMULARIO AGREGAR === */
-.agregar-integrante { 
-  display: flex; 
-  gap: 16px; 
-  margin-bottom: 32px; 
-  align-items: flex-start;
-}
-
-.input-group {
+.header-main {
   display: flex;
+  min-width: 0;
+  flex: 1 1 500px;
+
+  align-items: center;
+  gap: 14px;
+}
+
+.header-icon {
+  display: inline-flex;
+  width: 48px;
+  height: 48px;
+
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 48px;
+
+  color: var(--app-primary);
+  background: var(--app-primary-soft);
+
+  border: 1px solid var(--app-primary-border);
+  border-radius: 12px;
+}
+
+.header-copy {
+  min-width: 0;
+}
+
+.header-eyebrow,
+.card-eyebrow,
+.empty-eyebrow {
+  display: block;
+  margin-bottom: 4px;
+
+  color: var(--app-primary);
+
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.header-copy h1 {
+  margin: 0;
+
+  color: var(--app-text);
+
+  font-size: 1.6rem;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  line-height: 1.25;
+
+  overflow-wrap: anywhere;
+}
+
+.header-copy p {
+  max-width: 650px;
+  margin: 6px 0 0;
+
+  color: var(--app-text-muted);
+
+  font-size: 0.86rem;
+  line-height: 1.5;
+}
+
+
+/* =========================================================
+   BOTÓN VOLVER
+========================================================= */
+
+.btn-volver {
+  display: inline-flex;
+  min-height: 40px;
+
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  gap: 8px;
+
+  padding: 8px 14px;
+
+  color: var(--app-text-secondary);
+  background: var(--app-surface);
+
+  border: 1px solid var(--app-border-strong);
+  border-radius: var(--app-radius-small);
+
+  font-size: 0.82rem;
+  font-weight: 650;
+  white-space: nowrap;
+
+  cursor: pointer;
+
+  transition:
+    color var(--app-transition-fast),
+    background-color var(--app-transition-fast),
+    border-color var(--app-transition-fast);
+}
+
+.btn-volver:hover {
+  color: var(--app-text);
+  background: var(--app-surface-hover);
+  border-color: var(--app-text-subtle);
+}
+
+.btn-volver:focus-visible {
+  outline: 2px solid var(--app-primary);
+  outline-offset: 2px;
+}
+
+
+/* =========================================================
+   TARJETA PRINCIPAL
+========================================================= */
+
+.gestion-integrantes {
+  width: 100%;
+  min-width: 0;
+
+  padding: 24px;
+
+  color: var(--app-text);
+  background: var(--app-surface);
+
+  border: 1px solid var(--app-border);
+  border-radius: var(--app-radius);
+
+  box-shadow: var(--app-shadow);
+
+  transition:
+    color var(--app-transition),
+    background-color var(--app-transition),
+    border-color var(--app-transition);
+}
+
+
+/* =========================================================
+   CABECERA DE LA TARJETA
+========================================================= */
+
+.card-header {
+  display: flex;
+  width: 100%;
+  min-width: 0;
+
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+
+  padding-bottom: 18px;
+  margin-bottom: 20px;
+
+  border-bottom: 1px solid var(--app-border);
+}
+
+.card-title {
+  display: flex;
+  min-width: 0;
+
+  align-items: center;
   gap: 12px;
-  flex: 1;
+}
+
+.card-title > div {
+  min-width: 0;
+}
+
+.card-icon {
+  display: inline-flex;
+  width: 42px;
+  height: 42px;
+
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 42px;
+
+  color: var(--app-primary);
+  background: var(--app-primary-soft);
+
+  border-radius: 10px;
+}
+
+.card-title h2 {
+  margin: 0;
+
+  color: var(--app-text);
+
+  font-size: 1.08rem;
+  font-weight: 650;
+  letter-spacing: -0.015em;
+
+  overflow-wrap: anywhere;
+}
+
+.card-title p {
+  margin: 4px 0 0;
+
+  color: var(--app-text-muted);
+
+  font-size: 0.76rem;
+  line-height: 1.4;
+}
+
+.members-count {
+  display: inline-flex;
+  flex: 0 0 auto;
+
+  align-items: center;
+  justify-content: center;
+
+  padding: 6px 11px;
+
+  color: var(--app-text-secondary);
+  background: var(--app-surface-muted);
+
+  border: 1px solid var(--app-border);
+  border-radius: var(--app-radius-pill);
+
+  font-size: 0.7rem;
+  font-weight: 650;
+  white-space: nowrap;
+}
+
+
+/* =========================================================
+   INVITACIÓN
+========================================================= */
+
+.agregar-integrante {
+  width: 100%;
+  min-width: 0;
+
+  padding: 18px;
+  margin-bottom: 22px;
+
+  background: var(--app-surface-secondary);
+
+  border: 1px solid var(--app-border);
+  border-radius: 10px;
+}
+
+.invite-content {
+  width: 100%;
+  min-width: 0;
+}
+
+.invite-heading {
+  display: flex;
+  min-width: 0;
+
+  align-items: center;
+  gap: 10px;
+
+  margin-bottom: 15px;
+}
+
+.invite-icon {
+  display: inline-flex;
+  width: 36px;
+  height: 36px;
+
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 36px;
+
+  color: var(--app-primary);
+  background: var(--app-primary-soft);
+
+  border-radius: 9px;
+}
+
+.invite-heading > div {
+  min-width: 0;
+}
+
+.invite-heading h3 {
+  margin: 0;
+
+  color: var(--app-text);
+
+  font-size: 0.88rem;
+  font-weight: 650;
+}
+
+.invite-heading p {
+  margin: 3px 0 0;
+
+  color: var(--app-text-muted);
+
+  font-size: 0.72rem;
+  line-height: 1.4;
+}
+
+.invite-form-grid {
+  display: grid;
+  width: 100%;
+  min-width: 0;
+
+  grid-template-columns:
+    minmax(0, 1fr)
+    minmax(170px, 220px)
+    auto;
+
+  align-items: end;
+  gap: 12px;
+}
+
+
+/* =========================================================
+   CAMPOS
+========================================================= */
+
+.form-group {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-group label {
+  color: var(--app-text-secondary);
+
+  font-size: 0.74rem;
+  font-weight: 650;
 }
 
 .k-input {
-  padding: 0.75rem 1rem;
-  border: 1px solid #d1d5db;
-  border-radius: 8px;
-  font-size: 0.95rem;
-  color: #111827;
+  display: block;
+  width: 100%;
+  min-width: 0;
+  min-height: 42px;
+
+  padding: 9px 12px;
+
+  color: var(--app-text);
+  background: var(--app-input-background);
+
+  border: 1px solid var(--app-border-strong);
+  border-radius: var(--app-radius-small);
+
+  outline: none;
+
   font-family: inherit;
-  transition: all 0.2s ease;
-  background-color: #ffffff;
+  font-size: 0.84rem;
+
+  transition:
+    color var(--app-transition-fast),
+    background-color var(--app-transition-fast),
+    border-color var(--app-transition-fast),
+    box-shadow var(--app-transition-fast);
+}
+
+.k-input:hover {
+  border-color: var(--app-text-subtle);
 }
 
 .k-input:focus {
-  outline: none;
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  border-color: var(--app-primary);
+  box-shadow: 0 0 0 3px var(--app-primary-soft);
 }
 
-.flex-1 { flex: 1; }
-.select-rol { min-width: 160px; }
+.k-input::placeholder {
+  color: var(--app-placeholder);
+}
+
+select.k-input {
+  cursor: pointer;
+}
+
+
+/* =========================================================
+   BOTÓN PRINCIPAL
+========================================================= */
 
 .btn {
   display: inline-flex;
+  min-height: 42px;
+
   align-items: center;
   justify-content: center;
   gap: 8px;
-  padding: 0.75rem 1.25rem;
-  border-radius: 8px;
-  font-size: 0.95rem;
-  font-weight: 600;
+
+  padding: 9px 15px;
+
+  border: 1px solid transparent;
+  border-radius: var(--app-radius-small);
+
+  font-size: 0.82rem;
+  font-weight: 650;
+  white-space: nowrap;
+
   cursor: pointer;
-  border: none;
-  transition: all 0.2s ease;
+
+  transition:
+    color var(--app-transition-fast),
+    background-color var(--app-transition-fast),
+    border-color var(--app-transition-fast),
+    opacity var(--app-transition-fast);
 }
 
-.btn-primary { 
-  background: #111827; 
-  color: white; 
+.btn-primary {
+  color: var(--app-text-inverse);
+  background: var(--app-primary);
+  border-color: var(--app-primary);
 }
 
-.btn-primary:hover { 
-  background: #000000; 
-  transform: translateY(-1px);
+.btn-primary:hover:not(:disabled) {
+  background: var(--app-primary-hover);
+  border-color: var(--app-primary-hover);
 }
 
-/* === LISTA DE INTEGRANTES === */
-.lista-integrantes { 
-  display: flex; 
-  flex-direction: column; 
+.btn:focus-visible {
+  outline: 2px solid var(--app-primary);
+  outline-offset: 2px;
 }
 
-.integrante-item { 
-  display: flex; 
-  justify-content: space-between; 
-  align-items: center; 
-  padding: 16px 0; 
-  border-bottom: 1px solid #f3f4f6; 
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+
+/* =========================================================
+   ALERTAS
+========================================================= */
+
+.alert {
+  display: flex;
+  width: 100%;
+  min-width: 0;
+
+  align-items: flex-start;
+  gap: 10px;
+
+  padding: 12px 14px;
+  margin-bottom: 18px;
+
+  border: 1px solid transparent;
+  border-radius: var(--app-radius-small);
+
+  font-size: 0.8rem;
+  font-weight: 550;
+  line-height: 1.45;
+
+  overflow-wrap: anywhere;
+}
+
+.alert-icon {
+  display: inline-flex;
+  flex: 0 0 auto;
+  margin-top: 1px;
+}
+
+.success-message {
+  color: var(--app-success);
+  background: var(--app-success-soft);
+  border-color: var(--app-success);
+}
+
+.error-message {
+  color: var(--app-danger);
+  background: var(--app-danger-soft);
+  border-color: var(--app-danger);
+}
+
+
+/* =========================================================
+   SECCIÓN DE INTEGRANTES
+========================================================= */
+
+.members-section {
+  width: 100%;
+  min-width: 0;
+}
+
+.members-section-header {
+  margin-bottom: 10px;
+}
+
+.members-section-header h3 {
+  margin: 0;
+
+  color: var(--app-text);
+
+  font-size: 0.9rem;
+  font-weight: 650;
+}
+
+.members-section-header p {
+  margin: 3px 0 0;
+
+  color: var(--app-text-muted);
+
+  font-size: 0.72rem;
+}
+
+.lista-integrantes {
+  display: flex;
+  width: 100%;
+  min-width: 0;
+
+  flex-direction: column;
+}
+
+
+/* =========================================================
+   FILA DE INTEGRANTE
+========================================================= */
+
+.integrante-item {
+  display: flex;
+  width: 100%;
+  min-width: 0;
+
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+
+  padding: 15px 0;
+
+  border-bottom: 1px solid var(--app-border);
 }
 
 .integrante-item:last-child {
@@ -140,124 +616,448 @@
 
 .integrante-info {
   display: flex;
+  min-width: 0;
+  flex: 1 1 auto;
+
   align-items: center;
-  gap: 16px;
+  gap: 12px;
 }
 
-.avatar-circle { 
-  width: 44px; 
-  height: 44px; 
-  background: #f3f4f6; 
-  border-radius: 50%; 
-  display: flex; 
-  align-items: center; 
-  justify-content: center; 
-  font-weight: 700; 
-  color: #4b5563; 
-  font-size: 1.1rem;
+.avatar-circle {
+  display: inline-flex;
+  width: 42px;
+  height: 42px;
+
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 42px;
+
+  color: var(--app-primary);
+  background: var(--app-primary-soft);
+
+  border: 1px solid var(--app-primary-border);
+  border-radius: 50%;
+
+  font-size: 0.9rem;
+  font-weight: 700;
+  text-transform: uppercase;
 }
 
 .detalles {
   display: flex;
+  min-width: 0;
+  flex: 1 1 auto;
   flex-direction: column;
   gap: 2px;
 }
 
-.nombre { 
-  font-weight: 600; 
-  color: #111827; 
-  font-size: 0.95rem;
+.nombre {
+  min-width: 0;
+  overflow: hidden;
+
+  color: var(--app-text);
+
+  font-size: 0.88rem;
+  font-weight: 650;
+
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.email { 
-  font-size: 0.85rem; 
-  color: #6b7280; 
+.email {
+  min-width: 0;
+  overflow: hidden;
+
+  color: var(--app-text-muted);
+
+  font-size: 0.75rem;
+
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
+
+
+/* =========================================================
+   CONTROLES DEL INTEGRANTE
+========================================================= */
 
 .integrante-controls {
   display: flex;
+  min-width: 0;
+  flex: 0 0 auto;
+
   align-items: center;
-  gap: 12px; 
+  gap: 8px;
 }
 
-.select-rol-mini { 
-  padding: 8px 12px; 
-  font-size: 0.85rem;
-  border-color: #e5e7eb;
+.role-control {
+  min-width: 0;
+}
+
+.select-rol-mini {
+  width: 165px;
+  min-height: 36px;
+
+  padding-top: 6px;
+  padding-bottom: 6px;
+
+  font-size: 0.75rem;
 }
 
 .btn-icon {
+  display: inline-flex;
+  width: 36px;
+  height: 36px;
+
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 36px;
+
+  padding: 0;
+
+  color: var(--app-text-subtle);
   background: transparent;
+
   border: 1px solid transparent;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 8px;
-  border-radius: 6px;
+  border-radius: 8px;
+
   cursor: pointer;
-  transition: all 0.2s ease;
+
+  transition:
+    color var(--app-transition-fast),
+    background-color var(--app-transition-fast),
+    border-color var(--app-transition-fast);
 }
 
-.btn-eliminar { 
-  color: #9ca3af; 
+.btn-eliminar:hover {
+  color: var(--app-danger);
+  background: var(--app-danger-soft);
+  border-color: var(--app-danger);
 }
 
-.btn-eliminar:hover { 
-  background: #fef2f2; 
-  color: #ef4444; 
-  border-color: #fecaca;
+.btn-icon:focus-visible {
+  outline: 2px solid var(--app-primary);
+  outline-offset: 2px;
 }
 
-/* === MENSAJES Y ESTADOS === */
-.alert { 
-  padding: 12px 16px; 
-  border-radius: 8px; 
-  margin-bottom: 20px; 
-  font-size: 0.9rem; 
+
+/* =========================================================
+   CARGA
+========================================================= */
+
+.loading-state {
   display: flex;
-  align-items: center;
-  gap: 10px;
-  font-weight: 500;
-}
+  width: 100%;
+  min-width: 0;
+  min-height: 180px;
 
-.success-message { background: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0; }
-.error-message { background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; }
-
-.loading-state, .sin-integrantes {
-  display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 40px 20px;
-  color: #6b7280;
-  text-align: center;
+  gap: 14px;
+
+  padding: 36px;
+
+  color: var(--app-text-muted);
+  text-align: left;
+
+  background: var(--app-surface-secondary);
+
+  border: 1px solid var(--app-border);
+  border-radius: 10px;
 }
 
-.empty-icon {
-  color: #d1d5db;
-  margin-bottom: 12px;
+.loading-state > div:last-child {
+  min-width: 0;
+}
+
+.loading-state strong {
+  display: block;
+
+  color: var(--app-text);
+
+  font-size: 0.86rem;
+  font-weight: 650;
+}
+
+.loading-state p {
+  margin: 3px 0 0;
+
+  color: var(--app-text-muted);
+
+  font-size: 0.74rem;
 }
 
 .spinner {
-  border: 3px solid #f3f4f6;
-  border-top: 3px solid #3b82f6;
+  width: 28px;
+  height: 28px;
+  flex: 0 0 28px;
+
+  border: 3px solid var(--app-border);
+  border-top-color: var(--app-primary);
   border-radius: 50%;
-  width: 24px;
-  height: 24px;
-  animation: spin 1s linear infinite;
-  margin-bottom: 12px;
+
+  animation: spin 0.8s linear infinite;
 }
 
-@keyframes spin { 
-  0% { transform: rotate(0deg); } 
-  100% { transform: rotate(360deg); } 
+
+/* =========================================================
+   ESTADO VACÍO
+========================================================= */
+
+.sin-integrantes {
+  display: flex;
+  width: 100%;
+  min-width: 0;
+
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+
+  padding: 50px 24px;
+
+  color: var(--app-text-muted);
+  text-align: center;
+
+  background: var(--app-surface-secondary);
+
+  border: 1px dashed var(--app-border-strong);
+  border-radius: 10px;
 }
 
-/* === RESPONSIVE === */
+.empty-icon {
+  display: inline-flex;
+  width: 62px;
+  height: 62px;
+
+  align-items: center;
+  justify-content: center;
+
+  margin-bottom: 14px;
+
+  color: var(--app-primary);
+  background: var(--app-primary-soft);
+
+  border-radius: 14px;
+}
+
+.sin-integrantes h3 {
+  margin: 0;
+
+  color: var(--app-text);
+
+  font-size: 1rem;
+  font-weight: 650;
+}
+
+.sin-integrantes p {
+  max-width: 440px;
+  margin: 7px auto 0;
+
+  color: var(--app-text-muted);
+
+  font-size: 0.8rem;
+  line-height: 1.55;
+}
+
+
+/* =========================================================
+   ANIMACIONES
+========================================================= */
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+
+/* =========================================================
+   TABLETS
+========================================================= */
+
+@media (max-width: 850px) {
+  .invite-form-grid {
+    grid-template-columns:
+      minmax(0, 1fr)
+      minmax(160px, 200px);
+  }
+
+  .invite-form-grid .btn {
+    grid-column: 1 / -1;
+    width: 100%;
+  }
+}
+
+
+/* =========================================================
+   MÓVILES
+========================================================= */
+
 @media (max-width: 768px) {
-  .main-content { padding: 20px; }
-  .agregar-integrante { flex-direction: column; align-items: stretch; }
-  .input-group { flex-direction: column; }
-  .integrante-item { flex-direction: column; gap: 16px; align-items: flex-start; }
-  .integrante-controls { width: 100%; justify-content: space-between; }
+  .page-header {
+    align-items: stretch;
+    flex-direction: column;
+
+    padding: 20px;
+  }
+
+  .btn-volver {
+    width: 100%;
+  }
+
+  .gestion-integrantes {
+    padding: 20px;
+  }
+
+  .card-header {
+    align-items: flex-start;
+  }
+
+  .invite-form-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .invite-form-grid .btn {
+    grid-column: auto;
+  }
+
+  .integrante-item {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .integrante-info {
+    width: 100%;
+  }
+
+  .integrante-controls {
+    width: 100%;
+    padding-left: 54px;
+  }
+
+  .role-control {
+    flex: 1 1 auto;
+  }
+
+  .select-rol-mini {
+    width: 100%;
+  }
+}
+
+
+/* =========================================================
+   PANTALLAS PEQUEÑAS
+========================================================= */
+
+@media (max-width: 520px) {
+  .page-header {
+    padding: 18px 16px;
+  }
+
+  .header-main {
+    align-items: flex-start;
+    gap: 11px;
+  }
+
+  .header-icon {
+    width: 42px;
+    height: 42px;
+    flex-basis: 42px;
+  }
+
+  .header-copy h1 {
+    font-size: 1.28rem;
+  }
+
+  .header-copy p {
+    font-size: 0.8rem;
+  }
+
+  .gestion-integrantes {
+    padding: 18px 16px;
+  }
+
+  .card-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .members-count {
+    margin-left: 54px;
+  }
+
+  .agregar-integrante {
+    padding: 15px;
+  }
+
+  .integrante-controls {
+    padding-left: 0;
+  }
+
+  .loading-state {
+    align-items: center;
+    flex-direction: column;
+    text-align: center;
+  }
+}
+
+
+/* =========================================================
+   PANTALLAS MUY PEQUEÑAS
+========================================================= */
+
+@media (max-width: 360px) {
+  .header-icon,
+  .card-icon {
+    display: none;
+  }
+
+  .members-count {
+    margin-left: 0;
+  }
+
+  .invite-heading {
+    align-items: flex-start;
+  }
+
+  .invite-icon {
+    width: 34px;
+    height: 34px;
+    flex-basis: 34px;
+  }
+
+  .integrante-controls {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .btn-icon {
+    width: 100%;
+  }
+}
+
+
+/* =========================================================
+   ACCESIBILIDAD
+========================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+  .collaborators-page,
+  .page-header,
+  .gestion-integrantes,
+  .btn-volver,
+  .k-input,
+  .btn,
+  .btn-icon {
+    transition: none;
+  }
+
+  .spinner {
+    animation-duration: 1.5s;
+  }
 }

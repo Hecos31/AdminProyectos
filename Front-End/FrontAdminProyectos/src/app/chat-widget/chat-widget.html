@@ -1,12 +1,33 @@
-<div class="chat-widget" *ngIf="isOpen" [class.minimized]="isMinimized">
-  <div class="chat-header" (click)="minimizarChat()">
+<div
+  class="chat-widget"
+  *ngIf="isOpen"
+  [class.minimized]="isMinimized"
+  role="dialog"
+  [attr.aria-label]="
+    vistaActual === 'lista'
+      ? 'Chats'
+      : vistaActual === 'nuevo'
+        ? 'Nuevo chat'
+        : 'Conversación con ' + (chatActivo?.nombre || 'usuario')
+  "
+>
+
+  <!-- =====================================================
+       CABECERA
+  ====================================================== -->
+  <header class="chat-header">
+
     <div class="header-info">
+
+      <!-- VOLVER -->
       <button
+        type="button"
         *ngIf="vistaActual !== 'lista' && !isMinimized"
-        (click)="volverALista(); $event.stopPropagation()"
         class="btn-icon"
+        (click)="volverALista()"
+        aria-label="Volver a la lista de chats"
+        title="Volver"
       >
-        <!-- Icono Volver -->
         <svg
           width="18"
           height="18"
@@ -14,27 +35,84 @@
           fill="none"
           stroke="currentColor"
           stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
         >
           <polyline points="15 18 9 12 15 6"></polyline>
         </svg>
       </button>
-      <span class="header-title">
-        {{
-          vistaActual === 'lista'
-            ? 'Chats'
-            : vistaActual === 'nuevo'
-            ? 'Nuevo Chat'
-            : chatActivo?.nombre
-        }}
-      </span>
+
+
+      <!-- IDENTIDAD DEL CHAT -->
+      <div class="header-identity">
+
+        <span class="chat-symbol" aria-hidden="true">
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path
+              d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"
+            ></path>
+          </svg>
+        </span>
+
+        <div class="header-copy">
+          <span
+            class="header-title"
+            [title]="
+              vistaActual === 'lista'
+                ? 'Chats'
+                : vistaActual === 'nuevo'
+                  ? 'Nuevo chat'
+                  : chatActivo?.nombre || 'Conversación'
+            "
+          >
+            {{
+              vistaActual === 'lista'
+                ? 'Chats'
+                : vistaActual === 'nuevo'
+                  ? 'Nuevo chat'
+                  : chatActivo?.nombre || 'Conversación'
+            }}
+          </span>
+
+          <span class="header-subtitle" *ngIf="!isMinimized">
+            {{
+              vistaActual === 'lista'
+                ? 'Mensajería del equipo'
+                : vistaActual === 'nuevo'
+                  ? 'Busca un usuario por correo'
+                  : chatActivo?.tipo === 'privado'
+                    ? 'Conversación privada'
+                    : 'Conversación grupal'
+            }}
+          </span>
+        </div>
+
+      </div>
     </div>
+
+
+    <!-- ACCIONES -->
     <div class="header-actions">
+
+      <!-- NUEVA CONVERSACIÓN -->
       <button
+        type="button"
         *ngIf="vistaActual === 'lista' && !isMinimized"
-        (click)="irANuevoChat(); $event.stopPropagation()"
         class="btn-icon"
+        (click)="irANuevoChat()"
+        aria-label="Iniciar un nuevo chat"
+        title="Nuevo chat"
       >
-        <!-- Icono Nuevo -->
         <svg
           width="18"
           height="18"
@@ -42,13 +120,74 @@
           fill="none"
           stroke="currentColor"
           stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
         >
           <line x1="12" y1="5" x2="12" y2="19"></line>
           <line x1="5" y1="12" x2="19" y2="12"></line>
         </svg>
       </button>
-      <button (click)="cerrarChat(); $event.stopPropagation()" class="btn-icon">
-        <!-- Icono Cerrar -->
+
+
+      <!-- MINIMIZAR / EXPANDIR -->
+      <button
+        type="button"
+        class="btn-icon"
+        (click)="minimizarChat()"
+        [attr.aria-label]="
+          isMinimized
+            ? 'Expandir chat'
+            : 'Minimizar chat'
+        "
+        [title]="
+          isMinimized
+            ? 'Expandir'
+            : 'Minimizar'
+        "
+      >
+
+        <!-- MINIMIZAR -->
+        <svg
+          *ngIf="!isMinimized"
+          width="18"
+          height="18"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          aria-hidden="true"
+        >
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+
+        <!-- EXPANDIR -->
+        <svg
+          *ngIf="isMinimized"
+          width="18"
+          height="18"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+        >
+          <polyline points="18 15 12 9 6 15"></polyline>
+        </svg>
+      </button>
+
+
+      <!-- CERRAR -->
+      <button
+        type="button"
+        class="btn-icon btn-close"
+        (click)="cerrarChat()"
+        aria-label="Cerrar chat"
+        title="Cerrar"
+      >
         <svg
           width="18"
           height="18"
@@ -56,76 +195,318 @@
           fill="none"
           stroke="currentColor"
           stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
         >
           <line x1="18" y1="6" x2="6" y2="18"></line>
           <line x1="6" y1="6" x2="18" y2="18"></line>
         </svg>
       </button>
-    </div>
-  </div>
 
+    </div>
+
+  </header>
+
+
+  <!-- =====================================================
+       CUERPO
+  ====================================================== -->
   <div class="chat-body" *ngIf="!isMinimized">
-    <!-- LISTA DE CHATS -->
-    <div class="view-lista" *ngIf="vistaActual === 'lista'">
-      <div class="chat-row" *ngFor="let chat of conversaciones" (click)="abrirConversacion(chat)">
-        <div class="chat-avatar">{{ chat.nombre.charAt(0) | uppercase }}</div>
-        <div class="chat-info">
-          <span class="chat-name">{{ chat.nombre }}</span>
-          <span class="chat-last-msg">{{ chat.ultimoMensaje.contenido }}</span>
+
+    <!-- ===================================================
+         LISTA DE CONVERSACIONES
+    ==================================================== -->
+    <section
+      class="view-lista"
+      *ngIf="vistaActual === 'lista'"
+      aria-label="Lista de conversaciones"
+    >
+
+      <button
+        type="button"
+        class="chat-row"
+        *ngFor="let chat of conversaciones"
+        (click)="abrirConversacion(chat)"
+      >
+
+        <span class="chat-avatar" aria-hidden="true">
+          {{
+            chat.nombre?.charAt(0)
+              ? (chat.nombre.charAt(0) | uppercase)
+              : '?'
+          }}
+        </span>
+
+        <span class="chat-info">
+
+          <span class="chat-name">
+            {{ chat.nombre || 'Conversación' }}
+          </span>
+
+          <span class="chat-last-msg">
+            {{
+              chat.ultimoMensaje?.contenido ||
+              'Aún no hay mensajes'
+            }}
+          </span>
+
+        </span>
+
+        <svg
+          class="chat-row-chevron"
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+        >
+          <polyline points="9 18 15 12 9 6"></polyline>
+        </svg>
+
+      </button>
+
+
+      <!-- SIN CONVERSACIONES -->
+      <div
+        class="empty-state"
+        *ngIf="conversaciones.length === 0"
+      >
+        <span class="empty-icon" aria-hidden="true">
+          <svg
+            width="28"
+            height="28"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.7"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path
+              d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"
+            ></path>
+          </svg>
+        </span>
+
+        <strong>No tienes conversaciones</strong>
+
+        <span>
+          Inicia un nuevo chat para comunicarte con otro usuario.
+        </span>
+
+        <button
+          type="button"
+          class="empty-action"
+          (click)="irANuevoChat()"
+        >
+          Iniciar un chat
+        </button>
+      </div>
+
+    </section>
+
+
+    <!-- ===================================================
+         NUEVO CHAT
+    ==================================================== -->
+    <section
+      class="view-nuevo"
+      *ngIf="vistaActual === 'nuevo'"
+    >
+
+      <div class="new-chat-intro">
+        <span class="new-chat-icon" aria-hidden="true">
+          <svg
+            width="22"
+            height="22"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+        </span>
+
+        <div>
+          <h3>Buscar usuario</h3>
+
+          <p>
+            Escribe el correo electrónico del usuario con quien deseas conversar.
+          </p>
         </div>
       </div>
-      <div class="empty-state" *ngIf="conversaciones.length === 0">Sin mensajes.</div>
-    </div>
 
-    <!-- NUEVO CHAT -->
-    <div class="view-nuevo" *ngIf="vistaActual === 'nuevo'">
-      <p>Buscar usuario por correo:</p>
-      <input
-        type="email"
-        [(ngModel)]="correoDestino"
-        placeholder="correo@ejemplo.com"
-        class="input-base"
-      />
-      <button (click)="iniciarChatPorCorreo()" class="btn-base mt-2">Iniciar Conversación</button>
-    </div>
 
-    <!-- CONVERSACIÓN ACTIVA (ESTILO WHATSAPP) -->
-    <div class="view-conversacion" *ngIf="vistaActual === 'conversacion'">
-      <div class="messages-area" id="chat-scroll-area">
-        <!-- ALINEACIÓN DINÁMICA CORREGIDA -->
+      <form
+        class="new-chat-form"
+        (ngSubmit)="iniciarChatPorCorreo()"
+      >
+        <label for="correo-destino" class="input-label">
+          Correo electrónico
+        </label>
+
+        <input
+          id="correo-destino"
+          type="email"
+          name="correoDestino"
+          [(ngModel)]="correoDestino"
+          placeholder="correo@ejemplo.com"
+          class="input-base"
+          autocomplete="email"
+        />
+
+        <button
+          type="submit"
+          class="btn-base"
+          [disabled]="!correoDestino.trim()"
+        >
+          <svg
+            width="17"
+            height="17"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <path
+              d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"
+            ></path>
+          </svg>
+
+          Iniciar conversación
+        </button>
+      </form>
+
+    </section>
+
+
+    <!-- ===================================================
+         CONVERSACIÓN ACTIVA
+    ==================================================== -->
+    <section
+      class="view-conversacion"
+      *ngIf="vistaActual === 'conversacion'"
+    >
+
+      <!-- MENSAJES -->
+      <div
+        class="messages-area"
+        id="chat-scroll-area"
+        aria-live="polite"
+        aria-label="Mensajes de la conversación"
+      >
+
+        <div
+          class="conversation-empty"
+          *ngIf="mensajes.length === 0"
+        >
+          <span class="conversation-empty-icon" aria-hidden="true">
+            <svg
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path
+                d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"
+              ></path>
+            </svg>
+          </span>
+
+          <span>Aún no hay mensajes.</span>
+          <small>Envía el primero para iniciar la conversación.</small>
+        </div>
+
+
         <div
           class="msg-wrapper"
           *ngFor="let msg of mensajes"
-          [ngClass]="{
-            sent: esMiMensaje(msg),
-            received: !esMiMensaje(msg)
-          }"
+          [class.sent]="esMiMensaje(msg)"
+          [class.received]="!esMiMensaje(msg)"
         >
           <div class="msg-bubble">
-            <!-- Nombre del remitente (Solo se muestra si NO es tu mensaje y están en un grupo) -->
-            <span class="msg-sender" *ngIf="!esMiMensaje(msg) && chatActivo?.tipo !== 'privado'">
-              {{ msg.remitente.nombre || 'Usuario' }}
+
+            <span
+              class="msg-sender"
+              *ngIf="
+                !esMiMensaje(msg) &&
+                chatActivo?.tipo !== 'privado'
+              "
+            >
+              {{ msg.remitente?.nombre || 'Usuario' }}
             </span>
 
             <span class="msg-content">
               {{ msg.contenido }}
-              <br />
             </span>
-            <span class="msg-time">{{ msg.fecha_envio | date : 'shortTime' }}</span>
+
+            <span class="msg-time">
+              {{ msg.fecha_envio | date:'shortTime' }}
+            </span>
+
           </div>
         </div>
+
       </div>
 
-      <div class="input-area">
+
+      <!-- ESCRIBIR MENSAJE -->
+      <form
+        class="input-area"
+        (ngSubmit)="enviarMensaje()"
+      >
         <input
           type="text"
+          name="nuevoMensaje"
           [(ngModel)]="nuevoMensaje"
-          (keyup.enter)="enviarMensaje()"
           placeholder="Escribe un mensaje..."
-          class="input-base"
+          class="input-base message-input"
+          autocomplete="off"
+          aria-label="Escribir un mensaje"
         />
-        <button (click)="enviarMensaje()" class="btn-send">Envíar</button>
-      </div>
-    </div>
+
+        <button
+          type="submit"
+          class="btn-send"
+          [disabled]="!nuevoMensaje.trim()"
+          aria-label="Enviar mensaje"
+        >
+          <svg
+            width="17"
+            height="17"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <line x1="22" y1="2" x2="11" y2="13"></line>
+            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+          </svg>
+
+          <span>Enviar</span>
+        </button>
+      </form>
+
+    </section>
+
   </div>
 </div>

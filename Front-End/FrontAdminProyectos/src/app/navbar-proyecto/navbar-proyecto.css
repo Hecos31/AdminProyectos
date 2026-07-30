@@ -1,53 +1,343 @@
-.top-navbar {
-  position: sticky;
-  top: 0;
-  width: 100%; 
-  height: 60px;
-  background-color: #ffffff;
-  border-bottom: 1px solid #e5e7eb;
+/* =========================================================
+   HOST DEL COMPONENTE
+========================================================= */
+
+:host {
+  position: relative;
   z-index: 900;
-  display: flex;
-  align-items: flex-end;
-  padding: 0 40px;
+
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+
+  flex: 0 0 auto;
 }
+
+
+/* =========================================================
+   BARRA PRINCIPAL
+========================================================= */
+
+.top-navbar {
+  position: relative;
+
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  height: 64px;
+
+  color: var(--app-text-secondary);
+  background: var(--app-surface);
+
+  border-bottom: 1px solid var(--app-border);
+
+  overflow: hidden;
+
+  transition:
+    color var(--app-transition),
+    background-color var(--app-transition),
+    border-color var(--app-transition);
+}
+
+
+/* =========================================================
+   CONTENIDO ALINEADO CON LAS PÁGINAS
+========================================================= */
 
 .navbar-content {
   display: flex;
   width: 100%;
-  justify-content: flex-start;
+  max-width: var(--app-content-max-width);
+  min-width: 0;
+  height: 100%;
+
+  align-items: flex-end;
+
+  padding: 0 40px;
+  margin: 0 auto;
 }
+
+
+/* =========================================================
+   CONTENEDOR DE PESTAÑAS
+========================================================= */
 
 .nav-tabs {
   display: flex;
-  gap: 32px;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  height: 100%;
+
+  align-items: flex-end;
+  gap: 4px;
+
+  overflow-x: auto;
+  overflow-y: hidden;
+
+  overscroll-behavior-inline: contain;
+  scroll-behavior: smooth;
+  scrollbar-width: none;
+
+  -webkit-overflow-scrolling: touch;
 }
+
+.nav-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+
+/* =========================================================
+   PESTAÑAS
+========================================================= */
 
 .tab-link {
-  text-decoration: none;
-  color: #6b7280;
-  font-size: 0.95rem;
-  font-weight: 500;
-  padding-bottom: 16px;
-  border-bottom: 2px solid transparent;
-  transition: all 0.2s ease;
-  display: flex;
+  position: relative;
+
+  display: inline-flex;
+  height: 48px;
+
   align-items: center;
-  gap: 8px;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  justify-content: center;
+  flex: 0 0 auto;
+  gap: 7px;
+
+  padding: 0 12px;
+
+  color: var(--app-text-muted);
+  text-decoration: none;
+  white-space: nowrap;
+
+  background: transparent;
+  border: none;
+  border-radius:
+    var(--app-radius-small)
+    var(--app-radius-small)
+    0
+    0;
+
+  font-size: 0.87rem;
+  font-weight: 550;
+  line-height: 1;
+
+  -webkit-tap-highlight-color: transparent;
+
+  transition:
+    color var(--app-transition-fast),
+    background-color var(--app-transition-fast);
 }
+
+.tab-icon {
+  width: 17px;
+  height: 17px;
+  flex: 0 0 17px;
+
+  color: var(--app-text-subtle);
+
+  transition:
+    color var(--app-transition-fast);
+}
+
+.tab-text {
+  white-space: nowrap;
+}
+
+
+/* =========================================================
+   HOVER
+========================================================= */
 
 .tab-link:hover {
-  color: #111827;
+  color: var(--app-text);
+  background: var(--app-surface-hover);
 }
+
+.tab-link:hover .tab-icon {
+  color: var(--app-text-secondary);
+}
+
+
+/* =========================================================
+   ESTADO ACTIVO
+========================================================= */
 
 .tab-link.active {
-  color: #2563eb;
-  border-bottom-color: #2563eb;
-  font-weight: 600;
+  color: var(--app-primary);
+  background: var(--app-primary-soft);
+
+  font-weight: 650;
 }
+
+.tab-link.active .tab-icon {
+  color: var(--app-primary);
+}
+
+.tab-link.active::after {
+  position: absolute;
+  right: 10px;
+  bottom: 0;
+  left: 10px;
+
+  height: 3px;
+
+  background: var(--app-primary);
+  border-radius: 3px 3px 0 0;
+
+  content: "";
+}
+
+
+/* =========================================================
+   FOCO DE TECLADO
+========================================================= */
+
+.tab-link:focus-visible {
+  z-index: 1;
+
+  outline: 2px solid var(--app-primary);
+  outline-offset: -3px;
+}
+
+
+/* =========================================================
+   CONFIGURACIÓN
+========================================================= */
 
 .config-tab {
-  margin-left: auto; /* Empuja la configuración a la derecha si lo deseas */
+  margin-left: auto;
 }
 
 
+/* =========================================================
+   MONITORES MEDIANOS
+========================================================= */
+
+@media (max-width: 1100px) {
+  .tab-link {
+    padding-right: 10px;
+    padding-left: 10px;
+
+    font-size: 0.84rem;
+  }
+
+  .tab-link {
+    gap: 6px;
+  }
+}
+
+
+/* =========================================================
+   TABLETS
+========================================================= */
+
+@media (max-width: 900px) {
+  .navbar-content {
+    padding-right: 24px;
+    padding-left: 24px;
+  }
+
+  /*
+   * Cuando todas las pestañas no caben, configuración
+   * continúa como un elemento normal dentro del scroll.
+   */
+  .config-tab {
+    margin-left: 0;
+  }
+}
+
+
+/* =========================================================
+   MÓVILES
+========================================================= */
+
+@media (max-width: 768px) {
+  .top-navbar {
+    height: 58px;
+  }
+
+  .navbar-content {
+    padding-right: 20px;
+    padding-left: 20px;
+  }
+
+  .nav-tabs {
+    gap: 3px;
+  }
+
+  .tab-link {
+    height: 44px;
+    gap: 6px;
+
+    padding-right: 10px;
+    padding-left: 10px;
+
+    font-size: 0.82rem;
+  }
+
+  .tab-icon {
+    width: 16px;
+    height: 16px;
+    flex-basis: 16px;
+  }
+
+  .tab-link.active::after {
+    right: 8px;
+    left: 8px;
+  }
+}
+
+
+/* =========================================================
+   PANTALLAS PEQUEÑAS
+========================================================= */
+
+@media (max-width: 480px) {
+  .navbar-content {
+    padding-right: 16px;
+    padding-left: 16px;
+  }
+
+  .tab-link {
+    padding-right: 9px;
+    padding-left: 9px;
+
+    font-size: 0.8rem;
+  }
+}
+
+
+/* =========================================================
+   PANTALLAS MUY PEQUEÑAS
+========================================================= */
+
+@media (max-width: 360px) {
+  .navbar-content {
+    padding-right: 12px;
+    padding-left: 12px;
+  }
+
+  .tab-link {
+    gap: 5px;
+    padding-right: 8px;
+    padding-left: 8px;
+  }
+}
+
+
+/* =========================================================
+   ACCESIBILIDAD
+========================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+  .top-navbar,
+  .tab-link,
+  .tab-icon {
+    transition: none;
+  }
+
+  .nav-tabs {
+    scroll-behavior: auto;
+  }
+}

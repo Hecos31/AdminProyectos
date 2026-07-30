@@ -1,99 +1,261 @@
 <div class="sidebar">
-  <div class="sidebar-header" (click)="irAInicio()" style="cursor: pointer;">
-    <div class="logo-mark">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+
+  <!-- =====================================================
+       IDENTIDAD DEL SISTEMA
+  ====================================================== -->
+  <button
+    type="button"
+    class="sidebar-header"
+    (click)="irAInicio()"
+    title="Ir al inicio"
+    aria-label="Ir al inicio de Orbita"
+  >
+    <span class="logo-mark">
+      <svg
+        width="20"
+        height="20"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2.5"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        aria-hidden="true"
+      >
         <circle cx="12" cy="12" r="10"></circle>
         <circle cx="12" cy="12" r="4"></circle>
         <line x1="21.17" y1="8" x2="12" y2="8"></line>
         <line x1="3.95" y1="6.06" x2="8.54" y2="14"></line>
         <line x1="10.88" y1="21.94" x2="15.46" y2="14"></line>
       </svg>
-    </div>
-    <span class="logo-text">Orbita</span>
-  </div>
+    </span>
 
-  <nav class="sidebar-nav">
-    <div class="menu-global">
-      <ul class="nav-list">
-        <li class="nav-item">
-          <a
-            routerLink="/inicio"
-            class="nav-link"
-            routerLinkActive="active"
-            [routerLinkActiveOptions]="{ exact: true }"
-            title="Inicio"
+    <span class="logo-text">Orbita</span>
+  </button>
+
+
+  <!-- =====================================================
+       NAVEGACIÓN
+  ====================================================== -->
+  <nav
+    class="sidebar-nav"
+    aria-label="Navegación principal"
+  >
+    <ul class="nav-list">
+
+      <!-- INICIO -->
+      <li class="nav-item">
+        <a
+          routerLink="/inicio"
+          class="nav-link"
+          routerLinkActive="active"
+          [routerLinkActiveOptions]="{ exact: true }"
+          title="Inicio"
+        >
+          <svg
+            class="nav-icon"
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
           >
-            <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
-              <polyline points="9 22 9 12 15 12 15 22"></polyline>
-            </svg>
-            <span class="nav-text">Inicio</span>
-          </a>
-        </li>
-        <li class="nav-item">
-          <button
-            (click)="abrirChat()"
-            class="nav-link"
-            style="width: 100%; border: none; background: transparent; text-align: left"
-            title="Chats"
+            <path
+              d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"
+            ></path>
+
+            <polyline points="9 22 9 12 15 12 15 22"></polyline>
+          </svg>
+
+          <span class="nav-text">Inicio</span>
+        </a>
+      </li>
+
+
+      <!-- CHATS -->
+      <li class="nav-item">
+        <button
+          type="button"
+          class="nav-link"
+          (click)="abrirChat()"
+          title="Chats"
+        >
+          <svg
+            class="nav-icon"
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
           >
-            <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-            </svg>
-            <span class="nav-text">Chats</span>
-          </button>
-        </li>
-        <li class="nav-item separator"></li>
-        <li class="nav-item">
-          <button
-            routerLink="/crear-proyecto"
-            class="nav-link nav-btn-primary"
-            routerLinkActive="active"
-            title="Nuevo Proyecto"
+            <path
+              d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"
+            ></path>
+          </svg>
+
+          <span class="nav-text">Chats</span>
+        </button>
+      </li>
+
+
+      <!-- SEPARADOR -->
+      <li
+        class="nav-item separator"
+        aria-hidden="true"
+      ></li>
+
+
+      <!-- CREAR PROYECTO -->
+      <li class="nav-item">
+        <a
+          routerLink="/crear-proyecto"
+          class="nav-link nav-btn-primary"
+          routerLinkActive="active"
+          title="Nuevo proyecto"
+        >
+          <svg
+            class="nav-icon"
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
           >
-            <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <line x1="12" y1="5" x2="12" y2="19"></line>
-              <line x1="5" y1="12" x2="19" y2="12"></line>
-            </svg>
-            <span class="nav-text">Nuevo Proyecto</span>
-          </button>
-        </li>
-      </ul>
-    </div>
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+
+          <span class="nav-text">Nuevo proyecto</span>
+        </a>
+      </li>
+
+    </ul>
   </nav>
 
+
+  <!-- =====================================================
+       PERFIL DEL USUARIO
+  ====================================================== -->
   <div class="user-profile-section">
-    <div class="user-popover" *ngIf="mostrarMenuUsuario">
+
+    <!-- MENÚ EMERGENTE -->
+    <div
+      class="user-popover"
+      *ngIf="mostrarMenuUsuario"
+      role="menu"
+      aria-label="Opciones del usuario"
+    >
+
       <div class="popover-header">
-        <div class="popover-avatar">{{ inicialUsuario }}</div>
-        <div class="popover-info">
-          <span class="popover-name">{{ nombreUsuario }} {{ apellidoUsuario }}</span>
-          <span class="popover-email">{{ usuario?.correo || 'correo@ejemplo.com' }}</span>
+
+        <div
+          class="popover-avatar"
+          aria-hidden="true"
+        >
+          {{ inicialUsuario }}
         </div>
+
+        <div class="popover-info">
+          <span class="popover-name">
+            {{ nombreUsuario }} {{ apellidoUsuario }}
+          </span>
+
+          <span
+            class="popover-email"
+            [title]="usuario?.correo || 'correo@ejemplo.com'"
+          >
+            {{ usuario?.correo || 'correo@ejemplo.com' }}
+          </span>
+        </div>
+
       </div>
+
+
       <div class="popover-actions">
-        <button (click)="cerrarSesion()" class="popover-btn logout">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <button
+          type="button"
+          class="popover-btn logout"
+          (click)="cerrarSesion()"
+          role="menuitem"
+        >
+          <svg
+            width="17"
+            height="17"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
             <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
             <polyline points="16 17 21 12 16 7"></polyline>
             <line x1="21" y1="12" x2="9" y2="12"></line>
           </svg>
-          Cerrar Sesión
+
+          <span>Cerrar sesión</span>
         </button>
       </div>
+
     </div>
 
+
+    <!-- BOTÓN DEL PERFIL -->
     <button
-  class="user-profile-btn"
-  (click)="toggleMenuUsuario()"
-  [class.active]="mostrarMenuUsuario"
-  [title]="nombreUsuario + ' ' + apellidoUsuario"
->
-  <div class="user-avatar-mini">{{ inicialUsuario }}</div>
-  <span class="user-name-truncate">{{ nombreUsuario }} {{ apellidoUsuario }}</span>
-  <svg class="popover-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-    <polyline points="18 15 12 9 6 15"></polyline>
-  </svg>
-</button>
+      type="button"
+      class="user-profile-btn"
+      (click)="toggleMenuUsuario()"
+      [class.active]="mostrarMenuUsuario"
+      [attr.aria-expanded]="mostrarMenuUsuario"
+      aria-haspopup="menu"
+      [attr.aria-label]="
+        'Abrir opciones de ' +
+        nombreUsuario +
+        ' ' +
+        apellidoUsuario
+      "
+      [title]="nombreUsuario + ' ' + apellidoUsuario"
+    >
+      <span
+        class="user-avatar-mini"
+        aria-hidden="true"
+      >
+        {{ inicialUsuario }}
+      </span>
+
+      <span class="user-name-truncate">
+        {{ nombreUsuario }} {{ apellidoUsuario }}
+      </span>
+
+      <svg
+        class="popover-chevron"
+        width="15"
+        height="15"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        aria-hidden="true"
+      >
+        <polyline points="18 15 12 9 6 15"></polyline>
+      </svg>
+    </button>
+
   </div>
+
 </div>

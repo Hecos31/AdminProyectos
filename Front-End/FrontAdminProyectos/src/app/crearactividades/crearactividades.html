@@ -1,137 +1,794 @@
-<div class="k-container">
-  
-  <div *ngIf="mensajeToast.texto" class="k-toast" [ngClass]="mensajeToast.tipo">
-    {{ mensajeToast.texto }}
-  </div>
+<div class="management-page page-shell">
+  <main class="k-container page-content">
 
-  <header class="k-header">
-    <div class="k-header-title">
-      <h2>Tablero de Proyecto</h2>
-      <span class="k-subtitle">Gestión visual y asignación inteligente</span>
+    <!-- =====================================================
+         NOTIFICACIONES
+    ====================================================== -->
+    <div
+      *ngIf="mensajeToast.texto"
+      class="k-toast"
+      [ngClass]="mensajeToast.tipo"
+      [attr.role]="mensajeToast.tipo === 'error' ? 'alert' : 'status'"
+      aria-live="polite"
+    >
+      <span class="toast-icon" aria-hidden="true">
+
+        <!-- ÉXITO -->
+        <svg
+          *ngIf="mensajeToast.tipo === 'exito'"
+          width="18"
+          height="18"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2.4"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <polyline points="20 6 9 17 4 12"></polyline>
+        </svg>
+
+        <!-- ERROR -->
+        <svg
+          *ngIf="mensajeToast.tipo === 'error'"
+          width="18"
+          height="18"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="8" x2="12" y2="12"></line>
+          <line x1="12" y1="16" x2="12.01" y2="16"></line>
+        </svg>
+
+      </span>
+
+      <span>{{ mensajeToast.texto }}</span>
     </div>
-    <button class="k-btn k-btn-outline" (click)="volverAlProyecto()">Regresar</button>
-  </header>
 
-  <section class="k-creation-panel">
-    <div class="k-ai-box">
-      <div class="k-ai-header">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-        <span>Asistente de IA (Gemini)</span>
-      </div>
-      <div class="k-ai-input-wrapper">
-        <textarea [(ngModel)]="textoIA" class="k-input" placeholder="Describe la actividad. Ej: 'Diseñar la base de datos de usuarios para el próximo lunes, asígnalo a Héctor.'"></textarea>
-        <button class="k-btn k-btn-primary" (click)="generarConIA()" [disabled]="cargandoIA">
-          {{ cargandoIA ? 'Procesando...' : 'Autocompletar' }}
-        </button>
-      </div>
-    </div>
 
-    <div class="k-manual-form">
-      <div class="k-form-row">
-        <div class="k-form-group flex-2">
-          <label>Título de la actividad *</label>
-          <input type="text" class="k-input" [(ngModel)]="nuevaTarea.titulo" placeholder="Ej. Refactorización de API">
+    <!-- =====================================================
+         CABECERA
+    ====================================================== -->
+    <header class="k-header">
+
+      <div class="k-header-main">
+
+        <span class="k-header-icon" aria-hidden="true">
+          <svg
+            width="23"
+            height="23"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <rect x="3" y="3" width="7" height="18" rx="2"></rect>
+            <rect x="14" y="3" width="7" height="11" rx="2"></rect>
+          </svg>
+        </span>
+
+        <div class="k-header-title">
+          <span class="k-eyebrow">
+            Administración del proyecto
+          </span>
+
+          <h1>Gestión de actividades</h1>
+
+          <p class="k-subtitle">
+            Crea, asigna y organiza las actividades del equipo.
+          </p>
         </div>
-        <div class="k-form-group flex-1">
-          <label>Responsable</label>
-          <select class="k-input" [(ngModel)]="nuevaTarea.id_usuario_asignado">
-            <option [ngValue]="null">-- Sin asignar --</option>
-            <option *ngFor="let c of colaboradores" [ngValue]="c.id_usuario">{{ c.nombre }} {{ c.apellido }}</option>
-          </select>
-        </div>
+
       </div>
 
-      <div class="k-form-row">
-        <div class="k-form-group flex-1">
-          <label>Descripción detallada</label>
-          <textarea class="k-input" [(ngModel)]="nuevaTarea.descripcion" rows="2"></textarea>
-        </div>
-      </div>
 
-      <div class="k-form-row">
-        <div class="k-form-group">
-          <label>Nivel de Prioridad</label>
-          <select class="k-input" [(ngModel)]="nuevaTarea.prioridad">
-            <option value="Alta">Alta</option>
-            <option value="Media">Media</option>
-            <option value="Baja">Baja</option>
-          </select>
-        </div>
-        <div class="k-form-group">
-          <label>Fecha Inicio</label>
-          <input type="date" class="k-input" [(ngModel)]="nuevaTarea.fecha_inicio" [min]="fechaMinima">
-        </div>
-        <div class="k-form-group">
-          <label>Fecha Límite</label>
-          <input type="date" class="k-input" [(ngModel)]="nuevaTarea.fecha_limite" [min]="fechaMinima">
-        </div>
-      </div>
-      
-      <div class="k-form-actions">
-        <button class="k-btn k-btn-dark" (click)="crearTarea()">Añadir al Tablero</button>
-      </div>
-    </div>
-  </section>
+      <button
+        type="button"
+        class="k-btn k-btn-outline"
+        (click)="volverAlProyecto()"
+      >
+        <svg
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+        >
+          <line x1="19" y1="12" x2="5" y2="12"></line>
+          <polyline points="12 19 5 12 12 5"></polyline>
+        </svg>
 
-  <div class="k-board" cdkDropListGroup *ngIf="!cargando">
-    
-    <div class="k-column" *ngFor="let estado of estados">
-      <div class="k-column-header">
-        <h3>{{ estado }}</h3>
-        <span class="k-count">{{ columnas[estado].length }}</span>
-      </div>
+        Regresar
+      </button>
 
-      <div class="k-drop-zone"
-           cdkDropList
-           [cdkDropListData]="columnas[estado]"
-           (cdkDropListDropped)="onDrop($event, estado)">
-           
-        <div class="k-card" *ngFor="let tarea of columnas[estado]" cdkDrag (click)="abrirDetalle(tarea)">
+    </header>
 
-          <div class="k-custom-placeholder" *cdkDragPlaceholder></div>
-          
-          <div class="k-card-header">
-            <span class="k-badge" [attr.data-prio]="tarea.prioridad.toLowerCase()">{{ tarea.prioridad }}</span>
-            <button class="k-btn-icon" (click)="eliminarTarea(tarea.id_tarea); $event.stopPropagation()">×</button>
+
+    <!-- =====================================================
+         PANEL DE CREACIÓN
+    ====================================================== -->
+    <section class="k-creation-panel">
+
+      <div class="creation-header">
+
+        <div class="creation-title">
+          <span class="creation-icon" aria-hidden="true">
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <rect x="3" y="3" width="18" height="18" rx="3"></rect>
+              <line x1="12" y1="8" x2="12" y2="16"></line>
+              <line x1="8" y1="12" x2="16" y2="12"></line>
+            </svg>
+          </span>
+
+          <div>
+            <span class="creation-eyebrow">
+              Nueva actividad
+            </span>
+
+            <h2>Crear y asignar actividad</h2>
+
+            <p>
+              Utiliza el asistente o completa el formulario manualmente.
+            </p>
           </div>
-          
-          <h4 class="k-card-title">{{ tarea.titulo }}</h4>
-          <p class="k-card-desc" *ngIf="tarea.descripcion">{{ tarea.descripcion }}</p>
-          
-          <div class="k-card-footer">
-            <div class="k-date" *ngIf="tarea.fecha_limite">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-              {{ tarea.fecha_limite | date:'MMM d' }}
-            </div>
-            
-            <div class="k-assignee-selector">
-              <select (change)="cambiarResponsable(tarea, $event)" (click)="$event.stopPropagation()">
-                <option [value]="'null'" [selected]="!tarea.usuario_asignado">Sin asignar</option>
-                <option *ngFor="let colab of colaboradores" 
-                        [value]="colab.id_usuario" 
-                        [selected]="tarea.usuario_asignado?.id_usuario === colab.id_usuario">
-                  👤 {{ colab.nombre }}
-                </option>
-              </select>
+        </div>
+
+      </div>
+
+
+      <!-- ===================================================
+           ASISTENTE DE IA
+      ==================================================== -->
+      <div class="k-ai-box">
+
+        <div class="k-ai-header">
+
+          <span class="k-ai-icon" aria-hidden="true">
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M12 3l1.2 3.8L17 8l-3.8 1.2L12 13l-1.2-3.8L7 8l3.8-1.2L12 3z"></path>
+              <path d="M19 14l.8 2.2L22 17l-2.2.8L19 20l-.8-2.2L16 17l2.2-.8L19 14z"></path>
+              <path d="M5 13l.8 2.2L8 16l-2.2.8L5 19l-.8-2.2L2 16l2.2-.8L5 13z"></path>
+            </svg>
+          </span>
+
+          <div>
+            <h3>Asistente de IA</h3>
+
+            <p>
+              Describe la actividad y el formulario se completará
+              automáticamente.
+            </p>
+          </div>
+
+          <span class="ai-badge">Gemini</span>
+
+        </div>
+
+
+        <div class="k-ai-input-wrapper">
+
+          <label for="instruccion-ia" class="sr-only">
+            Descripción de la actividad para la inteligencia artificial
+          </label>
+
+          <textarea
+            id="instruccion-ia"
+            [(ngModel)]="textoIA"
+            class="k-input k-ai-input"
+            rows="3"
+            placeholder="Ejemplo: Diseñar la base de datos de usuarios para el próximo lunes y asignarla a Héctor."
+          ></textarea>
+
+          <button
+            type="button"
+            class="k-btn k-btn-ai"
+            (click)="generarConIA()"
+            [disabled]="cargandoIA || !textoIA.trim()"
+            [attr.aria-busy]="cargandoIA"
+          >
+            <svg
+              *ngIf="!cargandoIA"
+              width="17"
+              height="17"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M12 3l1.2 3.8L17 8l-3.8 1.2L12 13l-1.2-3.8L7 8l3.8-1.2L12 3z"></path>
+              <path d="M19 14l.8 2.2L22 17l-2.2.8L19 20l-.8-2.2L16 17l2.2-.8L19 14z"></path>
+            </svg>
+
+            <span
+              *ngIf="cargandoIA"
+              class="button-spinner"
+              aria-hidden="true"
+            ></span>
+
+            {{ cargandoIA ? 'Procesando...' : 'Autocompletar' }}
+          </button>
+
+        </div>
+
+      </div>
+
+
+      <!-- ===================================================
+           FORMULARIO MANUAL
+      ==================================================== -->
+      <form
+        class="k-manual-form"
+        (ngSubmit)="crearTarea()"
+      >
+
+        <div class="form-section-header">
+          <span>Información de la actividad</span>
+
+          <small>
+            Los campos marcados con * son obligatorios.
+          </small>
+        </div>
+
+
+        <div class="k-form-grid">
+
+          <!-- TÍTULO -->
+          <div class="k-form-group form-span-2">
+            <label for="actividad-titulo">
+              Título de la actividad
+              <span aria-hidden="true">*</span>
+            </label>
+
+            <input
+              id="actividad-titulo"
+              name="titulo"
+              type="text"
+              class="k-input"
+              [(ngModel)]="nuevaTarea.titulo"
+              placeholder="Ejemplo: Refactorización de la API"
+              autocomplete="off"
+              required
+            />
+          </div>
+
+
+          <!-- RESPONSABLE -->
+          <div class="k-form-group">
+            <label for="actividad-responsable">
+              Responsable
+            </label>
+
+            <select
+              id="actividad-responsable"
+              name="responsable"
+              class="k-input"
+              [(ngModel)]="nuevaTarea.id_usuario_asignado"
+            >
+              <option [ngValue]="null">
+                Sin asignar
+              </option>
+
+              <option
+                *ngFor="let colaborador of colaboradores"
+                [ngValue]="colaborador.id_usuario"
+              >
+                {{ colaborador.nombre }}
+                {{ colaborador.apellido }}
+              </option>
+            </select>
+          </div>
+
+
+          <!-- DESCRIPCIÓN -->
+          <div class="k-form-group form-full-width">
+            <label for="actividad-descripcion">
+              Descripción detallada
+            </label>
+
+            <textarea
+              id="actividad-descripcion"
+              name="descripcion"
+              class="k-input description-input"
+              [(ngModel)]="nuevaTarea.descripcion"
+              rows="4"
+              placeholder="Agrega instrucciones, objetivos o información importante."
+            ></textarea>
+          </div>
+
+
+          <!-- PRIORIDAD -->
+          <div class="k-form-group">
+            <label for="actividad-prioridad">
+              Nivel de prioridad
+            </label>
+
+            <select
+              id="actividad-prioridad"
+              name="prioridad"
+              class="k-input"
+              [(ngModel)]="nuevaTarea.prioridad"
+            >
+              <option value="Alta">Alta</option>
+              <option value="Media">Media</option>
+              <option value="Baja">Baja</option>
+            </select>
+          </div>
+
+
+          <!-- FECHA DE INICIO -->
+          <div class="k-form-group">
+            <label for="actividad-fecha-inicio">
+              Fecha de inicio
+            </label>
+
+            <input
+              id="actividad-fecha-inicio"
+              name="fechaInicio"
+              type="date"
+              class="k-input"
+              [(ngModel)]="nuevaTarea.fecha_inicio"
+              [min]="fechaMinima"
+            />
+          </div>
+
+
+          <!-- FECHA LÍMITE -->
+          <div class="k-form-group">
+            <label for="actividad-fecha-limite">
+              Fecha límite
+            </label>
+
+            <input
+              id="actividad-fecha-limite"
+              name="fechaLimite"
+              type="date"
+              class="k-input"
+              [(ngModel)]="nuevaTarea.fecha_limite"
+              [min]="fechaMinima"
+            />
+          </div>
+
+        </div>
+
+
+        <div class="k-form-actions">
+          <span class="form-helper">
+            La actividad se colocará automáticamente en la columna
+            correspondiente.
+          </span>
+
+          <button
+            type="submit"
+            class="k-btn k-btn-create"
+            [disabled]="!nuevaTarea.titulo?.trim()"
+          >
+            <svg
+              width="17"
+              height="17"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <line x1="12" y1="5" x2="12" y2="19"></line>
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+
+            Añadir al tablero
+          </button>
+        </div>
+
+      </form>
+
+    </section>
+
+
+    <!-- =====================================================
+         CABECERA DEL TABLERO
+    ====================================================== -->
+    <div class="board-section-header">
+
+      <div>
+        <span class="board-eyebrow">
+          Flujo de trabajo
+        </span>
+
+        <h2>Tablero del proyecto</h2>
+
+        <p>
+          Arrastra las actividades usando el control ubicado en cada tarjeta.
+        </p>
+      </div>
+
+
+      <span class="drag-help">
+        <svg
+          width="15"
+          height="15"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+        >
+          <path d="M9 11V6a2 2 0 0 1 4 0v5"></path>
+          <path d="M13 10V5a2 2 0 0 1 4 0v7"></path>
+          <path d="M17 11V8a2 2 0 0 1 4 0v7a7 7 0 0 1-7 7h-1a7 7 0 0 1-6.4-4.2L4.2 12.5a2 2 0 0 1 3.6-1.7L9 13"></path>
+        </svg>
+
+        Arrastrar y soltar
+      </span>
+
+    </div>
+
+
+    <!-- =====================================================
+         TABLERO KANBAN
+    ====================================================== -->
+    <section
+      class="k-board"
+      cdkDropListGroup
+      *ngIf="!cargando"
+      aria-label="Tablero editable de actividades"
+    >
+
+      <article
+        class="k-column"
+        *ngFor="let estado of estados"
+        [attr.data-status]="estado.toLowerCase()"
+      >
+
+        <!-- CABECERA DE COLUMNA -->
+        <header class="k-column-header">
+
+          <div class="k-column-title">
+            <span class="k-status-indicator" aria-hidden="true"></span>
+
+            <div>
+              <h3>{{ estado }}</h3>
+
+              <span class="k-column-description">
+                Actividades en este estado
+              </span>
             </div>
           </div>
+
+
+          <span class="k-count">
+            {{ columnas[estado].length }}
+          </span>
+
+        </header>
+
+
+        <!-- ZONA DE ARRASTRE -->
+        <div
+          class="k-drop-zone"
+          cdkDropList
+          [cdkDropListData]="columnas[estado]"
+          (cdkDropListDropped)="onDrop($event, estado)"
+        >
+
+          <!-- TARJETA -->
+          <article
+            class="k-card"
+            *ngFor="let tarea of columnas[estado]"
+            cdkDrag
+          >
+
+            <div
+              class="k-custom-placeholder"
+              *cdkDragPlaceholder
+            ></div>
+
+
+            <!-- CABECERA DE TARJETA -->
+            <div class="k-card-header">
+
+              <span
+                class="k-badge"
+                [attr.data-prio]="
+                  (tarea.prioridad || 'sin-prioridad').toLowerCase()
+                "
+              >
+                {{ tarea.prioridad || 'Sin prioridad' }}
+              </span>
+
+
+              <div class="k-card-actions">
+
+                <!-- CONTROL PARA ARRASTRAR -->
+                <button
+                  type="button"
+                  class="k-card-action k-drag-handle"
+                  cdkDragHandle
+                  (click)="$event.stopPropagation()"
+                  title="Arrastrar actividad"
+                  aria-label="Arrastrar actividad"
+                >
+                  <svg
+                    width="17"
+                    height="17"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                    aria-hidden="true"
+                  >
+                    <circle cx="8" cy="6" r="1.4"></circle>
+                    <circle cx="16" cy="6" r="1.4"></circle>
+                    <circle cx="8" cy="12" r="1.4"></circle>
+                    <circle cx="16" cy="12" r="1.4"></circle>
+                    <circle cx="8" cy="18" r="1.4"></circle>
+                    <circle cx="16" cy="18" r="1.4"></circle>
+                  </svg>
+                </button>
+
+
+                <!-- ELIMINAR -->
+                <button
+                  type="button"
+                  class="k-card-action k-delete-button"
+                  (click)="
+                    eliminarTarea(tarea.id_tarea);
+                    $event.stopPropagation()
+                  "
+                  title="Eliminar actividad"
+                  aria-label="Eliminar actividad"
+                >
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    aria-hidden="true"
+                  >
+                    <polyline points="3 6 5 6 21 6"></polyline>
+                    <path d="M19 6l-1 14H6L5 6"></path>
+                    <path d="M8 6V4h8v2"></path>
+                    <line x1="10" y1="10" x2="10" y2="16"></line>
+                    <line x1="14" y1="10" x2="14" y2="16"></line>
+                  </svg>
+                </button>
+
+              </div>
+
+            </div>
+
+
+            <!-- ABRIR DETALLES -->
+            <button
+              type="button"
+              class="k-card-main"
+              (click)="abrirDetalle(tarea)"
+              [attr.aria-label]="
+                'Abrir detalles de la actividad ' +
+                tarea.titulo
+              "
+            >
+              <strong class="k-card-title">
+                {{ tarea.titulo }}
+              </strong>
+
+              <span
+                class="k-card-desc"
+                *ngIf="tarea.descripcion"
+              >
+                {{ tarea.descripcion }}
+              </span>
+
+              <span
+                class="k-card-desc k-card-no-description"
+                *ngIf="!tarea.descripcion"
+              >
+                Esta actividad no cuenta con una descripción.
+              </span>
+
+              <span class="k-open-detail">
+                Ver detalles
+
+                <svg
+                  width="15"
+                  height="15"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                >
+                  <polyline points="9 18 15 12 9 6"></polyline>
+                </svg>
+              </span>
+            </button>
+
+
+            <!-- PIE DE TARJETA -->
+            <div class="k-card-footer">
+
+              <span
+                class="k-date"
+                *ngIf="tarea.fecha_limite"
+              >
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                >
+                  <rect
+                    x="3"
+                    y="4"
+                    width="18"
+                    height="18"
+                    rx="2"
+                  ></rect>
+
+                  <line x1="16" y1="2" x2="16" y2="6"></line>
+                  <line x1="8" y1="2" x2="8" y2="6"></line>
+                  <line x1="3" y1="10" x2="21" y2="10"></line>
+                </svg>
+
+                {{ tarea.fecha_limite | date:'d MMM' }}
+              </span>
+
+
+              <span
+                class="k-date k-no-date"
+                *ngIf="!tarea.fecha_limite"
+              >
+                Sin fecha límite
+              </span>
+
+
+              <div class="k-assignee-selector">
+
+                <label
+                  class="sr-only"
+                  [for]="'responsable-' + tarea.id_tarea"
+                >
+                  Responsable de {{ tarea.titulo }}
+                </label>
+
+                <select
+                  [id]="'responsable-' + tarea.id_tarea"
+                  (change)="cambiarResponsable(tarea, $event)"
+                  (click)="$event.stopPropagation()"
+                >
+                  <option
+                    value="null"
+                    [selected]="!tarea.usuario_asignado"
+                  >
+                    Sin asignar
+                  </option>
+
+                  <option
+                    *ngFor="let colaborador of colaboradores"
+                    [value]="colaborador.id_usuario"
+                    [selected]="
+                      tarea.usuario_asignado?.id_usuario ===
+                      colaborador.id_usuario
+                    "
+                  >
+                    {{ colaborador.nombre }}
+                  </option>
+                </select>
+
+              </div>
+
+            </div>
+
+          </article>
+
+
+          <!-- COLUMNA VACÍA -->
+          <div
+            class="k-empty-state"
+            *ngIf="columnas[estado].length === 0"
+          >
+            <span class="empty-drop-icon" aria-hidden="true">
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <rect x="4" y="4" width="16" height="16" rx="3"></rect>
+                <line x1="12" y1="8" x2="12" y2="16"></line>
+                <line x1="8" y1="12" x2="16" y2="12"></line>
+              </svg>
+            </span>
+
+            <strong>Columna vacía</strong>
+
+            <span>
+              Arrastra una actividad hasta este espacio.
+            </span>
+          </div>
+
         </div>
-        
-        <div class="k-empty-state" *ngIf="columnas[estado].length === 0">
-          Soltar tareas aquí
-        </div>
+
+      </article>
+
+    </section>
+
+
+    <!-- =====================================================
+         CARGA
+    ====================================================== -->
+    <section
+      class="k-loading-container"
+      *ngIf="cargando"
+      aria-live="polite"
+    >
+      <div class="spinner" aria-hidden="true"></div>
+
+      <div>
+        <strong>Cargando tablero</strong>
+
+        <p>
+          Estamos obteniendo la información del proyecto.
+        </p>
       </div>
-    </div>
-  </div>
+    </section>
 
-  <div class="k-loading-container" *ngIf="cargando">
-    <div class="spinner"></div>
-    <p>Cargando infraestructura del tablero...</p>
-  </div>
-
+  </main>
 </div>
 
-<app-detalles-actividades 
-        [tarea]="tareaSeleccionada" 
-        (cerrar)="cerrarDetalle()">
-</app-detalles-actividades>
+
+<!-- =====================================================
+     DETALLES DE ACTIVIDAD
+====================================================== -->
+<app-detalles-actividades
+  [tarea]="tareaSeleccionada"
+  (cerrar)="cerrarDetalle()"
+></app-detalles-actividades>

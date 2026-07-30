@@ -1,73 +1,215 @@
-<div class="top-navbar" *ngIf="modoProyecto && proyectoActivoId">
+<nav
+  class="top-navbar"
+  *ngIf="modoProyecto && proyectoActivoId"
+  aria-label="Navegación del proyecto"
+>
   <div class="navbar-content">
     <div class="nav-tabs">
+      <!-- DASHBOARD -->
       <a
         [routerLink]="['/proyecto', proyectoActivoId]"
         class="tab-link"
         routerLinkActive="active"
         [routerLinkActiveOptions]="{ exact: true }"
+        title="Dashboard"
       >
-        Dashboard
+        <svg
+          class="tab-icon"
+          width="17"
+          height="17"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+        >
+          <rect x="3" y="3" width="7" height="7" rx="1"></rect>
+          <rect x="14" y="3" width="7" height="7" rx="1"></rect>
+          <rect x="3" y="14" width="7" height="7" rx="1"></rect>
+          <rect x="14" y="14" width="7" height="7" rx="1"></rect>
+        </svg>
+
+        <span class="tab-text">Dashboard</span>
       </a>
 
-      <!-- Rutas corregidas exactamente a como las tienes -->
+      <!-- TABLÓN -->
       <a
         [routerLink]="['/proyecto', proyectoActivoId, 'tablon']"
         class="tab-link"
         routerLinkActive="active"
+        title="Tablón"
       >
-        Tablón
+        <svg
+          class="tab-icon"
+          width="17"
+          height="17"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+        >
+          <path
+            d="M9 5H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-3"
+          ></path>
+
+          <rect x="9" y="3" width="6" height="4" rx="1"></rect>
+          <line x1="8" y1="12" x2="16" y2="12"></line>
+          <line x1="8" y1="16" x2="14" y2="16"></line>
+        </svg>
+
+        <span class="tab-text">Tablón</span>
       </a>
 
+      <!-- MIS ACTIVIDADES -->
       <a
         [routerLink]="['/proyecto', proyectoActivoId, 'mis-actividades']"
         class="tab-link"
         routerLinkActive="active"
+        title="Mis actividades"
       >
-        Mis Actividades
+        <svg
+          class="tab-icon"
+          width="17"
+          height="17"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+        >
+          <path d="M9 11l3 3L22 4"></path>
+
+          <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+        </svg>
+
+        <span class="tab-text">Mis actividades</span>
       </a>
-      
+
+      <!-- GESTIONAR ACTIVIDADES -->
       <a
         *ngIf="rolUsuario === 'admin'"
         [routerLink]="['/proyecto', proyectoActivoId, 'crearactividades']"
         class="tab-link"
         routerLinkActive="active"
+        title="Gestionar actividades"
       >
-        Gestionar actividades  
+        <svg
+          class="tab-icon"
+          width="17"
+          height="17"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+        >
+          <rect x="3" y="3" width="18" height="18" rx="2"></rect>
+
+          <line x1="12" y1="8" x2="12" y2="16"></line>
+          <line x1="8" y1="12" x2="16" y2="12"></line>
+        </svg>
+
+        <span class="tab-text">Gestionar actividades</span>
       </a>
 
+      <!-- COLABORADORES -->
       <a
         *ngIf="rolUsuario === 'admin'"
         [routerLink]="['/proyecto', proyectoActivoId, 'integrantes']"
         class="tab-link"
         routerLinkActive="active"
+        title="Colaboradores"
       >
-        Colaboradores
+        <svg
+          class="tab-icon"
+          width="17"
+          height="17"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+        >
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+
+          <circle cx="9" cy="7" r="4"></circle>
+
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+
+          <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+        </svg>
+
+        <span class="tab-text">Colaboradores</span>
       </a>
 
-      <!-- === PESTAÑA PROTEGIDA === -->
-      <!-- Sólo se dibuja en el HTML si la API confirmó que eres admin (id_rol === 1) -->
+      <!-- CONFIGURACIÓN -->
       <a
         *ngIf="rolUsuario === 'admin'"
         [routerLink]="['/proyecto', proyectoActivoId, 'configuracion']"
         class="tab-link config-tab"
         routerLinkActive="active"
+        title="Configuración"
       >
         <svg
-          width="14"
-          height="14"
+          class="tab-icon"
+          width="17"
+          height="17"
           viewBox="0 0 24 24"
           fill="none"
           stroke="currentColor"
           stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
         >
           <circle cx="12" cy="12" r="3"></circle>
+
           <path
-            d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"
+            d="M19.4 15a1.65 1.65 0 0 0
+               .33 1.82l.06.06a2 2 0 0 1
+               0 2.83 2 2 0 0 1-2.83 0
+               l-.06-.06a1.65 1.65 0 0 0
+               -1.82-.33 1.65 1.65 0 0 0
+               -1 1.51V21a2 2 0 0 1-2 2
+               2 2 0 0 1-2-2v-.09A1.65
+               1.65 0 0 0 9 19.4a1.65
+               1.65 0 0 0-1.82.33l-.06.06
+               a2 2 0 0 1-2.83 0 2 2 0 0 1
+               0-2.83l.06-.06a1.65 1.65
+               0 0 0 .33-1.82 1.65 1.65
+               0 0 0-1.51-1H3a2 2 0 0 1
+               -2-2 2 2 0 0 1 2-2h.09A1.65
+               1.65 0 0 0 4.6 9a1.65
+               1.65 0 0 0-.33-1.82l-.06-.06
+               a2 2 0 0 1 0-2.83 2 2 0 0 1
+               2.83 0l.06.06a1.65 1.65
+               0 0 0 1.82.33H9a1.65 1.65
+               0 0 0 1-1.51V3a2 2 0 0 1
+               2-2 2 2 0 0 1 2 2v.09a1.65
+               1.65 0 0 0 1 1.51 1.65
+               1.65 0 0 0 1.82-.33l.06-.06
+               a2 2 0 0 1 2.83 0 2 2 0 0 1
+               0 2.83l-.06.06a1.65 1.65
+               0 0 0-.33 1.82V9a1.65
+               1.65 0 0 0 1.51 1H21a2 2
+               0 0 1 2 2 2 2 0 0 1-2 2
+               h-.09a1.65 1.65 0 0 0-1.51 1z"
           ></path>
         </svg>
-        Configuración
+
+        <span class="tab-text">Configuración</span>
       </a>
     </div>
   </div>
-</div>
+</nav>
