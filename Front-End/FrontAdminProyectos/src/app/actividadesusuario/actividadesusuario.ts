@@ -1,136 +1,278 @@
-import { Component, OnInit, inject } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
-import { CommonModule } from '@angular/common';
-import { ApiServicio } from '../Servicios/api.servicio';
-import { Tarea } from '../crearactividades/crearactividades';
+import {
+  Component,
+  OnInit,
+  inject
+} from '@angular/core';
+
+import {
+  ActivatedRoute
+} from '@angular/router';
+
+import {
+  CommonModule
+} from '@angular/common';
+
+import {
+  ApiServicio,
+  EstadoTareaApi,
+  TareaApi
+} from '../Servicios/api.servicio';
+
 
 @Component({
   selector: 'app-actividadesusuario',
   standalone: true,
-  imports: [CommonModule],
+  imports: [
+    CommonModule
+  ],
   templateUrl: './actividadesusuario.html',
-  styleUrl: './actividadesusuario.css',
+  styleUrl: './actividadesusuario.css'
 })
 export class Actividadesusuario implements OnInit {
-  // Inyección de dependencias
+  // =========================================================
+  // INYECCIÓN DE DEPENDENCIAS
+  // =========================================================
+
   private route = inject(ActivatedRoute);
   private apiService = inject(ApiServicio);
 
-  // Variables de estado
-  proyectoId!: number;
+
+  // =========================================================
+  // ESTADO DEL COMPONENTE
+  // =========================================================
+
+  proyectoId = 0;
+
   cargando = true;
+
   tareaExpandidaId: number | null = null;
 
-  // Colecciones de datos
-  misTareasNuevas: Tarea[] = [];
-  misTareasProgreso: Tarea[] = [];
-  misTareasTerminadas: Tarea[] = [];
+  errorMessage = '';
 
-  ngOnInit() {
-    this.proyectoId = Number(this.route.snapshot.params['id']);
+
+  // =========================================================
+  // COLECCIONES DE TAREAS
+  // =========================================================
+
+  misTareasNuevas: TareaApi[] = [];
+
+  misTareasProgreso: TareaApi[] = [];
+
+  misTareasTerminadas: TareaApi[] = [];
+
+
+  // =========================================================
+  // CICLO DE VIDA
+  // =========================================================
+
+  ngOnInit(): void {
+    this.proyectoId = Number(
+      this.route.snapshot.params['id']
+    );
+
+    if (
+      !Number.isInteger(this.proyectoId) ||
+      this.proyectoId <= 0
+    ) {
+      this.errorMessage =
+        'No se pudo identificar el proyecto.';
+
+      this.cargando = false;
+      return;
+    }
+
     this.cargarMisTareas();
   }
 
-  // Petición HTTP para obtener y clasificar las tareas del usuario autenticado
-  cargarMisTareas() {
+
+  // =========================================================
+  // CARGAR TAREAS DEL USUARIO
+  // =========================================================
+
+  cargarMisTareas(): void {
     this.cargando = true;
-
-    this.apiService.obtenerMisTareasProyecto(this.proyectoId).subscribe({
-      next: (misTareas: Tarea[]) => {
-        this.misTareasNuevas = misTareas.filter(
-          t => t.estado === 'Asignada'
-        );
-
-        this.misTareasProgreso = misTareas.filter(
-          t => t.estado === 'En progreso'
-        );
-
-        this.misTareasTerminadas = misTareas.filter(
-          t => t.estado === 'Concluida'
-        );
-
-        this.cargando = false;
-      },
-      error: error => {
-        console.error(
-          'Error al obtener las tareas del usuario:',
-          error
-        );
-
-        this.cargando = false;
-      },
-    });
-  }
-
-  // Control de estado UI para el acordeón
-  toggleDetalles(id_tarea: number) {
-    this.tareaExpandidaId =
-      this.tareaExpandidaId === id_tarea
-        ? null
-        : id_tarea;
-  }
-
-  // Petición HTTP para actualizar estado con actualización optimista de la UI
-  cambiarEstado(
-    tarea: Tarea,
-    nuevoEstado: string,
-    evento: Event
-  ) {
-    evento.stopPropagation();
-    this.tareaExpandidaId = null;
-
-    // Actualización optimista
-    this.moverTareaLocalmente(tarea, nuevoEstado);
+    this.errorMessage = '';
 
     this.apiService
-      .cambiarEstadoTarea(tarea.id_tarea, nuevoEstado)
+      .obtenerMisTareasProyecto(this.proyectoId)
       .subscribe({
-        next: () => {},
-        error: () => {
-          // Rollback en caso de error
-          this.cargarMisTareas();
-          alert('Error de conexión al actualizar la tarea');
+        next: (misTareas: TareaApi[]) => {
+          const tareas = misTareas ?? [];
+
+          this.misTareasNuevas = tareas.filter(
+            (tarea) =>
+              tarea.estado === 'Asignada'
+          );
+
+          this.misTareasProgreso = tareas.filter(
+            (tarea) =>
+              tarea.estado === 'En progreso'
+          );
+
+          this.misTareasTerminadas = tareas.filter(
+            (tarea) =>
+              tarea.estado === 'Concluida'
+          );
+
+          this.cargando = false;
         },
+
+        error: (error) => {
+          console.error(
+            'Error al obtener las tareas del usuario:',
+            error
+          );
+
+          this.misTareasNuevas = [];
+          this.misTareasProgreso = [];
+          this.misTareasTerminadas = [];
+
+          this.errorMessage =
+            error?.error?.detail ||
+            'No fue posible cargar tus actividades.';
+
+          this.cargando = false;
+        }
       });
   }
 
-  // Lógica interna para mover tareas en memoria sin recargar peticiones HTTP
-  private moverTareaLocalmente(
-    tarea: Tarea,
-    nuevoEstado: string
-  ) {
-    // Eliminar de la lista actual
-    this.misTareasNuevas = this.misTareasNuevas.filter(
-      t => t.id_tarea !== tarea.id_tarea
+
+  // =========================================================
+  // EXPANDIR O CONTRAER DETALLES
+  // =========================================================
+
+  toggleDetalles(idTarea: number): void {
+    this.tareaExpandidaId =
+      this.tareaExpandidaId === idTarea
+        ? null
+        : idTarea;
+  }
+
+
+  // =========================================================
+  // CAMBIAR ESTADO
+  // =========================================================
+
+  cambiarEstado(
+    tarea: TareaApi,
+    nuevoEstado: EstadoTareaApi,
+    evento: Event
+  ): void {
+    evento.stopPropagation();
+
+    this.tareaExpandidaId = null;
+    this.errorMessage = '';
+
+    const estadoAnterior =
+      tarea.estado as EstadoTareaApi;
+
+    // Actualización optimista
+    this.moverTareaLocalmente(
+      tarea,
+      nuevoEstado
     );
 
-    this.misTareasProgreso = this.misTareasProgreso.filter(
-      t => t.id_tarea !== tarea.id_tarea
-    );
+    this.apiService
+      .cambiarEstadoTarea(
+        tarea.id_tarea,
+        nuevoEstado
+      )
+      .subscribe({
+        next: () => {
+          // La tarea ya fue actualizada localmente.
+        },
+
+        error: (error) => {
+          console.error(
+            'Error al actualizar la tarea:',
+            error
+          );
+
+          // Restablecer visualmente la tarea.
+          this.moverTareaLocalmente(
+            tarea,
+            estadoAnterior
+          );
+
+          this.errorMessage =
+            error?.error?.detail ||
+            'No fue posible actualizar la actividad.';
+        }
+      });
+  }
+
+
+  // =========================================================
+  // MOVER TAREA LOCALMENTE
+  // =========================================================
+
+  private moverTareaLocalmente(
+    tarea: TareaApi,
+    nuevoEstado: EstadoTareaApi
+  ): void {
+    // Retirar la tarea de todas las listas.
+    this.misTareasNuevas =
+      this.misTareasNuevas.filter(
+        (item) =>
+          item.id_tarea !== tarea.id_tarea
+      );
+
+    this.misTareasProgreso =
+      this.misTareasProgreso.filter(
+        (item) =>
+          item.id_tarea !== tarea.id_tarea
+      );
 
     this.misTareasTerminadas =
       this.misTareasTerminadas.filter(
-        t => t.id_tarea !== tarea.id_tarea
+        (item) =>
+          item.id_tarea !== tarea.id_tarea
       );
 
-    // Actualizar propiedad y agregar a la nueva lista
-    const tareaActualizada = {
+
+    const tareaActualizada: TareaApi = {
       ...tarea,
-      estado: nuevoEstado,
+      estado: nuevoEstado
     };
+
 
     switch (nuevoEstado) {
       case 'Asignada':
-        this.misTareasNuevas.unshift(tareaActualizada);
+        this.misTareasNuevas.unshift(
+          tareaActualizada
+        );
         break;
 
       case 'En progreso':
-        this.misTareasProgreso.unshift(tareaActualizada);
+        this.misTareasProgreso.unshift(
+          tareaActualizada
+        );
         break;
 
       case 'Concluida':
-        this.misTareasTerminadas.unshift(tareaActualizada);
+        this.misTareasTerminadas.unshift(
+          tareaActualizada
+        );
+        break;
+
+      case 'Pendiente por asignar':
+        /*
+         * Esta vista muestra las tareas asignadas al usuario.
+         * Una tarea pendiente no debe aparecer en ninguna lista.
+         */
         break;
     }
+  }
+
+
+  // =========================================================
+  // TRACK BY
+  // =========================================================
+
+  trackTarea(
+    index: number,
+    tarea: TareaApi
+  ): number {
+    return tarea.id_tarea;
   }
 }

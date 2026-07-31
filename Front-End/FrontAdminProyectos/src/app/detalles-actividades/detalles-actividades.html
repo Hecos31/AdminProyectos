@@ -1,15 +1,34 @@
 <div class="modal-overlay" *ngIf="tarea" (click)="cerrarModal()">
-  <div class="modal-caja" (click)="$event.stopPropagation()">
+  <section
+    class="modal-caja"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="titulo-modal-actividad"
+    (click)="$event.stopPropagation()"
+  >
+    <!-- ENCABEZADO -->
     <header class="modal-header">
-      <h3>Detalles de la Actividad</h3>
-      <button class="btn-cerrar" (click)="cerrarModal()" title="Cerrar">
+      <div class="modal-header__title">
+        <span class="modal-eyebrow"> Actividad del proyecto </span>
+
+        <h2 id="titulo-modal-actividad">Detalle de la actividad</h2>
+      </div>
+
+      <button
+        type="button"
+        class="btn-cerrar"
+        (click)="cerrarModal()"
+        aria-label="Cerrar detalle de actividad"
+        title="Cerrar"
+      >
         <svg
-          width="24"
-          height="24"
+          width="21"
+          height="21"
           viewBox="0 0 24 24"
           fill="none"
           stroke="currentColor"
           stroke-width="2"
+          stroke-linecap="round"
         >
           <line x1="18" y1="6" x2="6" y2="18"></line>
           <line x1="6" y1="6" x2="18" y2="18"></line>
@@ -17,81 +36,717 @@
       </button>
     </header>
 
-    <div class="modal-cuerpo">
-      <div class="detalle-principal">
-        <h2>{{ tarea.titulo }}</h2>
-        <span class="badge" [attr.data-prio]="tarea.prioridad.toLowerCase()">
-          Prioridad {{ tarea.prioridad }}
-        </span>
+    <!-- CONTENIDO CON SCROLL INTERNO -->
+    <div class="modal-scroll">
+      <!-- ALERTAS -->
+      <div *ngIf="errorMessage" class="alert alert-error" role="alert">
+        <span>{{ errorMessage }}</span>
+
+        <button
+          type="button"
+          class="alert-close"
+          (click)="errorMessage = ''"
+          aria-label="Cerrar mensaje de error"
+        >
+          ×
+        </button>
       </div>
 
-      <div class="seccion-detalle">
-        <h4>Descripción</h4>
-        <p *ngIf="tarea.descripcion">{{ tarea.descripcion }}</p>
-        <p *ngIf="!tarea.descripcion" class="texto-vacio">Sin descripción proporcionada.</p>
+      <div *ngIf="successMessage" class="alert alert-success" role="status" aria-live="polite">
+        <span>{{ successMessage }}</span>
+
+        <button
+          type="button"
+          class="alert-close"
+          (click)="successMessage = ''"
+          aria-label="Cerrar mensaje"
+        >
+          ×
+        </button>
       </div>
 
-      <div class="cuadricula-detalles">
-        <div class="dato-box">
-          <label>Estado actual</label>
-          <p class="estado-texto">
-            <span class="indicator-dot"></span>
-            
-            {{ tarea.estado }}
-          </p>
-        </div>
+      <!-- CARGANDO -->
+      <div *ngIf="cargandoDetalle" class="loading-state" aria-live="polite">
+        <span class="spinner"></span>
+        <p>Cargando información de la actividad...</p>
+      </div>
 
-        <div class="dato-box">
-          <label>Responsable</label>
-          <div class="responsable-box" *ngIf="tarea.usuario_asignado">
-            <div class="avatar">{{ tarea.usuario_asignado.nombre.charAt(0) }}</div>
-            <p>{{ tarea.usuario_asignado.nombre }} {{ tarea.usuario_asignado.apellido }}</p>
+      <!-- ERROR SIN DETALLE -->
+      <div *ngIf="!cargandoDetalle && !detalle" class="empty-state">
+        <h3>No se pudo mostrar la actividad</h3>
+
+        <p>Revisa tu conexión e intenta cargar nuevamente.</p>
+
+        <button type="button" class="btn-secondary" (click)="reintentarCarga()">Reintentar</button>
+      </div>
+
+      <ng-container *ngIf="!cargandoDetalle && detalle">
+        <!-- =================================================
+             PRESENTACIÓN DE LA TAREA
+        ================================================== -->
+        <section class="task-hero">
+          <div class="task-hero__content">
+            <div class="badges-row">
+              <span
+                class="badge-priority"
+                [attr.data-prio]="(detalle.tarea.prioridad || 'sin-prioridad').toLowerCase()"
+              >
+                Prioridad
+                {{ detalle.tarea.prioridad || 'Sin definir' }}
+              </span>
+
+              <span
+                class="badge-status"
+                [attr.data-estado]="(detalle.tarea.estado || '').toLowerCase()"
+              >
+                {{ detalle.tarea.estado }}
+              </span>
+            </div>
+
+            <h1>{{ detalle.tarea.titulo }}</h1>
+
+            <p class="task-project">Proyecto #{{ detalle.tarea.id_proyecto }}</p>
           </div>
-          <p *ngIf="!tarea.usuario_asignado" class="texto-vacio">Sin asignar</p>
-        </div>
 
-        <div class="dato-box">
-          <label>Fecha de inicio</label>
-          <p class="fecha-texto" *ngIf="tarea.fecha_inicio">
-            <svg
-              width="14"
-              height="14"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
+          <div class="task-actions">
+            <button
+              type="button"
+              class="btn-primary"
+              *ngIf="detalle.permisos.puede_tomar"
+              [disabled]="tomandoActividad"
+              (click)="tomarActividad()"
             >
-              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-              <line x1="16" y1="2" x2="16" y2="6"></line>
-              <line x1="8" y1="2" x2="8" y2="6"></line>
-              <line x1="3" y1="10" x2="21" y2="10"></line>
-            </svg>
-            {{ tarea.fecha_inicio | date : 'longDate' }}
-          </p>
-          <p *ngIf="!tarea.fecha_inicio" class="texto-vacio">-</p>
-        </div>
+              <span *ngIf="tomandoActividad" class="button-spinner"></span>
 
-        <div class="dato-box">
-          <label>Fecha límite</label>
-          <p class="fecha-texto limite" *ngIf="tarea.fecha_limite">
-            <svg
-              width="14"
-              height="14"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
+              {{ tomandoActividad ? 'Tomando actividad...' : 'Tomar actividad' }}
+            </button>
+
+            <button
+              type="button"
+              class="btn-secondary"
+              *ngIf="detalle.permisos.puede_editar_tarea && !modoEdicion"
+              (click)="activarEdicion()"
             >
-              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-              <line x1="16" y1="2" x2="16" y2="6"></line>
-              <line x1="8" y1="2" x2="8" y2="6"></line>
-              <line x1="3" y1="10" x2="21" y2="10"></line>
-            </svg>
-            {{ tarea.fecha_limite | date : 'longDate' }}
-          </p>
-          <p *ngIf="!tarea.fecha_limite" class="texto-vacio">-</p>
-        </div>
-      </div>
+              Editar actividad
+            </button>
+          </div>
+        </section>
+
+        <!-- =================================================
+             FORMULARIO DE EDICIÓN
+        ================================================== -->
+        <form
+          class="edit-panel"
+          *ngIf="modoEdicion"
+          (ngSubmit)="guardarCambios()"
+          #editForm="ngForm"
+        >
+          <div class="section-heading">
+            <div>
+              <span class="section-eyebrow"> Administración </span>
+
+              <h3>Editar actividad</h3>
+            </div>
+          </div>
+
+          <div class="form-grid">
+            <div class="form-group form-full">
+              <label for="editar-titulo"> Título </label>
+
+              <input
+                id="editar-titulo"
+                name="titulo"
+                type="text"
+                class="form-control"
+                [(ngModel)]="formularioEdicion.titulo"
+                maxlength="200"
+                required
+              />
+            </div>
+
+            <div class="form-group form-full">
+              <label for="editar-descripcion"> Descripción </label>
+
+              <textarea
+                id="editar-descripcion"
+                name="descripcion"
+                class="form-control textarea-control"
+                [(ngModel)]="formularioEdicion.descripcion"
+                rows="4"
+              ></textarea>
+            </div>
+
+            <div class="form-group">
+              <label for="editar-prioridad"> Prioridad </label>
+
+              <select
+                id="editar-prioridad"
+                name="prioridad"
+                class="form-control"
+                [(ngModel)]="formularioEdicion.prioridad"
+              >
+                <option value="Baja">Baja</option>
+                <option value="Media">Media</option>
+                <option value="Alta">Alta</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="editar-estado"> Estado </label>
+
+              <select
+                id="editar-estado"
+                name="estado"
+                class="form-control"
+                [(ngModel)]="formularioEdicion.estado"
+              >
+                <option value="Pendiente por asignar">Pendiente por asignar</option>
+
+                <option value="Asignada">Asignada</option>
+
+                <option value="En progreso">En progreso</option>
+
+                <option value="Concluida">Concluida</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="editar-fecha-inicio"> Fecha de inicio </label>
+
+              <input
+                id="editar-fecha-inicio"
+                name="fechaInicio"
+                type="datetime-local"
+                class="form-control"
+                [(ngModel)]="formularioEdicion.fecha_inicio"
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="editar-fecha-limite"> Fecha límite </label>
+
+              <input
+                id="editar-fecha-limite"
+                name="fechaLimite"
+                type="datetime-local"
+                class="form-control"
+                [(ngModel)]="formularioEdicion.fecha_limite"
+              />
+            </div>
+
+            <div class="form-group form-full">
+              <label for="editar-responsable"> Responsable </label>
+
+              <select
+                id="editar-responsable"
+                name="responsable"
+                class="form-control"
+                [(ngModel)]="formularioEdicion.id_usuario_asignado"
+                [disabled]="cargandoColaboradores"
+              >
+                <option [ngValue]="null">Sin responsable</option>
+
+                <option
+                  *ngFor="let colaborador of colaboradores; trackBy: trackColaborador"
+                  [ngValue]="colaborador.id_usuario"
+                >
+                  {{ colaborador.nombre }}
+                  {{ colaborador.apellido }}
+                  — {{ colaborador.correo }}
+                </option>
+              </select>
+
+              <span class="field-help" *ngIf="cargandoColaboradores">
+                Cargando integrantes del proyecto...
+              </span>
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button
+              type="button"
+              class="btn-ghost"
+              [disabled]="guardandoTarea"
+              (click)="cancelarEdicion()"
+            >
+              Cancelar
+            </button>
+
+            <button
+              type="submit"
+              class="btn-primary"
+              [disabled]="guardandoTarea || editForm.invalid"
+            >
+              <span *ngIf="guardandoTarea" class="button-spinner"></span>
+
+              {{ guardandoTarea ? 'Guardando...' : 'Guardar cambios' }}
+            </button>
+          </div>
+        </form>
+
+        <!-- =================================================
+             INFORMACIÓN GENERAL
+        ================================================== -->
+        <section class="workspace-section" *ngIf="!modoEdicion">
+          <div class="section-heading">
+            <div>
+              <span class="section-eyebrow"> Información </span>
+
+              <h3>Resumen de la actividad</h3>
+            </div>
+          </div>
+
+          <div class="description-card">
+            <h4>Descripción</h4>
+
+            <p *ngIf="detalle.tarea.descripcion">
+              {{ detalle.tarea.descripcion }}
+            </p>
+
+            <p *ngIf="!detalle.tarea.descripcion" class="texto-vacio">
+              Sin descripción proporcionada.
+            </p>
+          </div>
+
+          <div class="details-grid">
+            <article class="detail-card">
+              <span class="detail-label"> Estado actual </span>
+
+              <p>
+                <span class="indicator-dot"></span>
+                {{ detalle.tarea.estado }}
+              </p>
+            </article>
+
+            <article class="detail-card">
+              <span class="detail-label"> Responsable </span>
+
+              <div class="responsable-box" *ngIf="detalle.tarea.usuario_asignado">
+                <span class="avatar">
+                  {{ iniciales(detalle.tarea.usuario_asignado) }}
+                </span>
+
+                <div>
+                  <strong>
+                    {{ detalle.tarea.usuario_asignado.nombre }}
+                    {{ detalle.tarea.usuario_asignado.apellido }}
+                  </strong>
+
+                  <small>
+                    {{ detalle.tarea.usuario_asignado.correo }}
+                  </small>
+                </div>
+              </div>
+
+              <p *ngIf="!detalle.tarea.usuario_asignado" class="texto-vacio">
+                Sin responsable asignado
+              </p>
+            </article>
+
+            <article class="detail-card">
+              <span class="detail-label"> Fecha de inicio </span>
+
+              <p *ngIf="detalle.tarea.fecha_inicio">
+                {{ detalle.tarea.fecha_inicio | date : 'medium' }}
+              </p>
+
+              <p *ngIf="!detalle.tarea.fecha_inicio" class="texto-vacio">Sin definir</p>
+            </article>
+
+            <article class="detail-card">
+              <span class="detail-label"> Fecha límite </span>
+
+              <p class="deadline" *ngIf="detalle.tarea.fecha_limite">
+                {{ detalle.tarea.fecha_limite | date : 'medium' }}
+              </p>
+
+              <p *ngIf="!detalle.tarea.fecha_limite" class="texto-vacio">Sin definir</p>
+            </article>
+          </div>
+        </section>
+
+        <!-- =================================================
+             EVIDENCIAS
+        ================================================== -->
+        <section class="workspace-section">
+          <div class="section-heading section-heading--split">
+            <div>
+              <span class="section-eyebrow"> Archivos y enlaces </span>
+
+              <h3>Evidencias</h3>
+
+              <p>Material que demuestra el avance o conclusión de la actividad.</p>
+            </div>
+
+            <span class="section-count">
+              {{ detalle.evidencias.length }}
+            </span>
+          </div>
+
+          <!-- AGREGAR EVIDENCIA -->
+          <div class="evidence-composer" *ngIf="detalle.permisos.puede_agregar_evidencia">
+            <div class="evidence-tabs">
+              <button
+                type="button"
+                [class.active]="tipoEvidencia === 'archivo'"
+                (click)="cambiarTipoEvidencia('archivo')"
+              >
+                Subir archivo
+              </button>
+
+              <button
+                type="button"
+                [class.active]="tipoEvidencia === 'enlace'"
+                (click)="cambiarTipoEvidencia('enlace')"
+              >
+                Agregar enlace
+              </button>
+            </div>
+
+            <div class="evidence-form">
+              <div class="form-group">
+                <label for="evidencia-nombre"> Nombre de la evidencia </label>
+
+                <input
+                  id="evidencia-nombre"
+                  type="text"
+                  class="form-control"
+                  [(ngModel)]="nombreEvidencia"
+                  name="nombreEvidencia"
+                  maxlength="255"
+                  placeholder="Ej. Reporte final"
+                />
+              </div>
+
+              <div class="form-group" *ngIf="tipoEvidencia === 'enlace'">
+                <label for="evidencia-url"> Dirección del enlace </label>
+
+                <input
+                  id="evidencia-url"
+                  type="url"
+                  class="form-control"
+                  [(ngModel)]="urlEvidencia"
+                  name="urlEvidencia"
+                  placeholder="https://..."
+                />
+              </div>
+
+              <div class="form-group form-full">
+                <label for="evidencia-descripcion"> Descripción opcional </label>
+
+                <textarea
+                  id="evidencia-descripcion"
+                  class="form-control textarea-control"
+                  [(ngModel)]="descripcionEvidencia"
+                  name="descripcionEvidencia"
+                  rows="2"
+                  maxlength="2000"
+                  placeholder="Describe brevemente la evidencia"
+                ></textarea>
+              </div>
+
+              <div class="form-group form-full" *ngIf="tipoEvidencia === 'archivo'">
+                <label class="file-picker" for="evidencia-archivo">
+                  <strong>
+                    {{ archivoSeleccionado ? archivoSeleccionado.name : 'Seleccionar archivo' }}
+                  </strong>
+
+                  <span> PDF, imágenes, documentos o ZIP. Máximo 10 MB. </span>
+                </label>
+
+                <input
+                  id="evidencia-archivo"
+                  class="file-input"
+                  type="file"
+                  accept=".pdf,.png,.jpg,.jpeg,.webp,.gif,.txt,.csv,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.zip"
+                  (change)="seleccionarArchivo($event)"
+                />
+              </div>
+
+              <div class="evidence-actions form-full">
+                <button
+                  type="button"
+                  class="btn-primary"
+                  *ngIf="tipoEvidencia === 'archivo'"
+                  [disabled]="!archivoSeleccionado || subiendoEvidencia"
+                  (click)="subirArchivo()"
+                >
+                  <span *ngIf="subiendoEvidencia" class="button-spinner"></span>
+
+                  {{ subiendoEvidencia ? 'Subiendo...' : 'Subir evidencia' }}
+                </button>
+
+                <button
+                  type="button"
+                  class="btn-primary"
+                  *ngIf="tipoEvidencia === 'enlace'"
+                  [disabled]="!nombreEvidencia.trim() || !urlEvidencia.trim() || subiendoEvidencia"
+                  (click)="agregarEnlace()"
+                >
+                  <span *ngIf="subiendoEvidencia" class="button-spinner"></span>
+
+                  {{ subiendoEvidencia ? 'Agregando...' : 'Agregar enlace' }}
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- LISTA DE EVIDENCIAS -->
+          <div class="empty-section" *ngIf="detalle.evidencias.length === 0">
+            <p>Todavía no se han agregado evidencias.</p>
+          </div>
+
+          <div class="evidence-list" *ngIf="detalle.evidencias.length > 0">
+            <article
+              class="evidence-item"
+              *ngFor="let evidencia of detalle.evidencias; trackBy: trackEvidencia"
+            >
+              <div class="evidence-type" [attr.data-tipo]="evidencia.tipo" aria-hidden="true">
+                {{ evidencia.tipo === 'archivo' ? 'A' : 'L' }}
+              </div>
+
+              <div class="evidence-info">
+                <div class="evidence-title-row">
+                  <h4>{{ evidencia.nombre }}</h4>
+
+                  <span class="type-label">
+                    {{ evidencia.tipo === 'archivo' ? 'Archivo' : 'Enlace' }}
+                  </span>
+                </div>
+
+                <p *ngIf="evidencia.descripcion">
+                  {{ evidencia.descripcion }}
+                </p>
+
+                <div class="evidence-meta">
+                  <span>
+                    Por {{ evidencia.usuario.nombre }}
+                    {{ evidencia.usuario.apellido }}
+                  </span>
+
+                  <span>
+                    {{ evidencia.fecha_creacion | date : 'medium' }}
+                  </span>
+
+                  <span *ngIf="evidencia.tamano_bytes !== null">
+                    {{ formatearTamano(evidencia.tamano_bytes) }}
+                  </span>
+                </div>
+              </div>
+
+              <div class="item-actions">
+                <a
+                  *ngIf="evidencia.tipo === 'enlace' && evidencia.url"
+                  class="btn-small"
+                  [href]="evidencia.url"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Abrir
+                </a>
+
+                <button
+                  type="button"
+                  class="btn-small"
+                  *ngIf="puedePrevisualizar(evidencia)"
+                  [disabled]="abriendoEvidenciaId === evidencia.id_evidencia"
+                  (click)="abrirEvidencia(evidencia)"
+                >
+                  {{ abriendoEvidenciaId === evidencia.id_evidencia ? 'Abriendo...' : 'Abrir' }}
+                </button>
+
+                <button
+                  type="button"
+                  class="btn-small"
+                  *ngIf="evidencia.tipo === 'archivo'"
+                  [disabled]="descargandoEvidenciaId === evidencia.id_evidencia"
+                  (click)="descargarEvidencia(evidencia)"
+                >
+                  {{
+                    descargandoEvidenciaId === evidencia.id_evidencia
+                      ? 'Descargando...'
+                      : 'Descargar'
+                  }}
+                </button>
+
+                <button
+                  type="button"
+                  class="btn-small btn-small--danger"
+                  *ngIf="evidencia.puede_eliminar"
+                  [disabled]="eliminandoEvidenciaId === evidencia.id_evidencia"
+                  (click)="eliminarEvidencia(evidencia)"
+                >
+                  Eliminar
+                </button>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <!-- =================================================
+             COMENTARIOS
+        ================================================== -->
+        <section class="workspace-section comments-section">
+          <div class="section-heading section-heading--split">
+            <div>
+              <span class="section-eyebrow"> Conversación </span>
+
+              <h3>Comentarios</h3>
+
+              <p>Comparte avances, dudas o información sobre la actividad.</p>
+            </div>
+
+            <span class="section-count">
+              {{ detalle.comentarios.length }}
+            </span>
+          </div>
+
+          <!-- NUEVO COMENTARIO -->
+          <form
+            class="comment-composer"
+            *ngIf="detalle.permisos.puede_comentar"
+            (ngSubmit)="enviarComentario()"
+          >
+            <label class="sr-only" for="nuevo-comentario"> Escribir comentario </label>
+
+            <textarea
+              id="nuevo-comentario"
+              name="nuevoComentario"
+              class="form-control textarea-control"
+              [(ngModel)]="nuevoComentario"
+              maxlength="5000"
+              rows="3"
+              placeholder="Escribe un comentario..."
+            ></textarea>
+
+            <div class="comment-composer__footer">
+              <span> {{ nuevoComentario.length }} / 5000 </span>
+
+              <button
+                type="submit"
+                class="btn-primary"
+                [disabled]="!nuevoComentario.trim() || enviandoComentario"
+              >
+                <span *ngIf="enviandoComentario" class="button-spinner"></span>
+
+                {{ enviandoComentario ? 'Publicando...' : 'Publicar comentario' }}
+              </button>
+            </div>
+          </form>
+
+          <!-- SIN COMENTARIOS -->
+          <div class="empty-section" *ngIf="detalle.comentarios.length === 0">
+            <p>Todavía no hay comentarios en esta actividad.</p>
+          </div>
+
+          <!-- LISTA -->
+          <div class="comment-list" *ngIf="detalle.comentarios.length > 0">
+            <article
+              class="comment-item"
+              *ngFor="let comentario of detalle.comentarios; trackBy: trackComentario"
+            >
+              <span class="avatar comment-avatar">
+                {{ iniciales(comentario.usuario) }}
+              </span>
+
+              <div class="comment-content">
+                <header class="comment-header">
+                  <div>
+                    <strong>
+                      {{ comentario.usuario.nombre }}
+                      {{ comentario.usuario.apellido }}
+                    </strong>
+
+                    <span>
+                      {{ comentario.fecha_creacion | date : 'medium' }}
+                    </span>
+
+                    <small *ngIf="comentario.fecha_actualizacion"> Editado </small>
+                  </div>
+
+                  <div class="comment-actions">
+                    <button
+                      type="button"
+                      *ngIf="
+                        comentario.puede_editar && comentarioEditandoId !== comentario.id_comentario
+                      "
+                      (click)="iniciarEdicionComentario(comentario)"
+                    >
+                      Editar
+                    </button>
+
+                    <button
+                      type="button"
+                      class="danger-link"
+                      *ngIf="comentario.puede_eliminar"
+                      [disabled]="eliminandoComentarioId === comentario.id_comentario"
+                      (click)="eliminarComentario(comentario)"
+                    >
+                      Eliminar
+                    </button>
+                  </div>
+                </header>
+
+                <ng-container *ngIf="comentarioEditandoId !== comentario.id_comentario">
+                  <p class="comment-text">
+                    {{ comentario.contenido }}
+                  </p>
+                </ng-container>
+
+                <div class="comment-edit" *ngIf="comentarioEditandoId === comentario.id_comentario">
+                  <textarea
+                    class="form-control textarea-control"
+                    [(ngModel)]="contenidoComentarioEditado"
+                    [ngModelOptions]="{
+                      standalone: true
+                    }"
+                    rows="3"
+                    maxlength="5000"
+                  ></textarea>
+
+                  <div class="comment-edit__actions">
+                    <button
+                      type="button"
+                      class="btn-ghost"
+                      [disabled]="guardandoComentario"
+                      (click)="cancelarEdicionComentario()"
+                    >
+                      Cancelar
+                    </button>
+
+                    <button
+                      type="button"
+                      class="btn-primary"
+                      [disabled]="!contenidoComentarioEditado.trim() || guardandoComentario"
+                      (click)="guardarComentario(comentario)"
+                    >
+                      {{ guardandoComentario ? 'Guardando...' : 'Guardar' }}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </article>
+          </div>
+        </section>
+      </ng-container>
     </div>
-  </div>
+
+    <!-- PIE ADMINISTRATIVO -->
+    <footer class="modal-footer" *ngIf="detalle?.permisos?.puede_eliminar_tarea">
+      <div>
+        <strong>Zona administrativa</strong>
+
+        <span> Esta acción eliminará permanentemente la actividad. </span>
+      </div>
+
+      <button
+        type="button"
+        class="btn-danger"
+        [disabled]="eliminandoTarea"
+        (click)="eliminarActividad()"
+      >
+        {{ eliminandoTarea ? 'Eliminando...' : 'Eliminar actividad' }}
+      </button>
+    </footer>
+  </section>
 </div>

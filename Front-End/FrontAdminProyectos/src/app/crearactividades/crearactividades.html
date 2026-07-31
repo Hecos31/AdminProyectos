@@ -789,6 +789,9 @@
      DETALLES DE ACTIVIDAD
 ====================================================== -->
 <app-detalles-actividades
+  *ngIf="tareaSeleccionada"
   [tarea]="tareaSeleccionada"
   (cerrar)="cerrarDetalle()"
+  (tareaActualizada)="actualizarDesdeModal()"
+  (tareaEliminada)="eliminarDesdeModal()"
 ></app-detalles-actividades>
