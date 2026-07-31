@@ -48,7 +48,7 @@
           <button
             (click)="abrirChat()"
             class="nav-link"
-            style="width: 100%; border: none; background: transparent; text-align: left"
+            style="width: 100%; border: none; background: transparent; text-align: left; cursor: pointer;"
           >
             <svg
               class="nav-icon"
@@ -90,14 +90,92 @@
     </div>
   </nav>
 
-  <!-- === SECCIÓN DE PERFIL CORREGIDA === -->
+  <!-- === SECCIÓN DE NOTIFICACIONES (Con Pestaña de Pendientes e Historial) === -->
+  <div class="sidebar-notificaciones-wrapper" style="position: relative; padding: 0 1rem; margin-bottom: 0.5rem;">
+    
+    <!-- Botón de la campana -->
+    <button
+      (click)="toggleNotificaciones()"
+      class="nav-link"
+      style="width: 100%; border: none; background: transparent; text-align: left; display: flex; justify-content: space-between; align-items: center; cursor: pointer; padding: 0.75rem 1rem; border-radius: 8px;"
+    >
+      <div style="display: flex; align-items: center; gap: 12px; color: var(--text-color, #4b5563);">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="bell-icon">
+          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+          <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+        </svg>
+        <span class="nav-text" style="font-weight: 500;">Notificaciones</span>
+      </div>
+      
+      <!-- Contador de pendientes -->
+      <span *ngIf="contadorNotificaciones > 0" style="background-color: #ef4444; color: white; border-radius: 50%; padding: 2px 8px; font-size: 12px; font-weight: bold;">
+        {{ contadorNotificaciones }}
+      </span>
+    </button>
+
+    <!-- Panel Desplegable -->
+    <div class="panel-notificaciones" *ngIf="mostrarNotificaciones" style="position: absolute; bottom: 100%; left: 1rem; width: 300px; background: white; border: 1px solid #e5e7eb; border-radius: 12px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); z-index: 50; max-height: 400px; display: flex; flex-direction: column; margin-bottom: 10px;">
+      
+      <!-- Cabecera con pestañas (Pendientes / Historial) -->
+      <div class="panel-header" style="padding: 12px 16px; border-bottom: 1px solid #e5e7eb; background: white; border-top-left-radius: 12px; border-top-right-radius: 12px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+          <h4 style="margin: 0; font-size: 14px; color: #111827;">Notificaciones</h4>
+        </div>
+        <div style="display: flex; gap: 8px;">
+          <button (click)="cambiarVistaHistorial(false)" [style.background]="!viendoHistorial ? '#3b82f6' : '#f3f4f6'" [style.color]="!viendoHistorial ? 'white' : '#4b5563'" style="flex: 1; border: none; padding: 6px; font-size: 12px; border-radius: 6px; cursor: pointer; font-weight: 500;">
+            Pendientes
+          </button>
+          <button (click)="cambiarVistaHistorial(true)" [style.background]="viendoHistorial ? '#3b82f6' : '#f3f4f6'" [style.color]="viendoHistorial ? 'white' : '#4b5563'" style="flex: 1; border: none; padding: 6px; font-size: 12px; border-radius: 6px; cursor: pointer; font-weight: 500;">
+            Historial
+          </button>
+        </div>
+      </div>
+      
+      <!-- CUERPO 1: PENDIENTES -->
+      <div class="panel-body" *ngIf="!viendoHistorial" style="overflow-y: auto; max-height: 300px;">
+        <div *ngIf="notificaciones.length === 0" style="padding: 20px; text-align: center; color: #6b7280; font-size: 13px;">
+          No tienes notificaciones pendientes.
+        </div>
+
+        <div *ngFor="let noti of notificaciones; let i = index" 
+             style="padding: 12px 16px; border-bottom: 1px solid #f3f4f6; transition: background-color 0.2s;">
+          <p style="margin: 0 0 4px 0; font-size: 13px; color: #374151; line-height: 1.4;">{{ noti.mensaje }}</p>
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <small style="font-size: 10px; color: #9ca3af;">{{ noti.fecha_creacion | date:'short' }}</small>
+            <button (click)="leerNotificacion(noti, i)" style="background: none; border: none; color: #3b82f6; font-size: 11px; cursor: pointer; padding: 0; font-weight: 500;">
+              Marcar leída
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- CUERPO 2: HISTORIAL COMPLETO -->
+      <div class="panel-body" *ngIf="viendoHistorial" style="overflow-y: auto; max-height: 300px;">
+        <div *ngIf="historialNotificaciones.length === 0" style="padding: 20px; text-align: center; color: #6b7280; font-size: 13px;">
+          No hay registros en tu historial.
+        </div>
+
+        <div *ngFor="let noti of historialNotificaciones" 
+             [style.opacity]="noti.leida ? '0.7' : '1'"
+             style="padding: 12px 16px; border-bottom: 1px solid #f3f4f6;">
+          <p style="margin: 0 0 4px 0; font-size: 13px; color: #374151; line-height: 1.4;">{{ noti.mensaje }}</p>
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <small style="font-size: 10px; color: #9ca3af;">{{ noti.fecha_creacion | date:'short' }}</small>
+            <span *ngIf="noti.leida" style="font-size: 10px; background: #e5e7eb; color: #4b5563; padding: 2px 6px; border-radius: 4px;">Leída</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+  <!-- === FIN DE SECCIÓN DE NOTIFICACIONES === -->
+
+  <!-- === SECCIÓN DE PERFIL === -->
   <div class="user-profile-section">
     <div class="user-popover" *ngIf="mostrarMenuUsuario">
       <div class="popover-header">
-        <!-- Inicial dinámica en mayúscula -->
         <div class="popover-avatar">{{ inicialUsuario }}</div>
         <div class="popover-info">
-          <!-- Nombre y correo dinámicos -->
           <span class="popover-name">{{ nombreUsuario }}</span>
           <span class="popover-email">{{ usuario?.correo || 'correo@ejemplo.com' }}</span>
         </div>
@@ -126,7 +204,6 @@
       (click)="toggleMenuUsuario()"
       [class.active]="mostrarMenuUsuario"
     >
-      <!-- Inicial dinámica -->
       <div class="user-avatar-mini">{{ inicialUsuario }}</div>
       <span class="user-name-truncate">{{ usuario?.correo || 'Usuario' }}</span>
       <svg

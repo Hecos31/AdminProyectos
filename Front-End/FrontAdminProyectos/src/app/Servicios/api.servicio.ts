@@ -1,17 +1,42 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, Subject, BehaviorSubject } from 'rxjs';
 import { environment } from '../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class ApiServicio {
   
-  // === DEPENDENCIAS ===
   private http = inject(HttpClient);
   private apiUrl = environment.apiUrl;
 
-  // Nota: Ya no inyectamos headers manualmente. El AuthInterceptor (que crearemos) 
-  // interceptará todas estas llamadas y les pondrá el token automáticamente.
+  // === ESTADO GLOBAL DE SESIÓN (BehaviorSubject) ===
+  private usuarioActualSource = new BehaviorSubject<any>(this.obtenerUsuarioInicial());
+  usuarioActual$ = this.usuarioActualSource.asObservable();
+
+  private obtenerUsuarioInicial() {
+    const usuarioStr = localStorage.getItem('usuario');
+    if (usuarioStr) {
+      try { return JSON.parse(usuarioStr); } catch (e) { return null; }
+    }
+    return null;
+  }
+
+  actualizarSesionUsuario(usuario: any) {
+    if (usuario) {
+      localStorage.setItem('usuario', JSON.stringify(usuario));
+    } else {
+      localStorage.removeItem('usuario');
+    }
+    this.usuarioActualSource.next(usuario);
+  }
+
+  // === COMUNICADOR PARA NOTIFICACIONES ===
+  private notificacionesSource = new Subject<void>();
+  notificacionesActualizadas$ = this.notificacionesSource.asObservable();
+
+  notificarCambio() {
+    this.notificacionesSource.next();
+  }
 
   // ==========================================
   //         ZONA PÚBLICA (AUTENTICACIÓN)
@@ -58,11 +83,8 @@ export class ApiServicio {
     return this.http.post(`${this.apiUrl}/proyectos/colaboradores`, data);
   }
 
- eliminarColaborador(data: { id_proyecto: number; id_usuario: number }): Observable<any> {
-    return this.http.delete(`${this.apiUrl}/proyectos/colaboradores`, { 
-      headers: this.getHeaders(),
-      body: data 
-    });
+  eliminarColaborador(data: { id_proyecto: number; id_usuario: number }): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/proyectos/colaboradores`, { body: data });
   }
 
   cambiarRolColaborador(data: { id_proyecto: number; id_usuario: number; id_rol_nuevo: number }): Observable<any> {
@@ -84,8 +106,8 @@ export class ApiServicio {
     return this.http.put(`${this.apiUrl}/tareas`, tarea);
   }
 
-  eliminarTarea(id_tarea: number): Observable<any> {
-    return this.http.delete(`${this.apiUrl}/tareas`, { body: { id_tarea } });
+  eliminarTarea(idTarea: number) {
+    return this.http.delete(`${this.apiUrl}/tareas/${idTarea}`);
   }
 
   cambiarEstadoTarea(id_tarea: number, estado: string): Observable<any> {
@@ -96,19 +118,16 @@ export class ApiServicio {
     return this.http.patch(`${this.apiUrl}/tareas/${id_tarea}/asignar`, { id_usuario_asignado });
   }
 
-  // ==========================================
-  //             MÓDULO DE IA
-  // ==========================================
   analizarConIA(id_proyecto: number, texto_libre: string): Observable<any> {
     return this.http.post(`${this.apiUrl}/ai/analizar-tarea`, { id_proyecto, texto_libre });
   }
 
-  // ============ NOTIFICACIONES (CON TOKEN) ============
-  obtenerNotificaciones(usuarioId: number): Observable<any[]> {
-    return this.http.get<any[]>(`${this.apiUrl}/notificaciones/?usuario_id=${usuarioId}`, { headers: this.getHeaders() });
+  // ============ NOTIFICACIONES (Blindadas por Token en el Backend) ============
+  obtenerNotificaciones(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/notificaciones/`);
   }
 
-  marcarNotificacionLeida(notificacionId: number): Observable<any> {
-    return this.http.put(`${this.apiUrl}/notificaciones/${notificacionId}/leer`, {}, { headers: this.getHeaders() });
+  marcarNotificacionLeida(idNotificacion: number) {
+    return this.http.put(`${this.apiUrl}/notificaciones/${idNotificacion}/leer`, {});
   }
 }

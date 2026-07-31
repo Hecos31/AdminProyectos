@@ -137,8 +137,14 @@ export class Crearactividades implements OnInit {
 
       this.apiService.cambiarEstadoTarea(tareaMovida.id_tarea, estadoDestino).subscribe({
         next: () => {
+          // --- NOTIFICACIÓN EN TIEMPO REAL ---
+          this.apiService.notificarCambio();
+          
           if (estadoDestino === 'Pendiente por asignar' && tareaMovida.usuario_asignado) {
-            this.apiService.asignarTarea(tareaMovida.id_tarea, null).subscribe(() => this.cargarTareas());
+            this.apiService.asignarTarea(tareaMovida.id_tarea, null).subscribe(() => {
+              this.cargarTareas();
+              this.apiService.notificarCambio();
+            });
           }
         },
         error: () => {
@@ -203,6 +209,9 @@ export class Crearactividades implements OnInit {
         this.mostrarToast('Tarea creada con éxito', 'exito');
         this.limpiarFormulario();
         this.cargarTareas();
+        
+        // --- NOTIFICACIÓN EN TIEMPO REAL ---
+        this.apiService.notificarCambio();
       },
       error: (err) => this.mostrarToast(err.error?.detail || 'Error al crear la tarea', 'error')
     });
@@ -240,6 +249,9 @@ export class Crearactividades implements OnInit {
       next: () => {
         this.mostrarToast('Tarea eliminada', 'exito');
         this.cargarTareas();
+        
+        // --- NOTIFICACIÓN EN TIEMPO REAL ---
+        this.apiService.notificarCambio();
       },
       error: () => this.mostrarToast('Error eliminando la tarea', 'error')
     });
@@ -252,12 +264,21 @@ export class Crearactividades implements OnInit {
     this.apiService.asignarTarea(tarea.id_tarea, id_usuario).subscribe({
       next: () => {
         this.mostrarToast('Responsable actualizado', 'exito');
+        
+        // --- NOTIFICACIÓN EN TIEMPO REAL ---
+        this.apiService.notificarCambio();
 
         if (id_usuario !== null && tarea.estado === 'Pendiente por asignar') {
-          this.apiService.cambiarEstadoTarea(tarea.id_tarea, 'Asignada').subscribe(() => this.cargarTareas());
+          this.apiService.cambiarEstadoTarea(tarea.id_tarea, 'Asignada').subscribe(() => {
+            this.cargarTareas();
+            this.apiService.notificarCambio();
+          });
         } 
         else if (id_usuario === null && tarea.estado === 'Asignada') {
-          this.apiService.cambiarEstadoTarea(tarea.id_tarea, 'Pendiente por asignar').subscribe(() => this.cargarTareas());
+          this.apiService.cambiarEstadoTarea(tarea.id_tarea, 'Pendiente por asignar').subscribe(() => {
+            this.cargarTareas();
+            this.apiService.notificarCambio();
+          });
         } 
         else {
           this.cargarTareas();

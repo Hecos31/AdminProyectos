@@ -15,22 +15,16 @@ from schemas import (
 )
 from auth import obtener_usuario_actual, obtener_rol_en_proyecto
 
-#Para notificaciones en bd
-from database import get_db
-import models # Para acceder a las tablas (ej. ProyectoUsuario)
+# Para notificaciones en bd
 from routers.notificaciones import disparar_notificacion
-from pydantic import BaseModel
-from routers.notificaciones import disparar_notificacion
+
 router = APIRouter(
     prefix="/proyectos",
     tags=["Proyectos"]
 )
 
-router = APIRouter(prefix="/proyectos", tags=["Proyectos"])
-
-
 @router.post("", response_model=ProyectoResponse, status_code=status.HTTP_201_CREATED)
-def crear_proyecto(
+async def crear_proyecto(
     proyecto_in: ProyectoCreate,
     db: Session = Depends(get_db),
     id_usuario_actual: int = Depends(obtener_usuario_actual)
@@ -56,6 +50,15 @@ def crear_proyecto(
 
         db.commit()
         db.refresh(nuevo_proyecto)
+        
+        # --- DISPARADOR DE NOTIFICACIÓN (Para el creador) ---
+        await disparar_notificacion(
+            usuario_id=id_usuario_actual,
+            tipo="PROYECTO_CREADO",
+            mensaje=f"Has creado el proyecto '{nuevo_proyecto.nombre}' exitosamente.",
+            db=db
+        )
+        
     except Exception:
         db.rollback()
         raise HTTPException(
@@ -171,33 +174,26 @@ def obtener_colaboradores(
     
     return resultado
 
-# Se agrego linea para poder trabajar en conjunto con las notificaciones
+
 @router.post("/colaboradores", status_code=status.HTTP_201_CREATED)
 async def agregar_colaborador(
     colaborador_in: ColaboradorCreate,
     db: Session = Depends(get_db),
     id_usuario_actual: int = Depends(obtener_usuario_actual)
 ):
-    print(f"\n--- [1] INTENTANDO AGREGAR: {colaborador_in.correo_colaborador} ---")
-    
     id_rol_admin = obtener_rol_en_proyecto(colaborador_in.id_proyecto, id_usuario_actual, db)
-    print(f"--- [2] Tu rol actual es: {id_rol_admin} ---")
     
     if id_rol_admin != 1:
-        print("!!! ERROR: La función se detuvo porque tu rol no es 1.")
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Solo los administradores pueden agregar colaboradores.")
 
     usuario_nuevo = db.query(UsuarioDB).filter(UsuarioDB.correo == colaborador_in.correo_colaborador).first()
     if not usuario_nuevo:
-        print("!!! ERROR: La función se detuvo porque el correo no existe en la BD.")
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="El usuario no existe.")
 
     rol_existente = obtener_rol_en_proyecto(colaborador_in.id_proyecto, usuario_nuevo.id_usuario, db)
     if rol_existente is not None:
-        print("!!! ERROR: La función se detuvo porque ya es colaborador.")
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="El usuario ya es colaborador.")
 
-    print("--- [3] Validaciones pasadas. Guardando en BD... ---")
     nuevo_colaborador = ProyectoUsuarioDB(
         id_proyecto=colaborador_in.id_proyecto,
         id_usuario=usuario_nuevo.id_usuario,
@@ -207,26 +203,24 @@ async def agregar_colaborador(
     try:
         db.add(nuevo_colaborador)
         db.commit()
-        print("--- [4] Colaborador guardado. Disparando notificación... ---")
         
+        # --- DISPARADOR DE NOTIFICACIÓN ---
         await disparar_notificacion(
             usuario_id=usuario_nuevo.id_usuario,
             tipo="NUEVO_PROYECTO",
             mensaje="Te han agregado como colaborador a un nuevo proyecto.",
             db=db
         )
-        print("--- [5] ¡Notificación inyectada con éxito! ---")
         
     except Exception as e:
         db.rollback()
-        print(f"!!! ERROR FATAL EN BASE DE DATOS: {e}")
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Error interno.")
 
     return {"mensaje": f"Usuario {usuario_nuevo.correo} agregado exitosamente."}
 
 
 @router.delete("/colaboradores", status_code=status.HTTP_200_OK)
-def eliminar_colaborador(
+async def eliminar_colaborador(
     colaborador_del: ColaboradorDelete,
     db: Session = Depends(get_db),
     id_usuario_actual: int = Depends(obtener_usuario_actual)
@@ -251,6 +245,10 @@ def eliminar_colaborador(
             detail="El usuario especificado no pertenece a este proyecto."
         )
 
+    # Buscar el nombre del proyecto para la notificación
+    proyecto = db.query(ProyectoDB).filter(ProyectoDB.id_proyecto == colaborador_del.id_proyecto).first()
+    nombre_proyecto = proyecto.nombre if proyecto else "un proyecto"
+
     try:
         from models import TareaAsignadaDB
         tareas_del_proyecto = db.query(TareaDB.id_tarea).filter(TareaDB.id_proyecto == colaborador_del.id_proyecto).subquery()
@@ -266,6 +264,15 @@ def eliminar_colaborador(
         ).delete()
 
         db.commit()
+
+        # --- DISPARADOR DE NOTIFICACIÓN ---
+        await disparar_notificacion(
+            usuario_id=colaborador_del.id_usuario,
+            tipo="COLABORADOR_REMOVIDO",
+            mensaje=f"Has sido removido del proyecto '{nombre_proyecto}'.",
+            db=db
+        )
+
     except Exception:
         db.rollback()
         raise HTTPException(
@@ -273,11 +280,14 @@ def eliminar_colaborador(
             detail="Error interno al eliminar al colaborador del proyecto."
         )
 
-    return {"mensaje": f"El usuario {colaborador_del.id_usuario} fue removido del proyecto {colaborador_del.id_proyecto} exitosamente."}
+    return {"mensaje": f"El usuario {colaborador_del.id_usuario} fue removido exitosamente."}
 
 
+# =================================================================
+# ATENCIÓN: SE MODIFICÓ LA SIGUIENTE RUTA (cambiar_rol_colaborador)
+# =================================================================
 @router.put("/colaboradores", status_code=status.HTTP_200_OK)
-def cambiar_rol_colaborador(
+async def cambiar_rol_colaborador( # <-- 1. Se cambió a async def
     colaborador_update: ColaboradorUpdate,
     db: Session = Depends(get_db),
     id_usuario_actual: int = Depends(obtener_usuario_actual)
@@ -306,10 +316,27 @@ def cambiar_rol_colaborador(
             detail="El usuario especificado no pertenece a este proyecto."
         )
 
+    # --- INICIO DE DATOS PARA LA NOTIFICACIÓN ---
+    # Obtenemos el nombre del proyecto y definimos cómo se llama el nuevo rol
+    proyecto = db.query(ProyectoDB).filter(ProyectoDB.id_proyecto == colaborador_update.id_proyecto).first()
+    nombre_proyecto = proyecto.nombre if proyecto else "un proyecto"
+    nombre_nuevo_rol = "Administrador" if colaborador_update.id_rol_nuevo == 1 else "Colaborador"
+    # --- FIN DE DATOS PARA LA NOTIFICACIÓN ---
+
     vinculo_proyecto.id_rol = colaborador_update.id_rol_nuevo
 
     try:
         db.commit()
+        
+        # --- DISPARADOR DE NOTIFICACIÓN ---
+        await disparar_notificacion(
+            usuario_id=colaborador_update.id_usuario,
+            tipo="CAMBIO_ROL",
+            mensaje=f"Tu rol en el proyecto '{nombre_proyecto}' ha cambiado a {nombre_nuevo_rol}.",
+            db=db
+        )
+        # ----------------------------------
+        
     except Exception:
         db.rollback()
         raise HTTPException(
@@ -317,11 +344,11 @@ def cambiar_rol_colaborador(
             detail="Error interno al actualizar el rol del colaborador."
         )
 
-    return {"mensaje": f"El rol del usuario {colaborador_update.id_usuario} ha sido actualizado al rol {colaborador_update.id_rol_nuevo} exitosamente."}
+    return {"mensaje": f"El rol ha sido actualizado exitosamente."}
 
 
 @router.put("", response_model=ProyectoResponse, status_code=status.HTTP_200_OK)
-def editar_proyecto(
+async def editar_proyecto(
     proyecto_in: ProyectoUpdate,
     db: Session = Depends(get_db),
     id_usuario_actual: int = Depends(obtener_usuario_actual)
@@ -346,9 +373,23 @@ def editar_proyecto(
     for key, value in update_data.items():
         setattr(proyecto, key, value)
 
+    # Buscar colaboradores ANTES de notificar
+    colaboradores = db.query(ProyectoUsuarioDB).filter(ProyectoUsuarioDB.id_proyecto == proyecto.id_proyecto).all()
+
     try:
         db.commit()
         db.refresh(proyecto)
+        
+        # --- DISPARADOR DE NOTIFICACIÓN (Para todos menos el que editó) ---
+        for colab in colaboradores:
+            if colab.id_usuario != id_usuario_actual:
+                await disparar_notificacion(
+                    usuario_id=colab.id_usuario,
+                    tipo="PROYECTO_ACTUALIZADO",
+                    mensaje=f"El proyecto '{proyecto.nombre}' ha sido modificado.",
+                    db=db
+                )
+
     except Exception:
         db.rollback()
         raise HTTPException(
@@ -360,7 +401,7 @@ def editar_proyecto(
 
 
 @router.delete("", status_code=status.HTTP_200_OK)
-def eliminar_proyecto(
+async def eliminar_proyecto(
     proyecto_del: ProyectoDelete,
     db: Session = Depends(get_db),
     id_usuario_actual: int = Depends(obtener_usuario_actual)
@@ -379,11 +420,27 @@ def eliminar_proyecto(
             detail="El proyecto no existe."
         )
 
+    nombre_proyecto = proyecto.nombre
+    
+    # Buscar colaboradores ANTES de borrar el proyecto de la BD
+    colaboradores = db.query(ProyectoUsuarioDB).filter(ProyectoUsuarioDB.id_proyecto == proyecto.id_proyecto).all()
+
     try:
         db.query(TareaDB).filter(TareaDB.id_proyecto == proyecto_del.id_proyecto).delete()
         db.query(ProyectoUsuarioDB).filter(ProyectoUsuarioDB.id_proyecto == proyecto_del.id_proyecto).delete()
         db.delete(proyecto)
         db.commit()
+        
+        # --- DISPARADOR DE NOTIFICACIÓN (Para todos menos el que eliminó) ---
+        for colab in colaboradores:
+            if colab.id_usuario != id_usuario_actual:
+                await disparar_notificacion(
+                    usuario_id=colab.id_usuario,
+                    tipo="PROYECTO_ELIMINADO",
+                    mensaje=f"El proyecto '{nombre_proyecto}' ha sido eliminado por un administrador.",
+                    db=db
+                )
+
     except Exception:
         db.rollback()
         raise HTTPException(
@@ -401,8 +458,7 @@ async def asignar_tarea_a_usuario(tarea_id: int, usuario_asignado_id: int, db: S
     # db.add(asignacion)
     # db.commit()
 
-    # 2. ¡EL DISPARADOR DINÁMICO!
-    # Justo después de guardar en la BD, llamas a la función para alertar al usuario:
+    # --- DISPARADOR DE NOTIFICACIÓN ---
     await disparar_notificacion(
         usuario_id=usuario_asignado_id,
         tipo="ASIGNACION_TAREA",
@@ -410,4 +466,4 @@ async def asignar_tarea_a_usuario(tarea_id: int, usuario_asignado_id: int, db: S
         db=db
     )
 
-    return {"mensaje": "Tarea asignada correctamente"}  
+    return {"mensaje": "Tarea asignada correctamente"}

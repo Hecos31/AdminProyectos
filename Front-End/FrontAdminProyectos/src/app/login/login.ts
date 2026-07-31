@@ -1,4 +1,3 @@
-// === IMPORTACIONES ===
 import { Component, ChangeDetectorRef, inject } from '@angular/core'; 
 import { Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -13,12 +12,10 @@ import { ApiServicio } from '../Servicios/api.servicio';
   styleUrls: ['./login.css']
 })
 export class LoginComponente {
-  // === INYECCIÓN DE DEPENDENCIAS ===
   private apiService = inject(ApiServicio);
   private router = inject(Router);
   private cdr = inject(ChangeDetectorRef);
 
-  // === ESTADO DEL COMPONENTE ===
   credentials = {
     correo: '',
     password: ''
@@ -27,7 +24,6 @@ export class LoginComponente {
   errorMessage = '';
   cargando = false;
 
-  // === MÉTODOS ===
   onSubmit() {
     this.cargando = true;
     this.errorMessage = '';
@@ -37,13 +33,14 @@ export class LoginComponente {
         localStorage.setItem('token', response.access_token);
         
         if (response.usuario) {
-          localStorage.setItem('usuario', JSON.stringify(response.usuario));
+          // Publicamos el usuario globalmente para que el Sidebar lo detecte al instante
+          this.apiService.actualizarSesionUsuario(response.usuario);
         }
         
         this.cargando = false;
         
-        window.location.href = '/inicio';
-        
+        // Navegación limpia de Angular sin recargar la página entera
+        this.router.navigate(['/inicio']);
       },
       error: (error) => {
         this.errorMessage = error.error?.detail || 'Error al iniciar sesión';

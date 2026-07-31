@@ -19,7 +19,6 @@ export class PantallaInicioComponente implements OnInit {
 
   // === ESTADO DEL COMPONENTE ===
   proyectos: any[] = [];
-  notificaciones: any[] = []; // <-- Nueva lista para las notificaciones
   usuario: any = null;
   cargando = true;
   
@@ -31,8 +30,8 @@ export class PantallaInicioComponente implements OnInit {
   }
 
   get nombreUsuario(): string {
-    if (this.usuario && this.usuario.nombre) {
-      return this.usuario.nombre;
+    if (this.usuario) {
+      return this.usuario.nombre || this.usuario.nombres || this.usuario.correo || 'Usuario';
     }
     return 'Usuario';
   }
@@ -46,7 +45,6 @@ export class PantallaInicioComponente implements OnInit {
       } catch (e) {}
     }
     this.cargarProyectos();
-    this.cargarNotificaciones(); // <-- La llamamos al arrancar
   }
 
   // === PETICIONES HTTP ===
@@ -66,7 +64,7 @@ export class PantallaInicioComponente implements OnInit {
     });
   }
 
-  // Método añadido para la navegación
+  // === NAVEGACIÓN ===
   crearProyecto() {
     this.router.navigate(['/crear-proyecto']);
   }
@@ -78,6 +76,6 @@ export class PantallaInicioComponente implements OnInit {
   cerrarSesion() {
     localStorage.clear();
     sessionStorage.clear();
-    window.location.href = '/login';
+    this.router.navigate(['/login']); 
   }
 }
