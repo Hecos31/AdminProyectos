@@ -3,13 +3,19 @@ from bson import ObjectId
 from bson.errors import InvalidId
 from fastapi import APIRouter, Depends, HTTPException, WebSocket, WebSocketDisconnect, Query, status
 from sqlalchemy.orm import Session
-
 from database import get_db, db_mongo
 from models import UsuarioDB
 from schemas import MensajeConversacionRequest
 from auth import obtener_usuario_actual, validar_token_ws
 from websocket import manager
-from schemas import IniciarChatCorreoRequest
+#Para notificaciones
+from database import get_db
+import models # Para acceder a tus tablas (ej. Mensaje)
+from routers.notificaciones import disparar_notificacion
+router = APIRouter(
+    prefix="/mensajes",
+    tags=["Mensajes"]
+)
 
 router = APIRouter(tags=["Mensajes y WebSockets"])
 
@@ -168,50 +174,49 @@ async def obtener_historial_conversacion(
     except Exception as e:
         print(f"Error en endpoint: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+# =======================================================
+# ENDPOINT: ENVIAR UN MENSAJE A OTRO USUARIO
+# =======================================================
+@router.post("/enviar", status_code=status.HTTP_201_CREATED)
+async def enviar_mensaje(remitente_id: int, receptor_id: int, texto: str, db: Session = Depends(get_db)):
     
-    
-@router.post("/mensajes/iniciar-correo", status_code=status.HTTP_200_OK)
-async def iniciar_chat_por_correo(
-    req: IniciarChatCorreoRequest,
-    db_sql: Session = Depends(get_db),
-    id_usuario_actual: int = Depends(obtener_usuario_actual)
-):
+    # 1. (Opcional) Validar que el receptor exista y no sea el mismo que el remitente
+    if remitente_id == receptor_id:
+        raise HTTPException(status_code=400, detail="No puedes enviarte un mensaje a ti mismo")
+
     try:
-        # 1. Buscar al usuario en tu base SQL
-        usuario_destino = db_sql.query(UsuarioDB).filter(UsuarioDB.correo == req.correo_destino).first()
-        if not usuario_destino:
-            raise HTTPException(status_code=404, detail="Usuario no encontrado")
+        # 2. Guardar el mensaje en la base de datos
+        # IMPORTANTE: Revisa que "Mensaje", "id_remitente", "id_receptor" y "contenido" 
+        # coincidan exactamente con cómo llamaste a tus columnas en models.py
+        nuevo_mensaje = models.Mensaje(
+            id_remitente=remitente_id,
+            id_receptor=receptor_id,
+            contenido=texto
+        )
         
-        if usuario_destino.id_usuario == id_usuario_actual:
-            raise HTTPException(status_code=400, detail="No puedes iniciar un chat contigo mismo")
+        db.add(nuevo_mensaje)
+        db.commit()
 
-        # 2. Verificar si ya existe una conversación privada entre estos dos usuarios en Mongo
-        chat_existente = await db_mongo.conversations.find_one({
-            "tipo": "privado",
-            "participantes": {
-                "$all": [
-                    {"$elemMatch": {"id_usuario": id_usuario_actual}},
-                    {"$elemMatch": {"id_usuario": usuario_destino.id_usuario}}
-                ]
-            }
-        })
+        # 3. ¡EL DISPARADOR DINÁMICO!
+        # Se envía la notificación exclusivamente al usuario que recibe el mensaje
+        await disparar_notificacion(
+            usuario_id=receptor_id,
+            tipo="NUEVO_MENSAJE",
+            mensaje=f"Tienes un nuevo mensaje sin leer.",
+            db=db
+        )
 
-        if chat_existente:
-            return {"id_conversacion": str(chat_existente["_id"])}
+        return {"mensaje": "Mensaje enviado y notificación entregada"}
 
-        # 3. Si no existe, crear la nueva conversación
-        nueva_conversacion = {
-            "tipo": "privado",
-            "creado_en": datetime.now(timezone.utc),
-            "participantes": [
-                {"id_usuario": id_usuario_actual},
-                {"id_usuario": usuario_destino.id_usuario}
-            ]
-        }
-        resultado = await db_mongo.conversations.insert_one(nueva_conversacion)
-        return {"id_conversacion": str(resultado.inserted_id)}
-
-    except HTTPException:
-        raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        # Si la base de datos rechaza la inserción, deshacemos los cambios
+        db.rollback()
+        raise HTTPException(status_code=400, detail=f"Error al enviar el mensaje: {str(e)}")
+
+# =======================================================
+# AQUÍ ABAJO VAN TUS OTRAS RUTAS DE MENSAJES (Si las tienes)
+# =======================================================
+# @router.get("/historial/{usuario_id}")
+# def obtener_mensajes(...):
+#     ...

@@ -753,132 +753,15 @@
 ========================================================= */
 
 @media (max-width: 768px) {
-  .home-header {
-    padding: 20px;
-  }
-
-  .section-header {
-    align-items: flex-start;
-    flex-direction: column;
-    gap: 10px;
-  }
-
-  .projects-count {
-    align-self: flex-start;
-  }
-
-  .proyectos-grid {
-    grid-template-columns: minmax(0, 1fr);
-  }
-
-  .proyecto-card {
-    min-height: 200px;
-  }
+  .main-content { padding: 20px; }
+  .header { flex-direction: column; align-items: flex-start; gap: 20px; }
+  .user-info { width: 100%; justify-content: space-between; }
+  .proyectos-grid { grid-template-columns: 1fr; }
 }
-
-
-/* =========================================================
-   PANTALLAS PEQUEÑAS
-========================================================= */
-
-@media (max-width: 520px) {
-  .home-header {
-    padding: 18px 16px;
-  }
-
-  .header-main {
-    align-items: flex-start;
-    gap: 11px;
-  }
-
-  .header-icon {
-    width: 42px;
-    height: 42px;
-    flex-basis: 42px;
-  }
-
-  .header-title h1 {
-    font-size: 1.28rem;
-  }
-
-  .subtitle {
-    font-size: 0.8rem;
-  }
-
-  .user-panel {
-    padding: 6px;
-  }
-
-  .user-avatar {
-    width: 38px;
-    height: 38px;
-    flex-basis: 38px;
-  }
-
-  .proyecto-card {
-    min-height: 190px;
-    padding: 16px;
-  }
-
-  .proyecto-meta {
-    align-items: flex-start;
-    flex-direction: column;
-  }
-
-  .open-project {
-    align-self: flex-end;
-  }
-
-  .loading-state {
-    align-items: center;
-    flex-direction: column;
-    text-align: center;
-  }
-}
-
-
-/* =========================================================
-   PANTALLAS MUY PEQUEÑAS
-========================================================= */
-
-@media (max-width: 360px) {
-  .header-icon {
-    display: none;
-  }
-
-  .user-greeting {
-    display: none;
-  }
-
-  .user-name {
-    font-size: 0.75rem;
-  }
-
-  .project-card-header {
-    align-items: flex-start;
-  }
-
-  .meta-item.status {
-    white-space: normal;
-  }
-}
-
-
-/* =========================================================
-   ACCESIBILIDAD
-========================================================= */
-
-@media (prefers-reduced-motion: reduce) {
-  .home-page,
-  .home-header,
-  .btn-icon,
-  .proyecto-card,
-  .proyecto-icono-nuevo,
-  .open-project svg {
-    transition: none;
-  }
-
-  .spinner {
-    animation-duration: 1.5s;
-  }
+/* --- CONTENEDOR PRINCIPAL --- */
+.notificaciones-container {
+  position: relative; /* ¡Clave! Mantiene la burbuja anclada a la campana */
+  display: flex;
+  align-items: center;
+  margin-right: 20px;
 }

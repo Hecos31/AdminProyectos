@@ -2,18 +2,22 @@ from datetime import datetime
 
 from sqlalchemy import (
     BigInteger,
+    Boolean,
     CheckConstraint,
     Column,
+    DateTime,
     ForeignKey,
     Integer,
     String,
     Text,
     TIMESTAMP,
     UniqueConstraint,
+    func,
 )
 from sqlalchemy.orm import relationship
 
 from database import Base
+
 
 
 # ============================================================
@@ -163,10 +167,55 @@ class ProyectoUsuarioDB(Base):
 
     id_rol = Column(
         Integer,
-        ForeignKey(
-            "roles.id_rol"
-        ),
+        ForeignKey("roles.id_rol"),
         primary_key=True
+    )
+
+
+# ============================================================
+# NOTIFICACIONES
+# ============================================================
+
+class Notificacion(Base):
+    __tablename__ = "notificaciones"
+
+    id_notificacion = Column(
+        Integer,
+        primary_key=True,
+        index=True,
+        autoincrement=True
+    )
+
+    id_usuario = Column(
+        Integer,
+        ForeignKey(
+            "usuarios.id_usuario",
+            ondelete="CASCADE"
+        ),
+        nullable=False,
+        index=True
+    )
+
+    tipo = Column(
+        String(50),
+        nullable=False
+    )
+
+    mensaje = Column(
+        String(255),
+        nullable=False
+    )
+
+    leida = Column(
+        Boolean,
+        default=False,
+        nullable=False
+    )
+
+    fecha_creacion = Column(
+        DateTime,
+        server_default=func.now(),
+        nullable=False
     )
 
 
@@ -361,10 +410,6 @@ class EvidenciaTareaDB(Base):
         CheckConstraint(
             "tipo IN ('archivo', 'enlace')",
             name="chk_evidencia_tipo"
-        ),
-        CheckConstraint(
-            "LENGTH(TRIM(contenido)) > 0",
-            name="chk_comentario_contenido"
         ),
         CheckConstraint(
             """

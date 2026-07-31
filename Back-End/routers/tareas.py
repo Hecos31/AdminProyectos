@@ -18,7 +18,6 @@ from fastapi.responses import FileResponse
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session, joinedload
 
-from auth import obtener_rol_en_proyecto, obtener_usuario_actual
 from database import get_db
 from models import (
     ComentarioTareaDB,
@@ -43,6 +42,10 @@ from schemas import (
     TareaUpdate,
     TomarTareaResponse,
 )
+
+# Autenticación y Notificaciones
+from auth import obtener_usuario_actual, obtener_rol_en_proyecto
+from routers.notificaciones import disparar_notificacion
 
 router = APIRouter(prefix="/tareas", tags=["Tareas - Tablón Kanban"])
 
@@ -335,7 +338,7 @@ def eliminar_archivo_silenciosamente(ruta: Optional[Path]) -> None:
     response_model=TareaResponse,
     status_code=status.HTTP_201_CREATED,
 )
-def crear_tarea(
+async def crear_tarea(
     tarea_in: TareaCreate,
     db: Session = Depends(get_db),
     id_usuario_actual: int = Depends(obtener_usuario_actual),
@@ -354,7 +357,7 @@ def crear_tarea(
 
     estado_inicial = (
         EstadoTarea.ASIGNADA.value
-        if tarea_in.id_usuario_asignado
+        if tarea_in.id_usuario_asignado is not None
         else EstadoTarea.PENDIENTE.value
     )
 
@@ -373,32 +376,34 @@ def crear_tarea(
         db.flush()
 
         if tarea_in.id_usuario_asignado is not None:
+            # Verifica que el usuario pertenezca al proyecto.
             exigir_miembro_proyecto(
                 tarea_in.id_proyecto,
                 tarea_in.id_usuario_asignado,
                 db,
             )
 
-            db.add(
-                TareaAsignadaDB(
-                    id_tarea=nueva_tarea.id_tarea,
-                    id_usuario=tarea_in.id_usuario_asignado,
-                )
+            asignacion = TareaAsignadaDB(
+                id_tarea=nueva_tarea.id_tarea,
+                id_usuario=tarea_in.id_usuario_asignado,
             )
+
+            db.add(asignacion)
 
         db.commit()
         db.refresh(nueva_tarea)
-        return tarea_a_dict(nueva_tarea, db)
 
     except HTTPException:
         db.rollback()
         raise
+
     except IntegrityError as exc:
         db.rollback()
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail="No fue posible crear la asignación de la tarea.",
         ) from exc
+
     except Exception as exc:
         db.rollback()
         raise HTTPException(
@@ -406,6 +411,21 @@ def crear_tarea(
             detail="Error al crear la tarea.",
         ) from exc
 
+    # La tarea ya se guardó correctamente.
+    resultado = tarea_a_dict(nueva_tarea, db)
+
+    if tarea_in.id_usuario_asignado is not None:
+        await disparar_notificacion(
+            usuario_id=tarea_in.id_usuario_asignado,
+            tipo="NUEVA_TAREA",
+            mensaje=(
+                f"Se te ha asignado la nueva tarea "
+                f"'{nueva_tarea.titulo}'."
+            ),
+            db=db,
+        )
+
+    return resultado
 
 # ============================================================
 # 2. OBTENER DETALLE COMPLETO

@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, throwError } from 'rxjs';
+import { Observable, throwError, Subject, BehaviorSubject } from 'rxjs';
 import { environment } from '../../environments/environment';
 
 
@@ -115,6 +115,34 @@ export class ApiServicio {
   private http = inject(HttpClient);
   private apiUrl = environment.apiUrl;
 
+  // === ESTADO GLOBAL DE SESIÓN (BehaviorSubject) ===
+  private usuarioActualSource = new BehaviorSubject<any>(this.obtenerUsuarioInicial());
+  usuarioActual$ = this.usuarioActualSource.asObservable();
+
+  private obtenerUsuarioInicial() {
+    const usuarioStr = localStorage.getItem('usuario');
+    if (usuarioStr) {
+      try { return JSON.parse(usuarioStr); } catch (e) { return null; }
+    }
+    return null;
+  }
+
+  actualizarSesionUsuario(usuario: any) {
+    if (usuario) {
+      localStorage.setItem('usuario', JSON.stringify(usuario));
+    } else {
+      localStorage.removeItem('usuario');
+    }
+    this.usuarioActualSource.next(usuario);
+  }
+
+  // === COMUNICADOR PARA NOTIFICACIONES ===
+  private notificacionesSource = new Subject<void>();
+  notificacionesActualizadas$ = this.notificacionesSource.asObservable();
+
+  notificarCambio() {
+    this.notificacionesSource.next();
+  }
 
   // ==========================================
   //         ZONA PÚBLICA
@@ -328,7 +356,7 @@ export class ApiServicio {
 
   cambiarEstadoTarea(
     idTarea: number,
-    estado: string
+    estado: EstadoTareaApi
   ): Observable<any> {
     return this.http.patch(
       `${this.apiUrl}/tareas/${idTarea}/estado`,
@@ -463,5 +491,14 @@ export class ApiServicio {
         texto_libre: textoLibre
       }
     );
+  }
+
+  // ============ NOTIFICACIONES (Blindadas por Token en el Backend) ============
+  obtenerNotificaciones(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/notificaciones/`);
+  }
+
+  marcarNotificacionLeida(idNotificacion: number) {
+    return this.http.put(`${this.apiUrl}/notificaciones/${idNotificacion}/leer`, {});
   }
 }

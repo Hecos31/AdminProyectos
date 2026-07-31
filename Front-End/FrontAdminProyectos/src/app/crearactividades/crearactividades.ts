@@ -267,23 +267,17 @@ export class Crearactividades implements OnInit {
     event: CdkDragDrop<TareaApi[]>,
     estadoDestino: EstadoTareaApi
   ): void {
-    if (
-      event.previousContainer ===
-      event.container
-    ) {
+    if (event.previousContainer === event.container) {
       moveItemInArray(
         event.container.data,
         event.previousIndex,
         event.currentIndex
       );
-
       return;
     }
 
     const tareaMovida =
-      event.previousContainer.data[
-        event.previousIndex
-      ];
+      event.previousContainer.data[event.previousIndex];
 
     const estadoAnterior =
       tareaMovida.estado as EstadoTareaApi;
@@ -305,8 +299,7 @@ export class Crearactividades implements OnInit {
       .subscribe({
         next: () => {
           if (
-            estadoDestino ===
-              'Pendiente por asignar' &&
+            estadoDestino === 'Pendiente por asignar' &&
             tareaMovida.usuario_asignado
           ) {
             this.apiService
@@ -316,15 +309,16 @@ export class Crearactividades implements OnInit {
               )
               .subscribe({
                 next: () => {
+                  this.apiService.notificarCambio();
                   this.cargarTareas();
                 },
-
                 error: () => {
                   this.mostrarToast(
                     'El estado cambió, pero no fue posible retirar al responsable.',
                     'error'
                   );
 
+                  this.apiService.notificarCambio();
                   this.cargarTareas();
                 }
               });
@@ -332,6 +326,7 @@ export class Crearactividades implements OnInit {
             return;
           }
 
+          this.apiService.notificarCambio();
           this.cargarTareas();
         },
 
@@ -462,6 +457,7 @@ export class Crearactividades implements OnInit {
           );
 
           this.limpiarFormulario();
+          this.apiService.notificarCambio();
           this.cargarTareas();
         },
 
@@ -553,6 +549,7 @@ export class Crearactividades implements OnInit {
             'exito'
           );
 
+          this.apiService.notificarCambio();
           this.cargarTareas();
         },
 
@@ -594,52 +591,12 @@ export class Crearactividades implements OnInit {
             'exito'
           );
 
-          if (
-            idUsuario !== null &&
-            tarea.estado ===
-              'Pendiente por asignar'
-          ) {
-            this.apiService
-              .cambiarEstadoTarea(
-                tarea.id_tarea,
-                'Asignada'
-              )
-              .subscribe({
-                next: () => {
-                  this.cargarTareas();
-                },
-
-                error: () => {
-                  this.cargarTareas();
-                }
-              });
-
-            return;
-          }
-
-          if (
-            idUsuario === null &&
-            tarea.estado !==
-              'Pendiente por asignar'
-          ) {
-            this.apiService
-              .cambiarEstadoTarea(
-                tarea.id_tarea,
-                'Pendiente por asignar'
-              )
-              .subscribe({
-                next: () => {
-                  this.cargarTareas();
-                },
-
-                error: () => {
-                  this.cargarTareas();
-                }
-              });
-
-            return;
-          }
-
+          /*
+           * El backend actual actualiza automáticamente el estado:
+           * - sin responsable: "Pendiente por asignar"
+           * - con responsable: "Asignada", cuando estaba pendiente
+           */
+          this.apiService.notificarCambio();
           this.cargarTareas();
         },
 
@@ -648,6 +605,8 @@ export class Crearactividades implements OnInit {
             'Error al asignar usuario',
             'error'
           );
+
+          this.cargarTareas();
         }
       });
   }

@@ -7,7 +7,15 @@ Instalaciones de FastApi
 pip install fastapi uvicorn sqlalchemy psycopg2-binary passlib[bcrypt] pyjwt pydantic[email] 
 
 
-# 22/07/2026 11:10 am
-pip install google-generativeai
-pip install python-dotenv google-generativeai
-pip install google-genai
+para crear tabla de notificaciones en postgresql
+CREATE TABLE notificaciones (
+    id_notificacion SERIAL PRIMARY KEY,
+    id_usuario INTEGER REFERENCES usuarios(id_usuario),
+    mensaje VARCHAR(255) NOT NULL,
+    leida BOOLEAN DEFAULT FALSE,
+    fecha_creacion TIMESTAMP WITHOUT TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-----------------------------valor de prueba----------------------------------
+INSERT INTO notificaciones (id_usuario, mensaje) 
+VALUES (1, 'Te han asignado al proyecto: Mi Primer Proyecto Angular');

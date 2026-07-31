@@ -1,13 +1,13 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-# from fastapi.staticfiles import StaticFiles # Descomentar si usas archivos estáticos
 
-# Importar los enrutadores desde la carpeta routers
-from routers import usuarios, proyectos, tareas, mensajes, ai
+# 1. Importar todos los enrutadores desde la carpeta routers
+from routers import usuarios, proyectos, tareas, mensajes, ai, notificaciones
 
-app = FastAPI(title="API AdminProyectos")
+# 2. Inicializar la aplicación
+app = FastAPI(title="API AdminProyectos - Órbita")
 
-# Configuración de CORS para permitir solicitudes desde el frontend Angular 
+# 3. Configuración de CORS
 app.add_middleware(
     CORSMiddleware,
     # Agrega la IP de tu red local a la lista de permitidos
@@ -19,22 +19,15 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# # Configuración de CORS para permitir solicitudes desde el frontend Angular a través del túnel ngrok
-# app.add_middleware(
-#     CORSMiddleware,
-#     allow_origins=["https://paying-anagram-bauble.ngrok-free.dev"],  # tu túnel del frontend
-#     allow_credentials=True,
-#     allow_methods=["*"],
-#     allow_headers=["*"],
-# )
-
-# Registrar las rutas (Endpoints) de cada módulo
+# 4. Registrar las rutas (Endpoints)
 app.include_router(usuarios.router)
 app.include_router(proyectos.router)
 app.include_router(tareas.router)
 app.include_router(mensajes.router)
 app.include_router(ai.router)
+app.include_router(notificaciones.router)
 
-# Si necesitas montar los estáticos de Angular (descomentar si es necesario)
-# app.mount("/", StaticFiles(directory="../Front-End/FrontAdminProyectos/dist/front-admin-proyectos/browser", html=True), name="static")
-
+# 5. Ruta de comprobación
+@app.get("/")
+def home():
+    return {"estado": "En línea", "mensaje": "Servidor modular funcionando correctamente."}

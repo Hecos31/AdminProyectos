@@ -261,6 +261,7 @@ export class DetallesActividades implements OnChanges {
         this.modoEdicion = false;
         this.successMessage = 'La actividad fue actualizada correctamente.';
 
+        this.apiServicio.notificarCambio();
         this.cargarDetalle(true);
       },
       error: (error) => {
@@ -296,6 +297,7 @@ export class DetallesActividades implements OnChanges {
       )
       .subscribe({
         next: () => {
+          this.apiServicio.notificarCambio();
           this.tareaEliminada.emit(idTarea);
           this.cerrarModal();
         },
@@ -330,6 +332,8 @@ export class DetallesActividades implements OnChanges {
       .subscribe({
         next: (respuesta) => {
           this.successMessage = respuesta.mensaje;
+
+          this.apiServicio.notificarCambio();
           this.cargarDetalle(true);
         },
         error: (error) => {
