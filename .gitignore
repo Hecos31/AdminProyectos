@@ -1,25 +1,26 @@
-Back-End/.env
+# Variables de entorno
+.env
+.env.*
+!.env.example
 
-Back-End/__pycache__/auth.cpython-314.pyc
-Back-End/__pycache__/database.cpython-314.pyc
-Back-End/__pycache__/main.cpython-314.pyc
-Back-End/__pycache__/models.cpython-314.pyc
-Back-End/__pycache__/schemas.cpython-314.pyc
-Back-End/__pycache__/websocket.cpython-314.pyc
-Back-End/routers/__pycache__/ai.cpython-314.pyc
-Back-End/routers/__pycache__/mensajes.cpython-314.pyc
-Back-End/routers/__pycache__/proyectos.cpython-314.pyc
-Back-End/routers/__pycache__/tareas.cpython-314.pyc
-Back-End/routers/__pycache__/usuarios.cpython-314.pyc
-Back-End/__pycache__/database.cpython-314.pyc
-Back-End/__pycache__/auth.cpython-314.pyc
-Back-End/__pycache__/database.cpython-314.pyc
-Back-End/__pycache__/main.cpython-314.pyc
-Back-End/__pycache__/models.cpython-314.pyc
-Back-End/__pycache__/schemas.cpython-314.pyc
-Back-End/__pycache__/websocket.cpython-314.pyc
-Back-End/routers/__pycache__/ai.cpython-314.pyc
-Back-End/routers/__pycache__/mensajes.cpython-314.pyc
-Back-End/routers/__pycache__/proyectos.cpython-314.pyc
-Back-End/routers/__pycache__/tareas.cpython-314.pyc
-Back-End/routers/__pycache__/usuarios.cpython-314.pyc
+# Caché de Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Entornos virtuales
+venv/
+.venv/
+env/
+
+# Archivos subidos por usuarios
+uploads/
+
+# Angular / Node
+node_modules/
+dist/
+.angular/
+
+# Editores
+.vscode/
+.idea/

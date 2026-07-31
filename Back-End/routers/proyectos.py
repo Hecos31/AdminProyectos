@@ -514,20 +514,4 @@ def obtener_mis_tareas_proyecto(
         tarea_dict["usuario_asignado"] = usuario_data
         resultado.append(tarea_dict)
 
-    return resultado@router.post("/asignar")
-async def asignar_tarea_a_usuario(tarea_id: int, usuario_asignado_id: int, db: Session = Depends(get_db)):
-    
-    # ... Tu código normal donde guardas la asignación en la base de datos ...
-    # asignacion = models.Asignacion(tarea_id=tarea_id, usuario_id=usuario_asignado_id)
-    # db.add(asignacion)
-    # db.commit()
-
-    # --- DISPARADOR DE NOTIFICACIÓN ---
-    await disparar_notificacion(
-        usuario_id=usuario_asignado_id,
-        tipo="ASIGNACION_TAREA",
-        mensaje=f"Se te ha asignado una nueva tarea en tu proyecto.",
-        db=db
-    )
-
-    return {"mensaje": "Tarea asignada correctamente"}
+    return resultado
