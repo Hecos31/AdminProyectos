@@ -2,6 +2,7 @@
   class="sidebar"
   [class.collapsed]="colapsado"
 >
+  <!-- CABECERA -->
   <div class="sidebar-top">
     <button
       type="button"
@@ -74,8 +75,9 @@
     </button>
   </div>
 
+  <!-- NAVEGACIÓN FIJA -->
   <nav
-    class="sidebar-nav"
+    class="sidebar-primary-nav"
     aria-label="Navegación principal"
   >
     <ul class="nav-list">
@@ -175,19 +177,210 @@
           </span>
         </button>
       </li>
+    </ul>
+  </nav>
 
-      <li
-        class="nav-item separator"
+  <!-- ZONA CENTRAL DE PROYECTOS -->
+  <section
+    class="projects-zone"
+    aria-label="Proyectos"
+  >
+    <div class="projects-zone-header">
+      <span class="projects-label">
+        Proyectos
+      </span>
+
+      <span
+        class="projects-count"
+        *ngIf="!cargandoProyectos"
+      >
+        {{ proyectos.length }}
+      </span>
+    </div>
+
+    <a
+      routerLink="/crear-proyecto"
+      class="nav-link nav-btn-primary"
+      routerLinkActive="active"
+      title="Nuevo proyecto"
+      aria-label="Crear un nuevo proyecto"
+    >
+      <svg
+        class="nav-icon"
+        width="20"
+        height="20"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
         aria-hidden="true"
-      ></li>
+      >
+        <line
+          x1="12"
+          y1="5"
+          x2="12"
+          y2="19"
+        ></line>
+        <line
+          x1="5"
+          y1="12"
+          x2="19"
+          y2="12"
+        ></line>
+      </svg>
 
-      <li class="nav-item">
-        <a
-          routerLink="/crear-proyecto"
-          class="nav-link nav-btn-primary"
-          routerLinkActive="active"
-          title="Nuevo proyecto"
+      <span class="nav-text">
+        Nuevo proyecto
+      </span>
+    </a>
+
+    <div class="projects-scroll">
+      <div
+        class="projects-loading"
+        *ngIf="cargandoProyectos"
+        aria-live="polite"
+      >
+        <span class="projects-spinner"></span>
+
+        <span class="nav-text">
+          Cargando proyectos...
+        </span>
+      </div>
+
+      <div
+        class="projects-error"
+        *ngIf="
+          !cargandoProyectos &&
+          errorProyectos
+        "
+      >
+        <span class="nav-text">
+          {{ errorProyectos }}
+        </span>
+
+        <button
+          type="button"
+          (click)="cargarProyectos()"
+          title="Reintentar"
+          aria-label="Volver a cargar proyectos"
         >
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <polyline points="23 4 23 10 17 10"></polyline>
+            <polyline points="1 20 1 14 7 14"></polyline>
+            <path
+              d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10"
+            ></path>
+            <path
+              d="M20.49 15a9 9 0 0 1-14.85 3.36L1 14"
+            ></path>
+          </svg>
+        </button>
+      </div>
+
+      <p
+        class="projects-empty nav-text"
+        *ngIf="
+          !cargandoProyectos &&
+          !errorProyectos &&
+          proyectos.length === 0
+        "
+      >
+        Todavía no participas en proyectos.
+      </p>
+
+      <ul
+        class="project-list"
+        *ngIf="
+          !cargandoProyectos &&
+          proyectos.length > 0
+        "
+      >
+        <li
+          *ngFor="
+            let proyecto of proyectos;
+            trackBy: trackProyecto
+          "
+        >
+          <a
+            class="project-link"
+            [routerLink]="[
+              '/proyecto',
+              proyecto.id
+            ]"
+            routerLinkActive="active"
+            [title]="proyecto.nombre"
+            [attr.aria-label]="
+              'Abrir proyecto ' +
+              proyecto.nombre
+            "
+          >
+            <span
+              class="project-avatar"
+              aria-hidden="true"
+            >
+              {{ inicialProyecto(proyecto) }}
+            </span>
+
+            <span class="project-copy">
+              <span class="project-name">
+                {{ proyecto.nombre }}
+              </span>
+
+              <span
+                class="project-description"
+                *ngIf="proyecto.descripcion"
+              >
+                {{ proyecto.descripcion }}
+              </span>
+            </span>
+
+            <svg
+              class="project-chevron"
+              width="15"
+              height="15"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <polyline
+                points="9 18 15 12 9 6"
+              ></polyline>
+            </svg>
+          </a>
+        </li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ZONA INFERIOR FIJA -->
+  <footer class="sidebar-footer">
+    <div class="sidebar-notificaciones-wrapper">
+      <button
+        type="button"
+        class="nav-link notifications-button"
+        (click)="toggleNotificaciones()"
+        [class.active]="mostrarNotificaciones"
+        [attr.aria-expanded]="mostrarNotificaciones"
+        aria-haspopup="dialog"
+        title="Notificaciones"
+      >
+        <span class="nav-icon-wrapper">
           <svg
             class="nav-icon"
             width="20"
@@ -200,40 +393,208 @@
             stroke-linejoin="round"
             aria-hidden="true"
           >
-            <line
-              x1="12"
-              y1="5"
-              x2="12"
-              y2="19"
-            ></line>
-            <line
-              x1="5"
-              y1="12"
-              x2="19"
-              y2="12"
-            ></line>
+            <path
+              d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"
+            ></path>
+            <path
+              d="M13.73 21a2 2 0 0 1-3.46 0"
+            ></path>
           </svg>
 
-          <span class="nav-text">
-            Nuevo proyecto
-          </span>
-        </a>
-      </li>
-    </ul>
-  </nav>
+          <span
+            class="collapsed-dot"
+            *ngIf="
+              colapsado &&
+              contadorNotificaciones > 0
+            "
+            aria-hidden="true"
+          ></span>
+        </span>
 
-  <div class="sidebar-notificaciones-wrapper">
-    <button
-      type="button"
-      class="nav-link notifications-button"
-      (click)="toggleNotificaciones()"
-      [class.active]="mostrarNotificaciones"
-      [attr.aria-expanded]="mostrarNotificaciones"
-      aria-haspopup="dialog"
-      title="Notificaciones"
-    >
-      <span class="nav-icon-wrapper">
+        <span class="nav-text">
+          Notificaciones
+        </span>
+
+        <span
+          class="nav-badge"
+          *ngIf="contadorNotificaciones > 0"
+        >
+          {{
+            cantidadBadge(
+              contadorNotificaciones
+            )
+          }}
+        </span>
+      </button>
+
+      <section
+        class="notifications-panel"
+        *ngIf="mostrarNotificaciones"
+        role="dialog"
+        aria-label="Notificaciones"
+        (click)="$event.stopPropagation()"
+      >
+        <header class="notifications-panel-header">
+          <h4>Notificaciones</h4>
+
+          <span
+            class="panel-total"
+            *ngIf="contadorNotificaciones > 0"
+          >
+            {{ contadorNotificaciones }}
+          </span>
+        </header>
+
+        <div class="notification-tabs">
+          <button
+            type="button"
+            [class.active]="!viendoHistorial"
+            (click)="cambiarVistaHistorial(false)"
+          >
+            Pendientes
+          </button>
+
+          <button
+            type="button"
+            [class.active]="viendoHistorial"
+            (click)="cambiarVistaHistorial(true)"
+          >
+            Historial
+          </button>
+        </div>
+
+        <div
+          class="notifications-list"
+          *ngIf="!viendoHistorial"
+        >
+          <p
+            class="notifications-empty"
+            *ngIf="notificaciones.length === 0"
+          >
+            No tienes notificaciones pendientes.
+          </p>
+
+          <article
+            class="notification-item"
+            *ngFor="
+              let notificacion of notificaciones;
+              let i = index
+            "
+          >
+            <p>
+              {{ notificacion.mensaje }}
+            </p>
+
+            <footer>
+              <time>
+                {{
+                  notificacion.fecha_creacion
+                    | date: 'short'
+                }}
+              </time>
+
+              <button
+                type="button"
+                (click)="
+                  leerNotificacion(
+                    notificacion,
+                    i
+                  )
+                "
+              >
+                Marcar leída
+              </button>
+            </footer>
+          </article>
+        </div>
+
+        <div
+          class="notifications-list"
+          *ngIf="viendoHistorial"
+        >
+          <p
+            class="notifications-empty"
+            *ngIf="
+              historialNotificaciones.length === 0
+            "
+          >
+            No hay registros en tu historial.
+          </p>
+
+          <article
+            class="notification-item"
+            *ngFor="
+              let notificacion of historialNotificaciones
+            "
+            [class.read]="notificacion.leida"
+          >
+            <p>
+              {{ notificacion.mensaje }}
+            </p>
+
+            <footer>
+              <time>
+                {{
+                  notificacion.fecha_creacion
+                    | date: 'short'
+                }}
+              </time>
+
+              <span
+                class="read-label"
+                *ngIf="notificacion.leida"
+              >
+                Leída
+              </span>
+            </footer>
+          </article>
+        </div>
+      </section>
+    </div>
+
+    <div class="theme-section">
+      <button
+        type="button"
+        class="nav-link theme-button"
+        (click)="toggleTheme($event)"
+        [attr.aria-pressed]="isDarkMode"
+        [attr.aria-label]="
+          isDarkMode
+            ? 'Activar modo claro'
+            : 'Activar modo oscuro'
+        "
+        [title]="
+          isDarkMode
+            ? 'Modo claro'
+            : 'Modo oscuro'
+        "
+      >
         <svg
+          *ngIf="isDarkMode"
+          class="nav-icon"
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+        >
+          <circle cx="12" cy="12" r="4"></circle>
+          <line x1="12" y1="2" x2="12" y2="4"></line>
+          <line x1="12" y1="20" x2="12" y2="22"></line>
+          <line x1="4.93" y1="4.93" x2="6.34" y2="6.34"></line>
+          <line x1="17.66" y1="17.66" x2="19.07" y2="19.07"></line>
+          <line x1="2" y1="12" x2="4" y2="12"></line>
+          <line x1="20" y1="12" x2="22" y2="12"></line>
+          <line x1="4.93" y1="19.07" x2="6.34" y2="17.66"></line>
+          <line x1="17.66" y1="6.34" x2="19.07" y2="4.93"></line>
+        </svg>
+
+        <svg
+          *ngIf="!isDarkMode"
           class="nav-icon"
           width="20"
           height="20"
@@ -246,285 +607,150 @@
           aria-hidden="true"
         >
           <path
-            d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"
-          ></path>
-          <path
-            d="M13.73 21a2 2 0 0 1-3.46 0"
+            d="M21 12.79A9 9 0 1 1 11.21 3
+               7 7 0 0 0 21 12.79z"
           ></path>
         </svg>
 
-        <span
-          class="collapsed-dot"
-          *ngIf="
-            colapsado &&
-            contadorNotificaciones > 0
-          "
-          aria-hidden="true"
-        ></span>
-      </span>
-
-      <span class="nav-text">
-        Notificaciones
-      </span>
-
-      <span
-        class="nav-badge"
-        *ngIf="contadorNotificaciones > 0"
-      >
-        {{
-          cantidadBadge(
-            contadorNotificaciones
-          )
-        }}
-      </span>
-    </button>
-
-    <section
-      class="notifications-panel"
-      *ngIf="mostrarNotificaciones"
-      role="dialog"
-      aria-label="Notificaciones"
-      (click)="$event.stopPropagation()"
-    >
-      <header class="notifications-panel-header">
-        <h4>Notificaciones</h4>
-
-        <span
-          class="panel-total"
-          *ngIf="contadorNotificaciones > 0"
-        >
-          {{ contadorNotificaciones }}
+        <span class="nav-text">
+          {{
+            isDarkMode
+              ? 'Modo claro'
+              : 'Modo oscuro'
+          }}
         </span>
-      </header>
 
-      <div class="notification-tabs">
-        <button
-          type="button"
-          [class.active]="!viendoHistorial"
-          (click)="cambiarVistaHistorial(false)"
+        <span
+          class="theme-status"
+          aria-hidden="true"
         >
-          Pendientes
-        </button>
+          {{ isDarkMode ? 'Oscuro' : 'Claro' }}
+        </span>
+      </button>
+    </div>
 
-        <button
-          type="button"
-          [class.active]="viendoHistorial"
-          (click)="cambiarVistaHistorial(true)"
-        >
-          Historial
-        </button>
-      </div>
-
+    <div class="user-profile-section">
       <div
-        class="notifications-list"
-        *ngIf="!viendoHistorial"
+        class="user-popover"
+        *ngIf="mostrarMenuUsuario"
+        role="menu"
+        aria-label="Opciones del usuario"
+        (click)="$event.stopPropagation()"
       >
-        <p
-          class="notifications-empty"
-          *ngIf="notificaciones.length === 0"
-        >
-          No tienes notificaciones pendientes.
-        </p>
+        <div class="popover-header">
+          <div
+            class="popover-avatar"
+            aria-hidden="true"
+          >
+            {{ inicialUsuario }}
+          </div>
 
-        <article
-          class="notification-item"
-          *ngFor="
-            let notificacion of notificaciones;
-            let i = index
-          "
-        >
-          <p>
-            {{ notificacion.mensaje }}
-          </p>
-
-          <footer>
-            <time>
-              {{
-                notificacion.fecha_creacion
-                  | date: 'short'
-              }}
-            </time>
-
-            <button
-              type="button"
-              (click)="
-                leerNotificacion(
-                  notificacion,
-                  i
-                )
-              "
-            >
-              Marcar leída
-            </button>
-          </footer>
-        </article>
-      </div>
-
-      <div
-        class="notifications-list"
-        *ngIf="viendoHistorial"
-      >
-        <p
-          class="notifications-empty"
-          *ngIf="
-            historialNotificaciones.length === 0
-          "
-        >
-          No hay registros en tu historial.
-        </p>
-
-        <article
-          class="notification-item"
-          *ngFor="
-            let notificacion of historialNotificaciones
-          "
-          [class.read]="notificacion.leida"
-        >
-          <p>
-            {{ notificacion.mensaje }}
-          </p>
-
-          <footer>
-            <time>
-              {{
-                notificacion.fecha_creacion
-                  | date: 'short'
-              }}
-            </time>
+          <div class="popover-info">
+            <span class="popover-name">
+              {{ nombreUsuario }}
+              {{ apellidoUsuario }}
+            </span>
 
             <span
-              class="read-label"
-              *ngIf="notificacion.leida"
+              class="popover-email"
+              [title]="
+                usuario?.correo ||
+                'correo@ejemplo.com'
+              "
             >
-              Leída
+              {{
+                usuario?.correo ||
+                'correo@ejemplo.com'
+              }}
             </span>
-          </footer>
-        </article>
-      </div>
-    </section>
-  </div>
+          </div>
+        </div>
 
-  <div class="user-profile-section">
-    <div
-      class="user-popover"
-      *ngIf="mostrarMenuUsuario"
-      role="menu"
-      aria-label="Opciones del usuario"
-      (click)="$event.stopPropagation()"
-    >
-      <div class="popover-header">
-        <div
-          class="popover-avatar"
+        <div class="popover-actions">
+          <button
+            type="button"
+            class="popover-btn logout"
+            (click)="cerrarSesion()"
+            role="menuitem"
+          >
+            <svg
+              width="17"
+              height="17"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path
+                d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"
+              ></path>
+              <polyline
+                points="16 17 21 12 16 7"
+              ></polyline>
+              <line
+                x1="21"
+                y1="12"
+                x2="9"
+                y2="12"
+              ></line>
+            </svg>
+
+            <span>Cerrar sesión</span>
+          </button>
+        </div>
+      </div>
+
+      <button
+        type="button"
+        class="user-profile-btn"
+        (click)="toggleMenuUsuario()"
+        [class.active]="mostrarMenuUsuario"
+        [attr.aria-expanded]="mostrarMenuUsuario"
+        aria-haspopup="menu"
+        [attr.aria-label]="
+          'Abrir opciones de ' +
+          nombreUsuario +
+          ' ' +
+          apellidoUsuario
+        "
+        [title]="
+          nombreUsuario +
+          ' ' +
+          apellidoUsuario
+        "
+      >
+        <span
+          class="user-avatar-mini"
           aria-hidden="true"
         >
           {{ inicialUsuario }}
-        </div>
+        </span>
 
-        <div class="popover-info">
-          <span class="popover-name">
-            {{ nombreUsuario }}
-            {{ apellidoUsuario }}
-          </span>
+        <span class="user-name-truncate">
+          {{ nombreUsuario }}
+          {{ apellidoUsuario }}
+        </span>
 
-          <span
-            class="popover-email"
-            [title]="
-              usuario?.correo ||
-              'correo@ejemplo.com'
-            "
-          >
-            {{
-              usuario?.correo ||
-              'correo@ejemplo.com'
-            }}
-          </span>
-        </div>
-      </div>
-
-      <div class="popover-actions">
-        <button
-          type="button"
-          class="popover-btn logout"
-          (click)="cerrarSesion()"
-          role="menuitem"
+        <svg
+          class="popover-chevron"
+          width="15"
+          height="15"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
         >
-          <svg
-            width="17"
-            height="17"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            aria-hidden="true"
-          >
-            <path
-              d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"
-            ></path>
-            <polyline
-              points="16 17 21 12 16 7"
-            ></polyline>
-            <line
-              x1="21"
-              y1="12"
-              x2="9"
-              y2="12"
-            ></line>
-          </svg>
-
-          <span>Cerrar sesión</span>
-        </button>
-      </div>
+          <polyline
+            points="18 15 12 9 6 15"
+          ></polyline>
+        </svg>
+      </button>
     </div>
-
-    <button
-      type="button"
-      class="user-profile-btn"
-      (click)="toggleMenuUsuario()"
-      [class.active]="mostrarMenuUsuario"
-      [attr.aria-expanded]="mostrarMenuUsuario"
-      aria-haspopup="menu"
-      [attr.aria-label]="
-        'Abrir opciones de ' +
-        nombreUsuario +
-        ' ' +
-        apellidoUsuario
-      "
-      [title]="
-        nombreUsuario +
-        ' ' +
-        apellidoUsuario
-      "
-    >
-      <span
-        class="user-avatar-mini"
-        aria-hidden="true"
-      >
-        {{ inicialUsuario }}
-      </span>
-
-      <span class="user-name-truncate">
-        {{ nombreUsuario }}
-        {{ apellidoUsuario }}
-      </span>
-
-      <svg
-        class="popover-chevron"
-        width="15"
-        height="15"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="2"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-        aria-hidden="true"
-      >
-        <polyline
-          points="18 15 12 9 6 15"
-        ></polyline>
-      </svg>
-    </button>
-  </div>
+  </footer>
 </div>

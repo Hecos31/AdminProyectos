@@ -9,12 +9,14 @@ import {
   inject
 } from '@angular/core';
 import {
+  NavigationEnd,
   Router,
   RouterModule
 } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import {
   Subscription,
+  filter,
   interval,
   startWith,
   switchMap
@@ -22,6 +24,13 @@ import {
 
 import { ChatService } from '../Servicios/chats';
 import { ApiServicio } from '../Servicios/api.servicio';
+import { ThemeService } from '../Servicios/theme.service';
+
+interface ProyectoSidebar {
+  id: number;
+  nombre: string;
+  descripcion?: string;
+}
 
 @Component({
   selector: 'app-sidebar',
@@ -38,17 +47,17 @@ export class SidebarComponente
 
   private router = inject(Router);
   private eRef = inject(ElementRef);
-  private chatService =
-    inject(ChatService);
-  private apiService =
-    inject(ApiServicio);
-  private cdr =
-    inject(ChangeDetectorRef);
+  private chatService = inject(ChatService);
+  private apiService = inject(ApiServicio);
+  private themeService = inject(ThemeService);
+  private cdr = inject(ChangeDetectorRef);
 
-  private subscriptions =
-    new Subscription();
+  private subscriptions = new Subscription();
 
   private suscripcionNotificaciones:
+    Subscription | null = null;
+
+  private suscripcionProyectos:
     Subscription | null = null;
 
   usuario: any = null;
@@ -60,8 +69,14 @@ export class SidebarComponente
   notificaciones: any[] = [];
   historialNotificaciones: any[] = [];
 
+  proyectos: ProyectoSidebar[] = [];
+  cargandoProyectos = false;
+  errorProyectos = '';
+
   contadorNotificaciones = 0;
   contadorMensajesNoLeidos = 0;
+
+  isDarkMode = false;
 
   colapsado =
     localStorage.getItem(
@@ -77,30 +92,26 @@ export class SidebarComponente
 
   get inicialUsuario(): string {
     return this.usuario?.nombre
-      ? String(
-          this.usuario.nombre
-        )
+      ? String(this.usuario.nombre)
           .charAt(0)
           .toUpperCase()
       : 'U';
   }
 
   get nombreUsuario(): string {
-    return (
-      this.usuario?.nombre ||
-      'Usuario'
-    );
+    return this.usuario?.nombre || 'Usuario';
   }
 
   get apellidoUsuario(): string {
-    return (
-      this.usuario?.apellido ||
-      ''
-    );
+    return this.usuario?.apellido || '';
   }
 
   ngOnInit(): void {
     this.aplicarAnchoGlobal();
+
+    this.themeService.initializeTheme();
+    this.isDarkMode =
+      this.themeService.isDarkTheme();
 
     this.subscriptions.add(
       this.chatService
@@ -120,15 +131,19 @@ export class SidebarComponente
           this.usuario = usuario;
 
           this.detenerPollingNotificaciones();
+          this.detenerCargaProyectos();
 
           if (this.usuario) {
             this.chatService.iniciar();
             this.iniciarPollingNotificaciones();
+            this.cargarProyectos();
           } else {
             this.chatService.detener();
 
             this.notificaciones = [];
             this.historialNotificaciones = [];
+            this.proyectos = [];
+
             this.contadorNotificaciones = 0;
             this.contadorMensajesNoLeidos = 0;
           }
@@ -147,16 +162,37 @@ export class SidebarComponente
         })
     );
 
-
     this.subscriptions.add(
-  this.chatService.sesionExpirada$.subscribe(() => {
-    this.cerrarSesion();
-  })
-);
+      this.chatService
+        .sesionExpirada$
+        .subscribe(() => {
+          this.cerrarSesion();
+        })
+    );
+
+    /*
+     * Después de crear, editar o cambiar de proyecto,
+     * la lista se vuelve a consultar para mantenerla actualizada.
+     */
+    this.subscriptions.add(
+      this.router.events
+        .pipe(
+          filter(
+            (evento): evento is NavigationEnd =>
+              evento instanceof NavigationEnd
+          )
+        )
+        .subscribe(() => {
+          if (this.usuario) {
+            this.cargarProyectos();
+          }
+        })
+    );
   }
 
   ngOnDestroy(): void {
     this.detenerPollingNotificaciones();
+    this.detenerCargaProyectos();
     this.subscriptions.unsubscribe();
   }
 
@@ -169,8 +205,7 @@ export class SidebarComponente
   ): void {
     evento?.stopPropagation();
 
-    this.colapsado =
-      !this.colapsado;
+    this.colapsado = !this.colapsado;
 
     localStorage.setItem(
       'orbita_sidebar_colapsado',
@@ -187,13 +222,10 @@ export class SidebarComponente
         'orbita-sidebar-toggle',
         {
           detail: {
-            colapsado:
-              this.colapsado,
-
-            ancho:
-              this.colapsado
-                ? 76
-                : 260
+            colapsado: this.colapsado,
+            ancho: this.colapsado
+              ? 76
+              : 260
           }
         }
       )
@@ -203,6 +235,80 @@ export class SidebarComponente
   abrirChat(): void {
     this.chatService
       .solicitarAperturaWidget();
+  }
+
+  toggleTheme(
+    evento?: Event
+  ): void {
+    evento?.stopPropagation();
+
+    this.themeService.toggleTheme();
+
+    this.isDarkMode =
+      this.themeService.isDarkTheme();
+
+    this.mostrarMenuUsuario = false;
+    this.mostrarNotificaciones = false;
+
+    this.cdr.detectChanges();
+  }
+
+  cargarProyectos(): void {
+    if (!this.usuario) {
+      return;
+    }
+
+    this.detenerCargaProyectos();
+
+    this.cargandoProyectos = true;
+    this.errorProyectos = '';
+
+    this.suscripcionProyectos =
+      this.apiService
+        .obtenerProyectos()
+        .subscribe({
+          next: (data: any) => {
+            this.proyectos =
+              this.normalizarProyectos(data);
+
+            this.cargandoProyectos = false;
+            this.cdr.detectChanges();
+          },
+
+          error: (error: any) => {
+            this.cargandoProyectos = false;
+
+            if (error?.status !== 401) {
+              this.errorProyectos =
+                'No fue posible cargar los proyectos.';
+
+              console.error(
+                'Error al cargar proyectos:',
+                error
+              );
+            }
+
+            this.cdr.detectChanges();
+          }
+        });
+  }
+
+  trackProyecto(
+    _index: number,
+    proyecto: ProyectoSidebar
+  ): number {
+    return proyecto.id;
+  }
+
+  inicialProyecto(
+    proyecto: ProyectoSidebar
+  ): string {
+    const nombre =
+      proyecto.nombre.trim();
+
+    return nombre
+      ? nombre.charAt(0).toUpperCase()
+      : 'P';
   }
 
   toggleNotificaciones(): void {
@@ -315,6 +421,83 @@ export class SidebarComponente
     }
   }
 
+  private normalizarProyectos(
+  data: unknown
+): ProyectoSidebar[] {
+  const datos = data as {
+    proyectos?: unknown;
+  };
+
+  const lista: any[] =
+    Array.isArray(data)
+      ? data
+      : Array.isArray(datos?.proyectos)
+        ? datos.proyectos
+        : [];
+
+  const proyectosNormalizados:
+    ProyectoSidebar[] = lista
+      .map(
+        (
+          proyecto: any
+        ): ProyectoSidebar | null => {
+          const id = Number(
+            proyecto?.id_proyecto ??
+            proyecto?.id
+          );
+
+          if (
+            !Number.isInteger(id) ||
+            id <= 0
+          ) {
+            return null;
+          }
+
+          const nombre = String(
+            proyecto?.nombre ??
+            proyecto?.nombre_proyecto ??
+            proyecto?.titulo ??
+            `Proyecto #${id}`
+          ).trim();
+
+          const descripcion =
+            proyecto?.descripcion != null
+              ? String(
+                  proyecto.descripcion
+                )
+              : undefined;
+
+          return {
+            id,
+            nombre:
+              nombre ||
+              `Proyecto #${id}`,
+            descripcion
+          };
+        }
+      )
+      .filter(
+        (
+          proyecto
+        ): proyecto is ProyectoSidebar =>
+          proyecto !== null
+      );
+
+  return proyectosNormalizados.sort(
+    (
+      a: ProyectoSidebar,
+      b: ProyectoSidebar
+    ) =>
+      a.nombre.localeCompare(
+        b.nombre,
+        'es',
+        {
+          sensitivity: 'base'
+        }
+      )
+  );
+}
+
   private iniciarPollingNotificaciones(): void {
     this.suscripcionNotificaciones =
       interval(15000)
@@ -333,10 +516,12 @@ export class SidebarComponente
           },
 
           error: (error) => {
-            console.error(
-              'Error al sincronizar notificaciones:',
-              error
-            );
+            if (error?.status !== 401) {
+              console.error(
+                'Error al sincronizar notificaciones:',
+                error
+              );
+            }
           }
         });
   }
@@ -346,6 +531,13 @@ export class SidebarComponente
       ?.unsubscribe();
 
     this.suscripcionNotificaciones = null;
+  }
+
+  private detenerCargaProyectos(): void {
+    this.suscripcionProyectos
+      ?.unsubscribe();
+
+    this.suscripcionProyectos = null;
   }
 
   private forzarCargaInmediata(): void {
@@ -359,10 +551,12 @@ export class SidebarComponente
         },
 
         error: (error) => {
-          console.error(
-            'Error al cargar notificaciones:',
-            error
-          );
+          if (error?.status !== 401) {
+            console.error(
+              'Error al cargar notificaciones:',
+              error
+            );
+          }
         }
       });
   }

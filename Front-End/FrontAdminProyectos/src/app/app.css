@@ -8,6 +8,7 @@
   height: 100%;
   min-width: 0;
   min-height: 0;
+
   overflow: hidden;
 }
 
@@ -21,10 +22,6 @@
   width: 100%;
   min-width: 0;
 
-  /*
-   * 100vh funciona como respaldo.
-   * 100dvh se adapta mejor a navegadores móviles.
-   */
   height: 100vh;
   height: 100dvh;
 
@@ -32,6 +29,7 @@
   grid-template-rows: minmax(0, 1fr);
 
   overflow: hidden;
+
   color: var(--app-text);
   background: var(--app-background);
 
@@ -47,7 +45,7 @@
 
 .app-container.with-sidebar {
   grid-template-columns:
-    var(--sidebar-width)
+    var(--app-sidebar-width, 260px)
     minmax(0, 1fr);
 }
 
@@ -91,6 +89,7 @@ app-sidebar {
   flex-direction: column;
 
   overflow: hidden;
+
   background: var(--app-background);
 }
 
@@ -108,6 +107,7 @@ app-navbar-proyecto {
   width: 100%;
   max-width: 100%;
   min-width: 0;
+
   flex: 0 0 auto;
 }
 
@@ -120,6 +120,7 @@ app-navbar-proyecto {
   width: 100%;
   min-width: 0;
   min-height: 0;
+
   flex: 1 1 auto;
 
   overflow-x: hidden;
@@ -136,10 +137,6 @@ app-navbar-proyecto {
     background-color var(--app-transition);
 }
 
-/*
- * overflow-x: clip evita la barra horizontal sin crear
- * otro contenedor de desplazamiento.
- */
 @supports (overflow: clip) {
   .app-page {
     overflow-x: clip;
@@ -157,116 +154,13 @@ app-chat-widget {
 
 
 /* =========================================================
-   BOTÓN TEMPORAL DE TEMA
-========================================================= */
-
-.theme-toggle {
-  position: fixed;
-  bottom: 18px;
-  left: 18px;
-  z-index: 1500;
-
-  display: inline-flex;
-  min-height: 42px;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-
-  padding: 9px 13px;
-
-  color: var(--app-text-secondary);
-  background: var(--app-surface);
-
-  border: 1px solid var(--app-border);
-  border-radius: var(--app-radius-pill);
-
-  box-shadow: var(--app-shadow-medium);
-
-  font-size: 0.78rem;
-  font-weight: 650;
-  white-space: nowrap;
-
-  cursor: pointer;
-
-  transition:
-    left var(--app-transition),
-    color var(--app-transition-fast),
-    background-color var(--app-transition-fast),
-    border-color var(--app-transition-fast),
-    box-shadow var(--app-transition-fast);
-}
-
-.app-container.with-sidebar .theme-toggle {
-  left: calc(var(--sidebar-width) + 18px);
-}
-
-.theme-toggle:hover {
-  color: var(--app-primary);
-  background: var(--app-surface-hover);
-  border-color: var(--app-primary-border);
-}
-
-.theme-toggle:focus-visible {
-  outline: 2px solid var(--app-primary);
-  outline-offset: 3px;
-}
-
-
-/* =========================================================
-   TABLETS Y MÓVILES
-========================================================= */
-
-@media (max-width: 768px) {
-  .app-container.with-sidebar {
-    grid-template-columns:
-      var(--sidebar-width-collapsed)
-      minmax(0, 1fr);
-  }
-
-  .app-container.with-sidebar .theme-toggle {
-    left:
-      calc(
-        var(--sidebar-width-collapsed) + 12px
-      );
-  }
-
-  .theme-toggle {
-    bottom: 12px;
-    left: 12px;
-    min-width: 42px;
-    min-height: 42px;
-    padding: 9px;
-  }
-
-  .theme-toggle span {
-    display: none;
-  }
-}
-
-
-/* =========================================================
-   PANTALLAS MUY PEQUEÑAS
-========================================================= */
-
-@media (max-width: 380px) {
-  .theme-toggle {
-    width: 40px;
-    min-width: 40px;
-    height: 40px;
-    min-height: 40px;
-  }
-}
-
-
-/* =========================================================
    ACCESIBILIDAD
 ========================================================= */
 
 @media (prefers-reduced-motion: reduce) {
   .app-container,
   .app-main,
-  .app-page,
-  .theme-toggle {
+  .app-page {
     transition: none;
   }
 }
