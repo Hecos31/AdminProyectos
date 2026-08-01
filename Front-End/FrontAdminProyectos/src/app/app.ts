@@ -7,11 +7,14 @@ import { SidebarComponente } from './sidebar/sidebar';
 import { NavbarProyecto } from './navbar-proyecto/navbar-proyecto';
 import { ChatWidget } from './chat-widget/chat-widget';
 import { ThemeService } from './Servicios/theme.service';
+import {
+  ConfirmacionModalComponent
+} from './confirmacion-modal/confirmacion-modal';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, CommonModule, SidebarComponente, NavbarProyecto, ChatWidget],
+  imports: [RouterOutlet, CommonModule, SidebarComponente, NavbarProyecto, ChatWidget, ConfirmacionModalComponent],
   templateUrl: './app.html',
   styleUrls: ['./app.css'],
 })

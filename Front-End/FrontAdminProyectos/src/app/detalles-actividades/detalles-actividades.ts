@@ -26,6 +26,11 @@ import {
   UsuarioTarea,
 } from '../Servicios/api.servicio';
 
+import {
+  ConfirmacionService
+} from '../Servicios/confirmacion.service';
+
+
 interface FormularioEdicionTarea {
   titulo: string;
   descripcion: string;
@@ -45,6 +50,9 @@ interface FormularioEdicionTarea {
 })
 export class DetallesActividades implements OnChanges {
   private apiServicio = inject(ApiServicio);
+
+  private confirmacionService =
+  inject(ConfirmacionService);
 
   @Input() tarea: TareaApi | null = null;
 
@@ -270,20 +278,36 @@ export class DetallesActividades implements OnChanges {
     });
   }
 
-  eliminarActividad(): void {
-    if (!this.detalle?.permisos.puede_eliminar_tarea || this.eliminandoTarea) {
+  async eliminarActividad(): Promise<void> {
+    if (
+      !this.detalle?.permisos.puede_eliminar_tarea ||
+      this.eliminandoTarea
+    ) {
       return;
     }
 
-    const confirmado = window.confirm(
-      '¿Deseas eliminar esta actividad? También se eliminarán sus comentarios y evidencias.'
-    );
+    const tarea = this.detalle.tarea;
+    const titulo =
+      tarea.titulo?.trim() ||
+      'esta actividad';
+
+    const confirmado =
+      await this.confirmacionService.solicitar({
+        titulo: 'Eliminar actividad',
+        mensaje:
+          `¿Deseas eliminar la actividad "${titulo}"?`,
+        detalle:
+          'También se eliminarán permanentemente sus comentarios y evidencias. Esta acción no se puede deshacer.',
+        tipo: 'danger',
+        textoBotonConfirmar:
+          'Eliminar actividad',
+      });
 
     if (!confirmado) {
       return;
     }
 
-    const idTarea = this.detalle.tarea.id_tarea;
+    const idTarea = tarea.id_tarea;
 
     this.eliminandoTarea = true;
     this.limpiarMensajes();
@@ -302,10 +326,11 @@ export class DetallesActividades implements OnChanges {
           this.cerrarModal();
         },
         error: (error) => {
-          this.errorMessage = this.obtenerMensajeError(
-            error,
-            'No fue posible eliminar la actividad.'
-          );
+          this.errorMessage =
+            this.obtenerMensajeError(
+              error,
+              'No fue posible eliminar la actividad.'
+            );
         },
       });
   }
@@ -448,23 +473,49 @@ export class DetallesActividades implements OnChanges {
       });
   }
 
-  eliminarComentario(comentario: ComentarioTarea): void {
-    if (!comentario.puede_eliminar || this.eliminandoComentarioId !== null) {
+  async eliminarComentario(
+    comentario: ComentarioTarea
+  ): Promise<void> {
+    if (
+      !comentario.puede_eliminar ||
+      this.eliminandoComentarioId !== null
+    ) {
       return;
     }
 
-    const confirmado = window.confirm('¿Deseas eliminar este comentario?');
+    const contenido =
+      comentario.contenido?.trim() ||
+      'Comentario sin contenido';
+
+    const resumen =
+      contenido.length > 220
+        ? `${contenido.slice(0, 220)}…`
+        : contenido;
+
+    const confirmado =
+      await this.confirmacionService.solicitar({
+        titulo: 'Eliminar comentario',
+        mensaje:
+          '¿Deseas eliminar este comentario?',
+        detalle: resumen,
+        tipo: 'danger',
+        textoBotonConfirmar:
+          'Eliminar comentario',
+      });
 
     if (!confirmado) {
       return;
     }
 
-    this.eliminandoComentarioId = comentario.id_comentario;
+    this.eliminandoComentarioId =
+      comentario.id_comentario;
 
     this.errorMessage = '';
 
     this.apiServicio
-      .eliminarComentario(comentario.id_comentario)
+      .eliminarComentario(
+        comentario.id_comentario
+      )
       .pipe(
         finalize(() => {
           this.eliminandoComentarioId = null;
@@ -476,15 +527,19 @@ export class DetallesActividades implements OnChanges {
             return;
           }
 
-          this.detalle.comentarios = this.detalle.comentarios.filter(
-            (item) => item.id_comentario !== comentario.id_comentario
-          );
+          this.detalle.comentarios =
+            this.detalle.comentarios.filter(
+              (item) =>
+                item.id_comentario !==
+                comentario.id_comentario
+            );
         },
         error: (error) => {
-          this.errorMessage = this.obtenerMensajeError(
-            error,
-            'No fue posible eliminar el comentario.'
-          );
+          this.errorMessage =
+            this.obtenerMensajeError(
+              error,
+              'No fue posible eliminar el comentario.'
+            );
         },
       });
   }
@@ -753,23 +808,51 @@ export class DetallesActividades implements OnChanges {
       });
   }
 
-  eliminarEvidencia(evidencia: EvidenciaTarea): void {
-    if (!evidencia.puede_eliminar || this.eliminandoEvidenciaId !== null) {
+  async eliminarEvidencia(
+    evidencia: EvidenciaTarea
+  ): Promise<void> {
+    if (
+      !evidencia.puede_eliminar ||
+      this.eliminandoEvidenciaId !== null
+    ) {
       return;
     }
 
-    const confirmado = window.confirm('¿Deseas eliminar esta evidencia?');
+    const nombre =
+      evidencia.nombre?.trim() ||
+      evidencia.nombre_archivo_original?.trim() ||
+      'esta evidencia';
+
+    const tipoContenido =
+      evidencia.tipo === 'archivo'
+        ? 'El archivo dejará de estar disponible para los integrantes del proyecto.'
+        : 'El enlace dejará de estar disponible para los integrantes del proyecto.';
+
+    const confirmado =
+      await this.confirmacionService.solicitar({
+        titulo: 'Eliminar evidencia',
+        mensaje:
+          `¿Deseas eliminar la evidencia "${nombre}"?`,
+        detalle:
+          `${tipoContenido} Esta acción no se puede deshacer.`,
+        tipo: 'danger',
+        textoBotonConfirmar:
+          'Eliminar evidencia',
+      });
 
     if (!confirmado) {
       return;
     }
 
-    this.eliminandoEvidenciaId = evidencia.id_evidencia;
+    this.eliminandoEvidenciaId =
+      evidencia.id_evidencia;
 
     this.errorMessage = '';
 
     this.apiServicio
-      .eliminarEvidencia(evidencia.id_evidencia)
+      .eliminarEvidencia(
+        evidencia.id_evidencia
+      )
       .pipe(
         finalize(() => {
           this.eliminandoEvidenciaId = null;
@@ -781,15 +864,19 @@ export class DetallesActividades implements OnChanges {
             return;
           }
 
-          this.detalle.evidencias = this.detalle.evidencias.filter(
-            (item) => item.id_evidencia !== evidencia.id_evidencia
-          );
+          this.detalle.evidencias =
+            this.detalle.evidencias.filter(
+              (item) =>
+                item.id_evidencia !==
+                evidencia.id_evidencia
+            );
         },
         error: (error) => {
-          this.errorMessage = this.obtenerMensajeError(
-            error,
-            'No fue posible eliminar la evidencia.'
-          );
+          this.errorMessage =
+            this.obtenerMensajeError(
+              error,
+              'No fue posible eliminar la evidencia.'
+            );
         },
       });
   }

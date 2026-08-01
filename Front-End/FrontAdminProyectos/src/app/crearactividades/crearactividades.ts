@@ -19,6 +19,10 @@ import {
 } from '@angular/forms';
 
 import {
+  finalize
+} from 'rxjs';
+
+import {
   CdkDragDrop,
   DragDropModule,
   moveItemInArray,
@@ -36,6 +40,10 @@ import {
 import {
   DetallesActividades
 } from '../detalles-actividades/detalles-actividades';
+
+import {
+  ConfirmacionService
+} from '../Servicios/confirmacion.service';
 
 
 interface FormularioNuevaTarea {
@@ -71,6 +79,7 @@ export class Crearactividades implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private apiService = inject(ApiServicio);
+  private confirmacionService = inject(ConfirmacionService);
   private cdr = inject(ChangeDetectorRef);
 
 
@@ -103,6 +112,7 @@ export class Crearactividades implements OnInit {
 
   cargando = true;
   cargandoIA = false;
+  eliminandoTareaId: number | null = null;
 
   textoIA = '';
 
@@ -529,37 +539,116 @@ export class Crearactividades implements OnInit {
   // GESTIÓN DE TAREAS
   // =========================================================
 
-  eliminarTarea(
+  async eliminarTarea(
     idTarea: number
-  ): void {
-    const confirmado = window.confirm(
-      '¿Estás seguro de eliminar esta tarea permanentemente?'
-    );
+  ): Promise<void> {
+    if (
+      this.eliminandoTareaId !== null ||
+      !Number.isInteger(idTarea) ||
+      idTarea <= 0
+    ) {
+      return;
+    }
+
+    const tarea = this.buscarTareaPorId(idTarea);
+
+    const tituloTarea =
+      tarea?.titulo?.trim() ||
+      'esta actividad';
+
+    const confirmado =
+      await this.confirmacionService
+        .solicitar({
+          titulo:
+            'Eliminar actividad',
+
+          mensaje:
+            `¿Deseas eliminar "${tituloTarea}"?`,
+
+          detalle:
+            'También se eliminarán sus comentarios y evidencias. Esta acción no se puede deshacer.',
+
+          tipo:
+            'danger',
+
+          textoBotonConfirmar:
+            'Eliminar actividad',
+
+          textoBotonCancelar:
+            'Conservar actividad'
+        });
 
     if (!confirmado) {
       return;
     }
 
+    this.ejecutarEliminacionTarea(idTarea);
+  }
+
+
+  private ejecutarEliminacionTarea(
+    idTarea: number
+  ): void {
+    this.eliminandoTareaId = idTarea;
+
     this.apiService
       .eliminarTarea(idTarea)
+      .pipe(
+        finalize(() => {
+          this.eliminandoTareaId = null;
+          this.cdr.detectChanges();
+        })
+      )
       .subscribe({
         next: () => {
           this.mostrarToast(
-            'Tarea eliminada',
+            'Actividad eliminada correctamente.',
             'exito'
           );
+
+          if (
+            this.tareaSeleccionada?.id_tarea ===
+            idTarea
+          ) {
+            this.tareaSeleccionada = null;
+          }
 
           this.apiService.notificarCambio();
           this.cargarTareas();
         },
 
-        error: () => {
+        error: (error) => {
+          console.error(
+            'Error eliminando la actividad:',
+            error
+          );
+
           this.mostrarToast(
-            'Error eliminando la tarea',
+            error?.error?.detail ||
+              'No fue posible eliminar la actividad.',
             'error'
           );
         }
       });
+  }
+
+
+  private buscarTareaPorId(
+    idTarea: number
+  ): TareaApi | undefined {
+    for (const estado of this.estados) {
+      const tarea = this.columnas[estado]
+        .find(
+          (item) =>
+            item.id_tarea === idTarea
+        );
+
+      if (tarea) {
+        return tarea;
+      }
+    }
+
+    return undefined;
   }
 
 

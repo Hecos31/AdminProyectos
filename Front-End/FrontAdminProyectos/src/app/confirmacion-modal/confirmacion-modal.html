@@ -1,0 +1,183 @@
+<div
+  class="confirmacion-backdrop"
+  *ngIf="configuracion as modal"
+  (click)="cerrarDesdeFondo($event)"
+>
+  <section
+    class="confirmacion-modal"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="confirmacion-titulo"
+    aria-describedby="confirmacion-mensaje"
+    (click)="$event.stopPropagation()"
+  >
+    <header class="confirmacion-header">
+      <span
+        class="confirmacion-icon"
+        [attr.data-tipo]="modal.tipo"
+        aria-hidden="true"
+      >
+        <svg
+          width="23"
+          height="23"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path
+            d="M10.29 3.86 1.82 18
+               a2 2 0 0 0 1.71 3
+               h16.94
+               a2 2 0 0 0 1.71-3
+               L13.71 3.86
+               a2 2 0 0 0-3.42 0z"
+          ></path>
+
+          <line
+            x1="12"
+            y1="9"
+            x2="12"
+            y2="13"
+          ></line>
+
+          <line
+            x1="12"
+            y1="17"
+            x2="12.01"
+            y2="17"
+          ></line>
+        </svg>
+      </span>
+
+      <div class="confirmacion-heading">
+        <span class="confirmacion-eyebrow">
+          Confirmación requerida
+        </span>
+
+        <h2 id="confirmacion-titulo">
+          {{ modal.titulo }}
+        </h2>
+      </div>
+
+      <button
+        type="button"
+        class="confirmacion-close"
+        (click)="cancelar()"
+        aria-label="Cerrar confirmación"
+        title="Cerrar"
+      >
+        <svg
+          width="19"
+          height="19"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+        >
+          <line
+            x1="18"
+            y1="6"
+            x2="6"
+            y2="18"
+          ></line>
+
+          <line
+            x1="6"
+            y1="6"
+            x2="18"
+            y2="18"
+          ></line>
+        </svg>
+      </button>
+    </header>
+
+    <div class="confirmacion-body">
+      <p
+        id="confirmacion-mensaje"
+        class="confirmacion-message"
+      >
+        {{ modal.mensaje }}
+      </p>
+
+      <p
+        class="confirmacion-detail"
+        *ngIf="modal.detalle"
+      >
+        {{ modal.detalle }}
+      </p>
+
+      <div
+        class="confirmacion-field"
+        *ngIf="modal.textoConfirmacion"
+      >
+        <label for="texto-confirmacion">
+          Escribe
+
+          <strong>
+            {{ modal.textoConfirmacion }}
+          </strong>
+
+          para continuar
+        </label>
+
+        <input
+          #campoConfirmacion
+          id="texto-confirmacion"
+          name="textoConfirmacion"
+          type="text"
+          [(ngModel)]="textoIngresado"
+          [placeholder]="
+            modal.placeholderConfirmacion ||
+            modal.textoConfirmacion
+          "
+          (keyup.enter)="confirmarConEnter()"
+          autocomplete="off"
+          spellcheck="false"
+        />
+
+        <span
+          class="confirmacion-help"
+          [class.valid]="puedeConfirmar"
+        >
+          {{
+            puedeConfirmar
+              ? 'El texto coincide.'
+              : 'El texto debe coincidir exactamente.'
+          }}
+        </span>
+      </div>
+    </div>
+
+    <footer class="confirmacion-actions">
+      <button
+        type="button"
+        class="btn-cancelar"
+        (click)="cancelar()"
+      >
+        {{
+          modal.textoBotonCancelar ||
+          'Cancelar'
+        }}
+      </button>
+
+      <button
+        type="button"
+        class="btn-confirmar"
+        [attr.data-tipo]="modal.tipo"
+        [disabled]="!puedeConfirmar"
+        (click)="confirmar()"
+      >
+        {{
+          modal.textoBotonConfirmar ||
+          'Confirmar'
+        }}
+      </button>
+    </footer>
+  </section>
+</div>
