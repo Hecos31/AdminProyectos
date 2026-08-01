@@ -89,7 +89,7 @@
 .header-main {
   display: flex;
   min-width: 0;
-  flex: 1 1 500px;
+  flex: 0 0 auto;
 
   align-items: center;
   gap: 14px;
