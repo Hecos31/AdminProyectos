@@ -1,15 +1,27 @@
-import { Component, OnInit, OnDestroy, inject, ChangeDetectorRef, NgZone } from '@angular/core';
+import {
+  ChangeDetectorRef,
+  Component,
+  NgZone,
+  OnDestroy,
+  OnInit,
+  inject
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ChatService } from '../Servicios/chats';
 import { Subscription } from 'rxjs';
+
+import {
+  ChatConversacion,
+  ChatMensaje,
+  ChatService
+} from '../Servicios/chats';
 
 @Component({
   selector: 'app-chat-widget',
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './chat-widget.html',
-  styleUrls: ['./chat-widget.css'],
+  styleUrls: ['./chat-widget.css']
 })
 export class ChatWidget implements OnInit, OnDestroy {
   private chatService = inject(ChatService);
@@ -19,44 +31,55 @@ export class ChatWidget implements OnInit, OnDestroy {
 
   isOpen = false;
   isMinimized = false;
+
   vistaActual: 'lista' | 'conversacion' | 'nuevo' = 'lista';
 
   miUsuario: any = null;
-  conversaciones: any[] = [];
-  chatActivo: any = null;
-  mensajes: any[] = [];
+  conversaciones: ChatConversacion[] = [];
+  chatActivo: ChatConversacion | null = null;
+  mensajes: ChatMensaje[] = [];
 
   nuevoMensaje = '';
   correoDestino = '';
 
-  ngOnInit() {
-    const usuarioStr = localStorage.getItem('usuario');
+  totalNoLeidos = 0;
+  conexionActiva = false;
 
-    if (!usuarioStr) {
+  ngOnInit(): void {
+    if (!this.cargarUsuarioActual()) {
       return;
     }
 
-    this.miUsuario = JSON.parse(usuarioStr);
+    this.subscriptions.add(
+      this.chatService.conversaciones$.subscribe((conversaciones) => {
+        this.ngZone.run(() => {
+          this.conversaciones = conversaciones;
+          this.actualizarChatActivo();
+          this.cdr.detectChanges();
+        });
+      })
+    );
 
-    // Primero conectar el WebSocket
-    this.chatService.conectarWebSocket();
+    this.subscriptions.add(
+      this.chatService.totalNoLeidos$.subscribe((total) => {
+        this.totalNoLeidos = total;
+        this.cdr.detectChanges();
+      })
+    );
 
-    // Escuchar mensajes nuevos
     this.subscriptions.add(
       this.chatService.mensajesNuevos$.subscribe({
-        next: (msg) => {
-
+        next: (mensaje) => {
           this.ngZone.run(() => {
-            this.procesarMensajeEnVivo(msg);
+            this.procesarMensajeEnVivo(mensaje);
           });
         },
         error: (error) => {
           console.error('[CHAT] Error en WebSocket:', error);
-        },
+        }
       })
     );
 
-    // Escuchar la apertura del widget
     this.subscriptions.add(
       this.chatService.abrirWidget$.subscribe(() => {
         this.ngZone.run(() => {
@@ -65,195 +88,598 @@ export class ChatWidget implements OnInit, OnDestroy {
       })
     );
 
-    this.cargarConversaciones();
+    this.subscriptions.add(
+      this.chatService.sesionExpirada$.subscribe(() => {
+        this.ngZone.run(() => {
+          this.cerrarChat();
+          console.warn(
+            '[CHAT] La sesión expiró. Es necesario iniciar sesión nuevamente.'
+          );
+        });
+      })
+    );
+
+    let conexionAnterior = false;
+    let conexionEstablecidaAlgunaVez = false;
+
+    this.subscriptions.add(
+      this.chatService.conexion$.subscribe((conectado) => {
+        const seReconecto =
+          conectado &&
+          !conexionAnterior &&
+          conexionEstablecidaAlgunaVez;
+
+        if (conectado) {
+          conexionEstablecidaAlgunaVez = true;
+        }
+
+        conexionAnterior = conectado;
+        this.conexionActiva = conectado;
+
+        /*
+         * ChatService ya sincroniza la lista al abrir el socket.
+         * Aquí solo se recupera el historial activo cuando hubo
+         * una reconexión real.
+         */
+        if (seReconecto && this.chatActivo) {
+          this.recargarHistorialActivo();
+        }
+
+        this.cdr.detectChanges();
+      })
+    );
+
+    this.chatService.iniciar();
   }
 
-  ngOnDestroy() {
+  ngOnDestroy(): void {
     this.subscriptions.unsubscribe();
   }
 
-  abrirChat() {
-    // 1. Recargar el usuario desde el disco duro (por si cambió de sesión)
-    const usuarioStr = localStorage.getItem('usuario');
-    if (usuarioStr) {
-      this.miUsuario = JSON.parse(usuarioStr);
-    } else {
-      // Si por alguna razón no hay usuario, abortamos y cerramos
+  abrirChat(): void {
+    if (!this.cargarUsuarioActual()) {
       this.cerrarChat();
       return;
     }
 
-    // 2. Limpiamos la memoria del chat anterior por seguridad
-    this.conversaciones = [];
-    this.chatActivo = null;
-
-    // 3. Abrimos la interfaz
     this.isOpen = true;
     this.isMinimized = false;
 
-    // 4. Cargamos los chats EXCLUSIVOS del usuario que acaba de iniciar sesión
     this.cargarConversaciones();
+
+    if (
+      this.vistaActual === 'conversacion' &&
+      this.chatActivo
+    ) {
+      this.marcarActivaComoLeida();
+      this.scrollAlFinal();
+    }
   }
 
-  minimizarChat() {
+  minimizarChat(): void {
     this.isMinimized = !this.isMinimized;
+
+    if (!this.isMinimized) {
+      this.marcarActivaComoLeida();
+      this.scrollAlFinal();
+    }
   }
-  cerrarChat() {
+
+  cerrarChat(): void {
     this.isOpen = false;
-    this.vistaActual = 'lista';
-  }
-  volverALista() {
+    this.isMinimized = false;
     this.vistaActual = 'lista';
     this.chatActivo = null;
+    this.mensajes = [];
   }
-  irANuevoChat() {
+
+  volverALista(): void {
+    this.vistaActual = 'lista';
+    this.chatActivo = null;
+    this.mensajes = [];
+  }
+
+  irANuevoChat(): void {
     this.vistaActual = 'nuevo';
     this.correoDestino = '';
   }
 
-  cargarConversaciones() {
-    this.chatService.obtenerConversaciones().subscribe((data) => {
-      this.conversaciones = data;
-      this.cdr.detectChanges();
+  cargarConversaciones(): void {
+    this.chatService.sincronizarConversaciones().subscribe({
+      error: (error) => {
+        if (error?.status !== 401) {
+          console.error(
+            '[CHAT] Error cargando conversaciones:',
+            error
+          );
+        }
+      }
     });
   }
 
-  abrirConversacion(chat: any) {
+  abrirConversacion(chat: ChatConversacion): void {
+    const idSolicitado = String(chat.id);
+
     this.chatActivo = chat;
     this.vistaActual = 'conversacion';
-    this.chatService.obtenerHistorial(chat.id).subscribe((msgs) => {
-      this.mensajes = msgs;
-      this.scrollAlFinal();
+    this.mensajes = [];
+
+    this.chatService.marcarConversacionLeidaLocal(chat.id);
+
+    this.chatService.marcarConversacionLeida(chat.id).subscribe({
+      error: (error) => {
+        if (error?.status !== 401) {
+          console.warn(
+            '[CHAT] No se pudo marcar como leída:',
+            error
+          );
+        }
+      }
+    });
+
+    this.chatService.obtenerHistorial(chat.id).subscribe({
+      next: (mensajes) => {
+        if (
+          !this.chatActivo ||
+          String(this.chatActivo.id) !== idSolicitado
+        ) {
+          return;
+        }
+
+        const historial = (mensajes ?? []).map((mensaje) =>
+          this.chatService.normalizarMensaje(mensaje)
+        );
+
+        /*
+         * Un mensaje WebSocket puede llegar mientras esta petición
+         * sigue en curso. Se combina el historial con los mensajes
+         * locales para no perderlo ni cambiarlo de conversación.
+         */
+        this.mensajes = this.combinarMensajes(
+          historial,
+          this.mensajes
+        );
+
+        this.scrollAlFinal();
+        this.cdr.detectChanges();
+      },
+      error: (error) => {
+        if (error?.status !== 401) {
+          console.error(
+            '[CHAT] Error cargando historial:',
+            error
+          );
+        }
+      }
     });
   }
 
-  enviarMensaje() {
-    if (!this.nuevoMensaje.trim() || !this.chatActivo) return;
-    const contenido = this.nuevoMensaje;
-    this.nuevoMensaje = ''; // Limpiar input rápido
+  enviarMensaje(): void {
+    const contenido = this.nuevoMensaje.trim();
 
-    this.chatService.enviarMensajeHTTP(this.chatActivo.id, contenido).subscribe({
-      error: () => alert('Error al enviar el mensaje'),
-    });
-  }
-
-  procesarMensajeEnVivo(msg: any) {
-
-    const idConversacion =
-      msg.id_conversacion ?? msg.conversacion_id ?? msg.idConversacion ?? msg.conversacion?.id;
-
-    const idRemitente =
-      msg.id_usuario_remitente ??
-      msg.id_remitente ??
-      msg.remitente_id ??
-      msg.remitente?.id_usuario ??
-      msg.remitente?.id;
-
-    if (idConversacion === null || idConversacion === undefined) {
-      console.error('[CHAT] El mensaje no contiene el ID de la conversación:', msg);
+    if (!contenido || !this.chatActivo) {
       return;
     }
 
-    const mensajeNormalizado = {
-      id: msg.id ?? msg.id_mensaje,
-      contenido: msg.contenido ?? msg.mensaje ?? '',
-      fecha_envio: msg.fecha_envio ?? msg.fecha ?? new Date().toISOString(),
-      remitente: {
-        id_usuario: idRemitente,
-      },
-    };
+    const idConversacion = this.chatActivo.id;
+    this.nuevoMensaje = '';
 
-    /*
-     * String() evita el problema:
-     * 5 !== "5"
-     */
-    const perteneceAlChatActivo =
-      this.chatActivo && String(this.chatActivo.id) === String(idConversacion);
+    this.chatService
+      .enviarMensajeHTTP(idConversacion, contenido)
+      .subscribe({
+        next: (mensaje) => {
+          this.procesarMensajeEnVivo(mensaje);
+        },
+        error: (error) => {
+          this.nuevoMensaje = contenido;
 
-    if (perteneceAlChatActivo) {
-      const mensajeDuplicado = this.mensajes.some(
-        (mensaje) =>
-          mensajeNormalizado.id != null && String(mensaje.id) === String(mensajeNormalizado.id)
+          if (error?.status !== 401) {
+            console.error(
+              '[CHAT] Error enviando mensaje:',
+              error
+            );
+
+            alert('No fue posible enviar el mensaje');
+          }
+        }
+      });
+  }
+
+  procesarMensajeEnVivo(mensajeOriginal: any): void {
+    const mensaje = this.chatService.normalizarMensaje(
+      mensajeOriginal
+    );
+
+    if (!mensaje.id_conversacion) {
+      console.error(
+        '[CHAT] Mensaje sin ID de conversación:',
+        mensajeOriginal
       );
+      return;
+    }
 
-      if (!mensajeDuplicado) {
-        // Crear un arreglo nuevo ayuda a que Angular detecte el cambio
-        this.mensajes = [...this.mensajes, mensajeNormalizado];
-        this.scrollAlFinal();
+    const perteneceAlChatActivo =
+      this.chatActivo !== null &&
+      String(this.chatActivo.id) ===
+        String(mensaje.id_conversacion);
+
+    if (!perteneceAlChatActivo) {
+      return;
+    }
+
+    const indiceExistente = this.mensajes.findIndex(
+      (item) =>
+        mensaje.id !== null &&
+        item.id !== null &&
+        String(item.id) === String(mensaje.id)
+    );
+
+    if (indiceExistente === -1) {
+      /*
+       * En tiempo real se agrega al final. No se ordena todo el
+       * arreglo aquí, porque la respuesta HTTP y el WebSocket pueden
+       * llegar en distinto orden.
+       */
+      this.mensajes = [
+        ...this.mensajes,
+        mensaje
+      ];
+    } else {
+      const mensajesActualizados = [...this.mensajes];
+      const mensajeExistente =
+        mensajesActualizados[indiceExistente];
+
+      if (!mensajeExistente) {
+        this.mensajes = [
+          ...this.mensajes,
+          mensaje
+        ];
+      } else {
+        mensajesActualizados[indiceExistente] =
+          this.combinarMensajeDuplicado(
+            mensajeExistente,
+            mensaje
+          );
+
+        this.mensajes = mensajesActualizados;
       }
     }
 
-    const chatIndex = this.conversaciones.findIndex(
-      (chat) => String(chat.id) === String(idConversacion)
-    );
+    this.scrollAlFinal();
 
-    if (chatIndex !== -1) {
-      const chatEncontrado = this.conversaciones[chatIndex];
-
-      const chatActualizado = {
-        ...chatEncontrado,
-        ultimoMensaje: {
-          ...(chatEncontrado.ultimoMensaje ?? {}),
-          contenido: mensajeNormalizado.contenido,
-          fecha: mensajeNormalizado.fecha_envio,
-          fecha_envio: mensajeNormalizado.fecha_envio,
-        },
-      };
-
-      // Colocar la conversación actualizada al principio
-      this.conversaciones = [
-        chatActualizado,
-        ...this.conversaciones.filter((_, index) => index !== chatIndex),
-      ];
-    } else {
-      // Es una conversación nueva que todavía no aparece en la lista
-      this.cargarConversaciones();
+    if (
+      this.conversacionEsVisible(
+        mensaje.id_conversacion
+      )
+    ) {
+      this.marcarActivaComoLeida();
     }
 
-    // Forzar actualización inmediata de esta vista
     this.cdr.detectChanges();
   }
 
-  iniciarChatPorCorreo() {
-    if (!this.correoDestino.trim()) return;
-    this.chatService.iniciarChatPorCorreo(this.correoDestino).subscribe({
-      next: (res) => {
-        this.cargarConversaciones();
-        this.volverALista();
+  iniciarChatPorCorreo(): void {
+    const correo = this.correoDestino.trim();
+
+    if (!correo) {
+      return;
+    }
+
+    this.chatService.iniciarChatPorCorreo(correo).subscribe({
+      next: (respuesta) => {
+        this.chatService
+          .sincronizarConversaciones()
+          .subscribe({
+            next: (conversaciones) => {
+              const conversacion = conversaciones.find(
+                (chat) =>
+                  String(chat.id) ===
+                  String(respuesta.id_conversacion)
+              );
+
+              if (conversacion) {
+                this.abrirConversacion(conversacion);
+              } else {
+                this.volverALista();
+              }
+            },
+            error: () => {
+              this.volverALista();
+            }
+          });
       },
-      error: (err) => alert(err.error?.detail || 'No se pudo iniciar el chat'),
+      error: (error) => {
+        if (error?.status !== 401) {
+          alert(
+            error?.error?.detail ||
+            'No se pudo iniciar el chat'
+          );
+        }
+      }
     });
   }
 
-  private scrollAlFinal() {
-    setTimeout(() => {
-      const el = document.getElementById('chat-scroll-area');
-      if (el) el.scrollTop = el.scrollHeight;
-    }, 50);
-  }
-
-  esMiMensaje(msg: any): boolean {
-    if (!this.miUsuario || !msg) {
+  esMiMensaje(mensaje: ChatMensaje): boolean {
+    if (!this.miUsuario || !mensaje) {
       return false;
     }
 
-    const miId = this.miUsuario.id_usuario ?? this.miUsuario.id;
+    const miId =
+      this.miUsuario.id_usuario ??
+      this.miUsuario.id;
 
     const remitenteId =
-      msg.remitente?.id_usuario ??
-      msg.remitente?.id ??
-      msg.id_usuario_remitente ??
-      msg.id_remitente ??
-      msg.remitente_id;
+      mensaje.remitente?.id_usuario ??
+      mensaje.id_usuario_remitente;
 
-    if (miId === null || miId === undefined) {
+    return (
+      miId != null &&
+      remitenteId != null &&
+      String(miId) === String(remitenteId)
+    );
+  }
+
+  trackMensaje(
+    index: number,
+    mensaje: ChatMensaje
+  ): string {
+    return (
+      mensaje.id ??
+      `${mensaje.fecha_envio}-${index}`
+    );
+  }
+
+  cantidadNoLeidos(chat: ChatConversacion): string {
+    const cantidad = Number(chat.noLeidos ?? 0);
+
+    return cantidad > 99
+      ? '99+'
+      : String(cantidad);
+  }
+
+  private cargarUsuarioActual(): boolean {
+    const usuarioStr = localStorage.getItem('usuario');
+
+    if (!usuarioStr) {
+      this.miUsuario = null;
       return false;
     }
 
-    if (remitenteId === null || remitenteId === undefined) {
+    try {
+      this.miUsuario = JSON.parse(usuarioStr);
+      return true;
+    } catch {
+      this.miUsuario = null;
       return false;
     }
+  }
 
-    return String(remitenteId) === String(miId);
+  private actualizarChatActivo(): void {
+    if (!this.chatActivo) {
+      return;
+    }
+
+    const actualizado = this.conversaciones.find(
+      (chat) =>
+        String(chat.id) ===
+        String(this.chatActivo?.id)
+    );
+
+    if (actualizado) {
+      this.chatActivo = actualizado;
+    }
+  }
+
+  private recargarHistorialActivo(): void {
+    if (!this.chatActivo) {
+      return;
+    }
+
+    const idActivo = String(this.chatActivo.id);
+
+    this.chatService.obtenerHistorial(idActivo).subscribe({
+      next: (mensajes) => {
+        if (
+          !this.chatActivo ||
+          String(this.chatActivo.id) !== idActivo
+        ) {
+          return;
+        }
+
+        const historial = (mensajes ?? []).map((mensaje) =>
+          this.chatService.normalizarMensaje(mensaje)
+        );
+
+        this.mensajes = this.combinarMensajes(
+          historial,
+          this.mensajes
+        );
+
+        if (this.conversacionEsVisible(idActivo)) {
+          this.marcarActivaComoLeida();
+        }
+
+        this.scrollAlFinal();
+        this.cdr.detectChanges();
+      },
+      error: (error) => {
+        if (error?.status !== 401) {
+          console.warn(
+            '[CHAT] No fue posible recuperar el historial después de reconectar:',
+            error
+          );
+        }
+      }
+    });
+  }
+
+  private marcarActivaComoLeida(): void {
+    if (
+      !this.chatActivo ||
+      !this.conversacionEsVisible(this.chatActivo.id)
+    ) {
+      return;
+    }
+
+    this.chatService.marcarConversacionLeidaLocal(
+      this.chatActivo.id
+    );
+
+    this.chatService
+      .marcarConversacionLeida(this.chatActivo.id)
+      .subscribe({
+        error: () => {
+          // El siguiente polling recuperará el valor real.
+        }
+      });
+  }
+
+  private conversacionEsVisible(
+    idConversacion: string
+  ): boolean {
+    return Boolean(
+      this.isOpen &&
+      !this.isMinimized &&
+      this.vistaActual === 'conversacion' &&
+      this.chatActivo &&
+      String(this.chatActivo.id) ===
+        String(idConversacion) &&
+      document.visibilityState === 'visible'
+    );
+  }
+
+  private combinarMensajes(
+    historial: ChatMensaje[],
+    mensajesLocales: ChatMensaje[]
+  ): ChatMensaje[] {
+    const mapa = new Map<string, ChatMensaje>();
+    const mensajesSinId: ChatMensaje[] = [];
+
+    const agregar = (
+      mensaje: ChatMensaje
+    ): void => {
+      if (!mensaje.id) {
+        mensajesSinId.push(mensaje);
+        return;
+      }
+
+      const clave = String(mensaje.id);
+      const existente = mapa.get(clave);
+
+      if (!existente) {
+        mapa.set(clave, mensaje);
+        return;
+      }
+
+      mapa.set(
+        clave,
+        this.combinarMensajeDuplicado(
+          existente,
+          mensaje
+        )
+      );
+    };
+
+    historial.forEach(agregar);
+    mensajesLocales.forEach(agregar);
+
+    return this.ordenarMensajes([
+      ...mapa.values(),
+      ...mensajesSinId
+    ]);
+  }
+
+  private combinarMensajeDuplicado(
+    existente: ChatMensaje,
+    entrante: ChatMensaje
+  ): ChatMensaje {
+    const idRemitente =
+      entrante.remitente?.id_usuario ??
+      existente.remitente?.id_usuario ??
+      entrante.id_usuario_remitente ??
+      existente.id_usuario_remitente ??
+      null;
+
+    const nombreRemitente =
+      entrante.remitente?.nombre ??
+      existente.remitente?.nombre;
+
+    const remitente: NonNullable<
+      ChatMensaje['remitente']
+    > = nombreRemitente
+      ? {
+          id_usuario: idRemitente,
+          nombre: nombreRemitente
+        }
+      : {
+          id_usuario: idRemitente
+        };
+
+    return {
+      ...existente,
+      ...entrante,
+
+      id_usuario_remitente:
+        entrante.id_usuario_remitente ??
+        existente.id_usuario_remitente ??
+        idRemitente,
+
+      remitente
+    };
+  }
+
+  private ordenarMensajes(
+    mensajes: ChatMensaje[]
+  ): ChatMensaje[] {
+    return [...mensajes].sort(
+      (mensajeA, mensajeB) => {
+        const tiempoA = this.obtenerTiempoMensaje(
+          mensajeA.fecha_envio
+        );
+
+        const tiempoB = this.obtenerTiempoMensaje(
+          mensajeB.fecha_envio
+        );
+
+        if (tiempoA !== tiempoB) {
+          return tiempoA - tiempoB;
+        }
+
+        const idA = mensajeA.id ?? '';
+        const idB = mensajeB.id ?? '';
+
+        return idA.localeCompare(idB);
+      }
+    );
+  }
+
+  private obtenerTiempoMensaje(
+    fecha: string | null | undefined
+  ): number {
+    if (!fecha) {
+      return 0;
+    }
+
+    const tiempo = Date.parse(fecha);
+
+    return Number.isFinite(tiempo)
+      ? tiempo
+      : 0;
+  }
+
+  private scrollAlFinal(): void {
+    window.requestAnimationFrame(() => {
+      window.requestAnimationFrame(() => {
+        const elemento = document.getElementById(
+          'chat-scroll-area'
+        );
+
+        if (!elemento) {
+          return;
+        }
+
+        elemento.scrollTop = elemento.scrollHeight;
+      });
+    });
   }
 }

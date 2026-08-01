@@ -726,3 +726,501 @@
 .notificaciones-btn:hover {
   background-color: rgba(255, 255, 255, 0.05);
 }
+
+/* =========================================================
+   ANCHO CONTRAÍBLE DEL COMPONENTE
+========================================================= */
+
+:host {
+  width: var(--app-sidebar-width, 260px);
+  flex: 0 0 var(--app-sidebar-width, 260px);
+
+  transition:
+    width var(--app-transition),
+    flex-basis var(--app-transition);
+}
+
+:host.sidebar-collapsed {
+  width: 76px;
+  flex-basis: 76px;
+}
+
+.sidebar {
+  overflow: visible;
+}
+
+
+/* =========================================================
+   CABECERA NUEVA Y BOTÓN CONTRAER
+========================================================= */
+
+.sidebar-top {
+  display: flex;
+  width: 100%;
+  min-width: 0;
+
+  align-items: center;
+  gap: 6px;
+
+  flex: 0 0 auto;
+
+  padding: 18px 12px 12px;
+}
+
+.sidebar-brand {
+  display: flex;
+  min-width: 0;
+  flex: 1 1 auto;
+
+  align-items: center;
+  gap: 12px;
+
+  padding: 6px;
+
+  color: inherit;
+  text-align: left;
+
+  background: transparent;
+  border: 0;
+  border-radius: var(--app-radius-small);
+
+  cursor: pointer;
+}
+
+.sidebar-brand:hover {
+  background: var(--app-surface-hover);
+}
+
+.sidebar-toggle {
+  display: inline-flex;
+  width: 34px;
+  height: 34px;
+
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 34px;
+
+  padding: 0;
+
+  color: var(--app-text-muted);
+  background: transparent;
+
+  border: 1px solid var(--app-border);
+  border-radius: var(--app-radius-small);
+
+  cursor: pointer;
+}
+
+.sidebar-toggle:hover {
+  color: var(--app-primary);
+  background: var(--app-primary-soft);
+  border-color: var(--app-primary-border);
+}
+
+.sidebar-brand:focus-visible,
+.sidebar-toggle:focus-visible {
+  outline: 2px solid var(--app-primary);
+  outline-offset: 2px;
+}
+
+
+/* =========================================================
+   CONTADORES
+========================================================= */
+
+.nav-link {
+  position: relative;
+}
+
+.nav-icon-wrapper {
+  position: relative;
+
+  display: inline-flex;
+  width: 20px;
+  height: 20px;
+
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 20px;
+}
+
+.nav-badge {
+  display: inline-flex;
+  min-width: 22px;
+  height: 22px;
+
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+
+  padding: 0 6px;
+  margin-left: auto;
+
+  color: #ffffff;
+  background: var(--app-danger);
+
+  border-radius: var(--app-radius-pill);
+
+  font-size: 0.66rem;
+  font-weight: 750;
+  line-height: 1;
+}
+
+.collapsed-dot {
+  position: absolute;
+  top: -5px;
+  right: -6px;
+
+  width: 9px;
+  height: 9px;
+
+  background: var(--app-danger);
+  border: 2px solid var(--app-surface);
+  border-radius: 50%;
+}
+
+
+/* =========================================================
+   NOTIFICACIONES SIN ESTILOS EN LÍNEA
+========================================================= */
+
+.sidebar-notificaciones-wrapper {
+  position: relative;
+
+  width: 100%;
+  min-width: 0;
+
+  flex: 0 0 auto;
+
+  padding: 0 16px;
+  margin-bottom: 6px;
+}
+
+.notifications-button {
+  border: 1px solid transparent;
+}
+
+.notifications-button.active {
+  color: var(--app-primary);
+  background: var(--app-primary-soft);
+  border-color: var(--app-primary-border);
+}
+
+.notifications-panel {
+  position: absolute;
+  right: 16px;
+  bottom: calc(100% + 10px);
+  left: 16px;
+  z-index: 2200;
+
+  display: flex;
+  width: auto;
+  min-width: 280px;
+  max-height: min(430px, calc(100vh - 48px));
+
+  flex-direction: column;
+
+  overflow: hidden;
+
+  color: var(--app-text);
+  background: var(--app-surface);
+
+  border: 1px solid var(--app-border);
+  border-radius: var(--app-radius);
+
+  box-shadow: var(--app-shadow-medium);
+}
+
+.notifications-panel-header {
+  display: flex;
+
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+
+  padding: 13px 15px;
+
+  background: var(--app-surface);
+  border-bottom: 1px solid var(--app-border);
+}
+
+.notifications-panel-header h4 {
+  margin: 0;
+
+  color: var(--app-text);
+
+  font-size: 0.86rem;
+}
+
+.panel-total {
+  display: inline-flex;
+  min-width: 24px;
+  height: 24px;
+
+  align-items: center;
+  justify-content: center;
+
+  padding: 0 7px;
+
+  color: #ffffff;
+  background: var(--app-danger);
+
+  border-radius: var(--app-radius-pill);
+
+  font-size: 0.67rem;
+  font-weight: 700;
+}
+
+.notification-tabs {
+  display: grid;
+
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+
+  gap: 6px;
+
+  padding: 9px;
+
+  background: var(--app-surface-secondary);
+  border-bottom: 1px solid var(--app-border);
+}
+
+.notification-tabs button {
+  min-height: 32px;
+
+  padding: 6px 9px;
+
+  color: var(--app-text-muted);
+  background: transparent;
+
+  border: 1px solid transparent;
+  border-radius: 7px;
+
+  font-family: inherit;
+  font-size: 0.7rem;
+  font-weight: 650;
+
+  cursor: pointer;
+}
+
+.notification-tabs button.active {
+  color: var(--app-primary);
+  background: var(--app-surface);
+  border-color: var(--app-border);
+
+  box-shadow: var(--app-shadow-small);
+}
+
+.notifications-list {
+  min-height: 0;
+  max-height: 310px;
+
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+.notifications-empty {
+  padding: 24px 18px;
+  margin: 0;
+
+  color: var(--app-text-muted);
+
+  font-size: 0.76rem;
+  text-align: center;
+}
+
+.notification-item {
+  padding: 12px 15px;
+
+  border-bottom: 1px solid var(--app-border);
+}
+
+.notification-item:last-child {
+  border-bottom: 0;
+}
+
+.notification-item.read {
+  opacity: 0.68;
+}
+
+.notification-item p {
+  margin: 0;
+
+  color: var(--app-text-secondary);
+
+  font-size: 0.76rem;
+  line-height: 1.45;
+
+  overflow-wrap: anywhere;
+}
+
+.notification-item footer {
+  display: flex;
+
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+
+  margin-top: 7px;
+}
+
+.notification-item time {
+  color: var(--app-text-muted);
+
+  font-size: 0.64rem;
+}
+
+.notification-item footer button {
+  padding: 0;
+
+  color: var(--app-primary);
+  background: transparent;
+
+  border: 0;
+
+  font-family: inherit;
+  font-size: 0.66rem;
+  font-weight: 650;
+
+  cursor: pointer;
+}
+
+.read-label {
+  padding: 3px 6px;
+
+  color: var(--app-text-muted);
+  background: var(--app-surface-muted);
+
+  border-radius: 5px;
+
+  font-size: 0.62rem;
+}
+
+
+/* =========================================================
+   ESTADO CONTRAÍDO
+========================================================= */
+
+.sidebar.collapsed .sidebar-top {
+  flex-direction: column;
+  padding: 16px 10px 12px;
+}
+
+.sidebar.collapsed .sidebar-brand {
+  width: 100%;
+  flex: 0 0 auto;
+
+  justify-content: center;
+  padding: 4px;
+}
+
+.sidebar.collapsed .sidebar-toggle {
+  width: 34px;
+}
+
+.sidebar.collapsed .logo-text,
+.sidebar.collapsed .nav-text,
+.sidebar.collapsed .nav-badge,
+.sidebar.collapsed .user-name-truncate,
+.sidebar.collapsed .popover-chevron {
+  display: none;
+}
+
+.sidebar.collapsed .sidebar-nav {
+  padding: 12px 10px;
+}
+
+.sidebar.collapsed .nav-link {
+  min-height: 44px;
+
+  justify-content: center;
+  gap: 0;
+
+  padding: 10px;
+}
+
+.sidebar.collapsed .nav-icon,
+.sidebar.collapsed .nav-icon-wrapper {
+  display: inline-flex;
+
+  width: 20px;
+  height: 20px;
+
+  flex: 0 0 20px;
+}
+
+.sidebar.collapsed .nav-item.separator {
+  margin-right: 5px;
+  margin-left: 5px;
+}
+
+.sidebar.collapsed .sidebar-notificaciones-wrapper {
+  padding: 0 10px;
+}
+
+.sidebar.collapsed .notifications-panel {
+  right: auto;
+  bottom: 0;
+  left: calc(100% + 10px);
+
+  width: min(320px, calc(100vw - 110px));
+}
+
+.sidebar.collapsed .user-profile-section {
+  padding: 12px 10px;
+}
+
+.sidebar.collapsed .user-profile-btn {
+  justify-content: center;
+  gap: 0;
+
+  padding: 6px;
+}
+
+.sidebar.collapsed .user-popover {
+  right: auto;
+  bottom: 12px;
+  left: calc(100% + 10px);
+
+  width: min(290px, calc(100vw - 110px));
+}
+
+.sidebar.collapsed .user-avatar-mini {
+  flex: 0 0 32px;
+}
+
+
+/* =========================================================
+   PROTECCIÓN DE ICONOS
+========================================================= */
+
+.nav-icon,
+.logo-mark,
+.user-avatar-mini,
+.sidebar-toggle {
+  visibility: visible;
+  opacity: 1;
+}
+
+@media (max-width: 520px) {
+  :host {
+    width: 76px;
+    flex-basis: 76px;
+  }
+
+  .sidebar:not(.collapsed) .logo-text,
+  .sidebar:not(.collapsed) .nav-text,
+  .sidebar:not(.collapsed) .nav-badge,
+  .sidebar:not(.collapsed) .user-name-truncate,
+  .sidebar:not(.collapsed) .popover-chevron {
+    display: none;
+  }
+
+  .sidebar:not(.collapsed) .sidebar-top {
+    flex-direction: column;
+  }
+
+  .sidebar:not(.collapsed) .nav-link {
+    justify-content: center;
+  }
+}

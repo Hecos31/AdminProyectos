@@ -1,55 +1,92 @@
-<div class="sidebar">
+<div
+  class="sidebar"
+  [class.collapsed]="colapsado"
+>
+  <div class="sidebar-top">
+    <button
+      type="button"
+      class="sidebar-brand"
+      (click)="irAInicio()"
+      title="Ir al inicio"
+      aria-label="Ir al inicio de Orbita"
+    >
+      <span class="logo-mark">
+        <svg
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2.5"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+        >
+          <circle cx="12" cy="12" r="10"></circle>
+          <circle cx="12" cy="12" r="4"></circle>
+          <line x1="21.17" y1="8" x2="12" y2="8"></line>
+          <line x1="3.95" y1="6.06" x2="8.54" y2="14"></line>
+          <line x1="10.88" y1="21.94" x2="15.46" y2="14"></line>
+        </svg>
+      </span>
 
-  <!-- =====================================================
-       IDENTIDAD DEL SISTEMA
-  ====================================================== -->
-  <button
-    type="button"
-    class="sidebar-header"
-    (click)="irAInicio()"
-    title="Ir al inicio"
-    aria-label="Ir al inicio de Orbita"
-  >
-    <span class="logo-mark">
+      <span class="logo-text">
+        Orbita
+      </span>
+    </button>
+
+    <button
+      type="button"
+      class="sidebar-toggle"
+      (click)="toggleSidebar($event)"
+      [attr.aria-label]="
+        colapsado
+          ? 'Expandir barra lateral'
+          : 'Contraer barra lateral'
+      "
+      [title]="
+        colapsado
+          ? 'Expandir'
+          : 'Contraer'
+      "
+    >
       <svg
-        width="20"
-        height="20"
+        width="17"
+        height="17"
         viewBox="0 0 24 24"
         fill="none"
         stroke="currentColor"
-        stroke-width="2.5"
+        stroke-width="2"
         stroke-linecap="round"
         stroke-linejoin="round"
         aria-hidden="true"
       >
-        <circle cx="12" cy="12" r="10"></circle>
-        <circle cx="12" cy="12" r="4"></circle>
-        <line x1="21.17" y1="8" x2="12" y2="8"></line>
-        <line x1="3.95" y1="6.06" x2="8.54" y2="14"></line>
-        <line x1="10.88" y1="21.94" x2="15.46" y2="14"></line>
+        <polyline
+          *ngIf="!colapsado"
+          points="15 18 9 12 15 6"
+        ></polyline>
+
+        <polyline
+          *ngIf="colapsado"
+          points="9 18 15 12 9 6"
+        ></polyline>
       </svg>
-    </span>
+    </button>
+  </div>
 
-    <span class="logo-text">Orbita</span>
-  </button>
-
-
-  <!-- =====================================================
-       NAVEGACIÓN
-  ====================================================== -->
   <nav
     class="sidebar-nav"
     aria-label="Navegación principal"
   >
     <ul class="nav-list">
-
-      <!-- INICIO -->
       <li class="nav-item">
         <a
           routerLink="/inicio"
           class="nav-link"
           routerLinkActive="active"
-          [routerLinkActiveOptions]="{ exact: true }"
+          [routerLinkActiveOptions]="{
+            exact: true
+          }"
           title="Inicio"
         >
           <svg
@@ -67,53 +104,83 @@
             <path
               d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"
             ></path>
-
-            <polyline points="9 22 9 12 15 12 15 22"></polyline>
+            <polyline
+              points="9 22 9 12 15 12 15 22"
+            ></polyline>
           </svg>
 
-          <span class="nav-text">Inicio</span>
+          <span class="nav-text">
+            Inicio
+          </span>
         </a>
       </li>
 
-
-      <!-- CHATS -->
       <li class="nav-item">
         <button
           type="button"
           class="nav-link"
           (click)="abrirChat()"
           title="Chats"
+          [attr.aria-label]="
+            contadorMensajesNoLeidos > 0
+              ? 'Chats, ' +
+                contadorMensajesNoLeidos +
+                ' mensajes sin leer'
+              : 'Chats'
+          "
         >
-          <svg
-            class="nav-icon"
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            aria-hidden="true"
-          >
-            <path
-              d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"
-            ></path>
-          </svg>
+          <span class="nav-icon-wrapper">
+            <svg
+              class="nav-icon"
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path
+                d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"
+              ></path>
+            </svg>
 
-          <span class="nav-text">Chats</span>
+            <span
+              class="collapsed-dot"
+              *ngIf="
+                colapsado &&
+                contadorMensajesNoLeidos > 0
+              "
+              aria-hidden="true"
+            ></span>
+          </span>
+
+          <span class="nav-text">
+            Chats
+          </span>
+
+          <span
+            class="nav-badge"
+            *ngIf="
+              contadorMensajesNoLeidos > 0
+            "
+          >
+            {{
+              cantidadBadge(
+                contadorMensajesNoLeidos
+              )
+            }}
+          </span>
         </button>
       </li>
 
-
-      <!-- SEPARADOR -->
       <li
         class="nav-item separator"
         aria-hidden="true"
       ></li>
 
-
-      <!-- CREAR PROYECTO -->
       <li class="nav-item">
         <a
           routerLink="/crear-proyecto"
@@ -133,110 +200,219 @@
             stroke-linejoin="round"
             aria-hidden="true"
           >
-            <line x1="12" y1="5" x2="12" y2="19"></line>
-            <line x1="5" y1="12" x2="19" y2="12"></line>
+            <line
+              x1="12"
+              y1="5"
+              x2="12"
+              y2="19"
+            ></line>
+            <line
+              x1="5"
+              y1="12"
+              x2="19"
+              y2="12"
+            ></line>
           </svg>
 
-          <span class="nav-text">Nuevo proyecto</span>
+          <span class="nav-text">
+            Nuevo proyecto
+          </span>
         </a>
       </li>
-
     </ul>
   </nav>
 
-  <!-- === SECCIÓN DE NOTIFICACIONES (Con Pestaña de Pendientes e Historial) === -->
-  <div class="sidebar-notificaciones-wrapper" style="position: relative; padding: 0 1rem; margin-bottom: 0.5rem;">
-    
-    <!-- Botón de la campana -->
+  <div class="sidebar-notificaciones-wrapper">
     <button
+      type="button"
+      class="nav-link notifications-button"
       (click)="toggleNotificaciones()"
-      class="nav-link"
-      style="width: 100%; border: none; background: transparent; text-align: left; display: flex; justify-content: space-between; align-items: center; cursor: pointer; padding: 0.75rem 1rem; border-radius: 8px;"
+      [class.active]="mostrarNotificaciones"
+      [attr.aria-expanded]="mostrarNotificaciones"
+      aria-haspopup="dialog"
+      title="Notificaciones"
     >
-      <div style="display: flex; align-items: center; gap: 12px; color: var(--text-color, #4b5563);">
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="bell-icon">
-          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
-          <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+      <span class="nav-icon-wrapper">
+        <svg
+          class="nav-icon"
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+        >
+          <path
+            d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"
+          ></path>
+          <path
+            d="M13.73 21a2 2 0 0 1-3.46 0"
+          ></path>
         </svg>
-        <span class="nav-text" style="font-weight: 500;">Notificaciones</span>
-      </div>
-      
-      <!-- Contador de pendientes -->
-      <span *ngIf="contadorNotificaciones > 0" style="background-color: #ef4444; color: white; border-radius: 50%; padding: 2px 8px; font-size: 12px; font-weight: bold;">
-        {{ contadorNotificaciones }}
+
+        <span
+          class="collapsed-dot"
+          *ngIf="
+            colapsado &&
+            contadorNotificaciones > 0
+          "
+          aria-hidden="true"
+        ></span>
+      </span>
+
+      <span class="nav-text">
+        Notificaciones
+      </span>
+
+      <span
+        class="nav-badge"
+        *ngIf="contadorNotificaciones > 0"
+      >
+        {{
+          cantidadBadge(
+            contadorNotificaciones
+          )
+        }}
       </span>
     </button>
 
-    <!-- Panel Desplegable -->
-    <div class="panel-notificaciones" *ngIf="mostrarNotificaciones" style="position: absolute; bottom: 100%; left: 1rem; width: 300px; background: white; border: 1px solid #e5e7eb; border-radius: 12px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); z-index: 50; max-height: 400px; display: flex; flex-direction: column; margin-bottom: 10px;">
-      
-      <!-- Cabecera con pestañas (Pendientes / Historial) -->
-      <div class="panel-header" style="padding: 12px 16px; border-bottom: 1px solid #e5e7eb; background: white; border-top-left-radius: 12px; border-top-right-radius: 12px;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-          <h4 style="margin: 0; font-size: 14px; color: #111827;">Notificaciones</h4>
-        </div>
-        <div style="display: flex; gap: 8px;">
-          <button (click)="cambiarVistaHistorial(false)" [style.background]="!viendoHistorial ? '#3b82f6' : '#f3f4f6'" [style.color]="!viendoHistorial ? 'white' : '#4b5563'" style="flex: 1; border: none; padding: 6px; font-size: 12px; border-radius: 6px; cursor: pointer; font-weight: 500;">
-            Pendientes
-          </button>
-          <button (click)="cambiarVistaHistorial(true)" [style.background]="viendoHistorial ? '#3b82f6' : '#f3f4f6'" [style.color]="viendoHistorial ? 'white' : '#4b5563'" style="flex: 1; border: none; padding: 6px; font-size: 12px; border-radius: 6px; cursor: pointer; font-weight: 500;">
-            Historial
-          </button>
-        </div>
-      </div>
-      
-      <!-- CUERPO 1: PENDIENTES -->
-      <div class="panel-body" *ngIf="!viendoHistorial" style="overflow-y: auto; max-height: 300px;">
-        <div *ngIf="notificaciones.length === 0" style="padding: 20px; text-align: center; color: #6b7280; font-size: 13px;">
-          No tienes notificaciones pendientes.
-        </div>
+    <section
+      class="notifications-panel"
+      *ngIf="mostrarNotificaciones"
+      role="dialog"
+      aria-label="Notificaciones"
+      (click)="$event.stopPropagation()"
+    >
+      <header class="notifications-panel-header">
+        <h4>Notificaciones</h4>
 
-        <div *ngFor="let noti of notificaciones; let i = index" 
-             style="padding: 12px 16px; border-bottom: 1px solid #f3f4f6; transition: background-color 0.2s;">
-          <p style="margin: 0 0 4px 0; font-size: 13px; color: #374151; line-height: 1.4;">{{ noti.mensaje }}</p>
-          <div style="display: flex; justify-content: space-between; align-items: center;">
-            <small style="font-size: 10px; color: #9ca3af;">{{ noti.fecha_creacion | date:'short' }}</small>
-            <button (click)="leerNotificacion(noti, i)" style="background: none; border: none; color: #3b82f6; font-size: 11px; cursor: pointer; padding: 0; font-weight: 500;">
+        <span
+          class="panel-total"
+          *ngIf="contadorNotificaciones > 0"
+        >
+          {{ contadorNotificaciones }}
+        </span>
+      </header>
+
+      <div class="notification-tabs">
+        <button
+          type="button"
+          [class.active]="!viendoHistorial"
+          (click)="cambiarVistaHistorial(false)"
+        >
+          Pendientes
+        </button>
+
+        <button
+          type="button"
+          [class.active]="viendoHistorial"
+          (click)="cambiarVistaHistorial(true)"
+        >
+          Historial
+        </button>
+      </div>
+
+      <div
+        class="notifications-list"
+        *ngIf="!viendoHistorial"
+      >
+        <p
+          class="notifications-empty"
+          *ngIf="notificaciones.length === 0"
+        >
+          No tienes notificaciones pendientes.
+        </p>
+
+        <article
+          class="notification-item"
+          *ngFor="
+            let notificacion of notificaciones;
+            let i = index
+          "
+        >
+          <p>
+            {{ notificacion.mensaje }}
+          </p>
+
+          <footer>
+            <time>
+              {{
+                notificacion.fecha_creacion
+                  | date: 'short'
+              }}
+            </time>
+
+            <button
+              type="button"
+              (click)="
+                leerNotificacion(
+                  notificacion,
+                  i
+                )
+              "
+            >
               Marcar leída
             </button>
-          </div>
-        </div>
+          </footer>
+        </article>
       </div>
 
-      <!-- CUERPO 2: HISTORIAL COMPLETO -->
-      <div class="panel-body" *ngIf="viendoHistorial" style="overflow-y: auto; max-height: 300px;">
-        <div *ngIf="historialNotificaciones.length === 0" style="padding: 20px; text-align: center; color: #6b7280; font-size: 13px;">
+      <div
+        class="notifications-list"
+        *ngIf="viendoHistorial"
+      >
+        <p
+          class="notifications-empty"
+          *ngIf="
+            historialNotificaciones.length === 0
+          "
+        >
           No hay registros en tu historial.
-        </div>
+        </p>
 
-        <div *ngFor="let noti of historialNotificaciones" 
-             [style.opacity]="noti.leida ? '0.7' : '1'"
-             style="padding: 12px 16px; border-bottom: 1px solid #f3f4f6;">
-          <p style="margin: 0 0 4px 0; font-size: 13px; color: #374151; line-height: 1.4;">{{ noti.mensaje }}</p>
-          <div style="display: flex; justify-content: space-between; align-items: center;">
-            <small style="font-size: 10px; color: #9ca3af;">{{ noti.fecha_creacion | date:'short' }}</small>
-            <span *ngIf="noti.leida" style="font-size: 10px; background: #e5e7eb; color: #4b5563; padding: 2px 6px; border-radius: 4px;">Leída</span>
-          </div>
-        </div>
+        <article
+          class="notification-item"
+          *ngFor="
+            let notificacion of historialNotificaciones
+          "
+          [class.read]="notificacion.leida"
+        >
+          <p>
+            {{ notificacion.mensaje }}
+          </p>
+
+          <footer>
+            <time>
+              {{
+                notificacion.fecha_creacion
+                  | date: 'short'
+              }}
+            </time>
+
+            <span
+              class="read-label"
+              *ngIf="notificacion.leida"
+            >
+              Leída
+            </span>
+          </footer>
+        </article>
       </div>
-
-    </div>
+    </section>
   </div>
-  <!-- === FIN DE SECCIÓN DE NOTIFICACIONES === -->
 
-  <!-- === SECCIÓN DE PERFIL === -->
   <div class="user-profile-section">
-
-    <!-- MENÚ EMERGENTE -->
     <div
       class="user-popover"
       *ngIf="mostrarMenuUsuario"
       role="menu"
       aria-label="Opciones del usuario"
+      (click)="$event.stopPropagation()"
     >
-
       <div class="popover-header">
-
         <div
           class="popover-avatar"
           aria-hidden="true"
@@ -246,19 +422,24 @@
 
         <div class="popover-info">
           <span class="popover-name">
-            {{ nombreUsuario }} {{ apellidoUsuario }}
+            {{ nombreUsuario }}
+            {{ apellidoUsuario }}
           </span>
 
           <span
             class="popover-email"
-            [title]="usuario?.correo || 'correo@ejemplo.com'"
+            [title]="
+              usuario?.correo ||
+              'correo@ejemplo.com'
+            "
           >
-            {{ usuario?.correo || 'correo@ejemplo.com' }}
+            {{
+              usuario?.correo ||
+              'correo@ejemplo.com'
+            }}
           </span>
         </div>
-
       </div>
-
 
       <div class="popover-actions">
         <button
@@ -278,19 +459,25 @@
             stroke-linejoin="round"
             aria-hidden="true"
           >
-            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-            <polyline points="16 17 21 12 16 7"></polyline>
-            <line x1="21" y1="12" x2="9" y2="12"></line>
+            <path
+              d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"
+            ></path>
+            <polyline
+              points="16 17 21 12 16 7"
+            ></polyline>
+            <line
+              x1="21"
+              y1="12"
+              x2="9"
+              y2="12"
+            ></line>
           </svg>
 
           <span>Cerrar sesión</span>
         </button>
       </div>
-
     </div>
 
-
-    <!-- BOTÓN DEL PERFIL -->
     <button
       type="button"
       class="user-profile-btn"
@@ -304,7 +491,11 @@
         ' ' +
         apellidoUsuario
       "
-      [title]="nombreUsuario + ' ' + apellidoUsuario"
+      [title]="
+        nombreUsuario +
+        ' ' +
+        apellidoUsuario
+      "
     >
       <span
         class="user-avatar-mini"
@@ -314,7 +505,8 @@
       </span>
 
       <span class="user-name-truncate">
-        {{ nombreUsuario }} {{ apellidoUsuario }}
+        {{ nombreUsuario }}
+        {{ apellidoUsuario }}
       </span>
 
       <svg
@@ -329,10 +521,10 @@
         stroke-linejoin="round"
         aria-hidden="true"
       >
-        <polyline points="18 15 12 9 6 15"></polyline>
+        <polyline
+          points="18 15 12 9 6 15"
+        ></polyline>
       </svg>
     </button>
-
   </div>
-
 </div>

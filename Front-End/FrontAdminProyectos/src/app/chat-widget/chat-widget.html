@@ -64,6 +64,20 @@
           </svg>
         </span>
 
+        <span
+          class="header-unread-badge"
+          *ngIf="totalNoLeidos > 0"
+          [attr.aria-label]="
+            totalNoLeidos + ' mensajes sin leer'
+          "
+        >
+          {{
+            totalNoLeidos > 99
+              ? '99+'
+              : totalNoLeidos
+          }}
+        </span>
+
         <div class="header-copy">
           <span
             class="header-title"
@@ -227,24 +241,39 @@
         type="button"
         class="chat-row"
         *ngFor="let chat of conversaciones"
+        [class.has-unread]="
+          (chat.noLeidos || 0) > 0
+        "
         (click)="abrirConversacion(chat)"
       >
 
         <span class="chat-avatar" aria-hidden="true">
           {{
-            chat.nombre?.charAt(0)
-              ? (chat.nombre.charAt(0) | uppercase)
-              : '?'
+            (chat.nombre || '?').charAt(0) | uppercase
           }}
         </span>
 
         <span class="chat-info">
 
-          <span class="chat-name">
-            {{ chat.nombre || 'Conversación' }}
+          <span class="chat-name-line">
+            <span class="chat-name">
+              {{ chat.nombre || 'Conversación' }}
+            </span>
+
+            <span
+              class="chat-unread-badge"
+              *ngIf="(chat.noLeidos || 0) > 0"
+            >
+              {{ cantidadNoLeidos(chat) }}
+            </span>
           </span>
 
-          <span class="chat-last-msg">
+          <span
+            class="chat-last-msg"
+            [class.unread-text]="
+              (chat.noLeidos || 0) > 0
+            "
+          >
             {{
               chat.ultimoMensaje?.contenido ||
               'Aún no hay mensajes'
@@ -436,7 +465,10 @@
 
         <div
           class="msg-wrapper"
-          *ngFor="let msg of mensajes"
+          *ngFor="
+  let msg of mensajes;
+  trackBy: trackMensaje
+"
           [class.sent]="esMiMensaje(msg)"
           [class.received]="!esMiMensaje(msg)"
         >

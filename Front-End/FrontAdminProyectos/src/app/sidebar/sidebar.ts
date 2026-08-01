@@ -1,195 +1,405 @@
-import { Component, OnInit, OnDestroy, HostListener, ElementRef, inject, ChangeDetectorRef } from '@angular/core'; 
-import { Router, RouterModule } from '@angular/router';
+import {
+  ChangeDetectorRef,
+  Component,
+  ElementRef,
+  HostBinding,
+  HostListener,
+  OnDestroy,
+  OnInit,
+  inject
+} from '@angular/core';
+import {
+  Router,
+  RouterModule
+} from '@angular/router';
 import { CommonModule } from '@angular/common';
+import {
+  Subscription,
+  interval,
+  startWith,
+  switchMap
+} from 'rxjs';
+
 import { ChatService } from '../Servicios/chats';
-import { ApiServicio } from '../Servicios/api.servicio'; 
-import { Subscription, interval, startWith, switchMap } from 'rxjs'; // === IMPORTADO: Operadores de tiempo real seguro ===
+import { ApiServicio } from '../Servicios/api.servicio';
 
 @Component({
   selector: 'app-sidebar',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [
+    CommonModule,
+    RouterModule
+  ],
   templateUrl: './sidebar.html',
-  styleUrls: ['./sidebar.css'],
+  styleUrls: ['./sidebar.css']
 })
-export class SidebarComponente implements OnInit, OnDestroy { 
+export class SidebarComponente
+  implements OnInit, OnDestroy {
+
   private router = inject(Router);
   private eRef = inject(ElementRef);
-  private chatService = inject(ChatService);
-  private apiService = inject(ApiServicio);
-  private cdr = inject(ChangeDetectorRef);
-  
+  private chatService =
+    inject(ChatService);
+  private apiService =
+    inject(ApiServicio);
+  private cdr =
+    inject(ChangeDetectorRef);
+
+  private subscriptions =
+    new Subscription();
+
+  private suscripcionNotificaciones:
+    Subscription | null = null;
+
   usuario: any = null;
-  mostrarMenuUsuario: boolean = false;
+
+  mostrarMenuUsuario = false;
+  mostrarNotificaciones = false;
+  viendoHistorial = false;
 
   notificaciones: any[] = [];
-  contadorNotificaciones: number = 0; 
-  mostrarNotificaciones: boolean = false;
-  
-  viendoHistorial: boolean = false;
   historialNotificaciones: any[] = [];
 
-  private suscripcionNotificaciones!: Subscription;
-  private suscripcionSesion!: Subscription; 
+  contadorNotificaciones = 0;
+  contadorMensajesNoLeidos = 0;
+
+  colapsado =
+    localStorage.getItem(
+      'orbita_sidebar_colapsado'
+    ) === 'true';
+
+  @HostBinding(
+    'class.sidebar-collapsed'
+  )
+  get hostColapsado(): boolean {
+    return this.colapsado;
+  }
 
   get inicialUsuario(): string {
-    if (this.usuario && this.usuario.nombre) {
-      return String(this.usuario.nombre).charAt(0).toUpperCase();
-    }
-    return 'U';
+    return this.usuario?.nombre
+      ? String(
+          this.usuario.nombre
+        )
+          .charAt(0)
+          .toUpperCase()
+      : 'U';
   }
-  
+
   get nombreUsuario(): string {
-    if (this.usuario && this.usuario.nombre) {
-      return this.usuario.nombre;
-    }
-    return 'Usuario';
+    return (
+      this.usuario?.nombre ||
+      'Usuario'
+    );
   }
 
   get apellidoUsuario(): string {
-    if (this.usuario && this.usuario.apellido) {
-      return this.usuario.apellido;
-    }
-    return '...';
+    return (
+      this.usuario?.apellido ||
+      ''
+    );
   }
 
+  ngOnInit(): void {
+    this.aplicarAnchoGlobal();
 
-  // Metodo para que en el logo lo regrese al inicio 
-  irAInicio() {
+    this.subscriptions.add(
+      this.chatService
+        .totalNoLeidos$
+        .subscribe((total) => {
+          this.contadorMensajesNoLeidos =
+            total;
+
+          this.cdr.detectChanges();
+        })
+    );
+
+    this.subscriptions.add(
+      this.apiService
+        .usuarioActual$
+        .subscribe((usuario) => {
+          this.usuario = usuario;
+
+          this.detenerPollingNotificaciones();
+
+          if (this.usuario) {
+            this.chatService.iniciar();
+            this.iniciarPollingNotificaciones();
+          } else {
+            this.chatService.detener();
+
+            this.notificaciones = [];
+            this.historialNotificaciones = [];
+            this.contadorNotificaciones = 0;
+            this.contadorMensajesNoLeidos = 0;
+          }
+
+          this.cdr.detectChanges();
+        })
+    );
+
+    this.subscriptions.add(
+      this.apiService
+        .notificacionesActualizadas$
+        .subscribe(() => {
+          if (this.usuario) {
+            this.forzarCargaInmediata();
+          }
+        })
+    );
+
+
+    this.subscriptions.add(
+  this.chatService.sesionExpirada$.subscribe(() => {
+    this.cerrarSesion();
+  })
+);
+  }
+
+  ngOnDestroy(): void {
+    this.detenerPollingNotificaciones();
+    this.subscriptions.unsubscribe();
+  }
+
+  irAInicio(): void {
     this.router.navigate(['/inicio']);
   }
 
-  ngOnInit() {
-    // Sincronización de sesión en tiempo real
-    this.suscripcionSesion = this.apiService.usuarioActual$.subscribe(user => {
-      this.usuario = user;
-      
-      // Reiniciamos o limpiamos el ciclo de notificaciones al cambiar de usuario
-      if (this.suscripcionNotificaciones) {
-        this.suscripcionNotificaciones.unsubscribe();
-      }
+  toggleSidebar(
+    evento?: Event
+  ): void {
+    evento?.stopPropagation();
 
-      if (this.usuario) {
-        // === POLLING SILENCIOSO CADA 15 SEGUNDOS ===
-        // startWith(0) carga inmediatamente al iniciar; switchMap evita cuellos de botella en la red.
-        this.suscripcionNotificaciones = interval(15000).pipe(
-          startWith(0),
-          switchMap(() => this.apiService.obtenerNotificaciones())
-        ).subscribe({
-          next: (data) => {
-            const todasNotificaciones = Array.isArray(data) ? data : [];
-            this.notificaciones = todasNotificaciones.filter(n => n.leida === false);
-            this.contadorNotificaciones = this.notificaciones.length;
-            
-            if (this.viendoHistorial) {
-              this.historialNotificaciones = todasNotificaciones;
-            }
+    this.colapsado =
+      !this.colapsado;
 
-            this.cdr.detectChanges();
-          },
-          error: (error) => {
-            console.error('Error al sincronizar notificaciones:', error);
+    localStorage.setItem(
+      'orbita_sidebar_colapsado',
+      String(this.colapsado)
+    );
+
+    this.mostrarMenuUsuario = false;
+    this.mostrarNotificaciones = false;
+
+    this.aplicarAnchoGlobal();
+
+    window.dispatchEvent(
+      new CustomEvent(
+        'orbita-sidebar-toggle',
+        {
+          detail: {
+            colapsado:
+              this.colapsado,
+
+            ancho:
+              this.colapsado
+                ? 76
+                : 260
           }
-        });
-      } else {
-        this.notificaciones = [];
-        this.historialNotificaciones = [];
-        this.contadorNotificaciones = 0;
-        this.cdr.detectChanges();
-      }
-    });
-
-    // Canal local por si un componente quiere forzar una actualización instantánea
-    this.apiService.notificacionesActualizadas$.subscribe(() => {
-      if (this.usuario) {
-        this.forzarCargaInmediata();
-      }
-    });
-  }
-
-  ngOnDestroy() {
-    if (this.suscripcionNotificaciones) this.suscripcionNotificaciones.unsubscribe();
-    if (this.suscripcionSesion) this.suscripcionSesion.unsubscribe();
-  }
-
-  // Método auxiliar para llamadas instantáneas manuales
-  private forzarCargaInmediata() {
-    this.apiService.obtenerNotificaciones().subscribe({
-      next: (data) => {
-        const todasNotificaciones = Array.isArray(data) ? data : [];
-        this.notificaciones = todasNotificaciones.filter(n => n.leida === false);
-        this.contadorNotificaciones = this.notificaciones.length;
-        if (this.viendoHistorial) {
-          this.historialNotificaciones = todasNotificaciones;
         }
-        this.cdr.detectChanges();
-      }
-    });
+      )
+    );
   }
 
-  cambiarVistaHistorial(verHistorial: boolean) {
-    this.viendoHistorial = verHistorial;
-    if (this.viendoHistorial) {
-      this.forzarCargaInmediata();
-    }
+  abrirChat(): void {
+    this.chatService
+      .solicitarAperturaWidget();
   }
 
-  leerNotificacion(notificacion: any, index: number) {
-    this.apiService.marcarNotificacionLeida(notificacion.id_notificacion).subscribe({
-      next: () => {
-        this.notificaciones.splice(index, 1);
-        if (this.contadorNotificaciones > 0) {
-          this.contadorNotificaciones--;
-        }
-        
-        const encontrada = this.historialNotificaciones.find(n => n.id_notificacion === notificacion.id_notificacion);
-        if (encontrada) {
-          encontrada.leida = true;
-        }
+  toggleNotificaciones(): void {
+    this.mostrarNotificaciones =
+      !this.mostrarNotificaciones;
 
-        this.cdr.detectChanges();
-      },
-      error: (error) => {
-        console.error('Error al marcar la notificación como leída:', error);
-      }
-    });
-  }
-
-  toggleNotificaciones() {
-    this.mostrarNotificaciones = !this.mostrarNotificaciones;
     if (this.mostrarNotificaciones) {
       this.mostrarMenuUsuario = false;
       this.forzarCargaInmediata();
     }
   }
 
-  abrirChat() {
-    this.chatService.solicitarAperturaWidget();
+  cambiarVistaHistorial(
+    verHistorial: boolean
+  ): void {
+    this.viendoHistorial =
+      verHistorial;
+
+    if (this.viendoHistorial) {
+      this.forzarCargaInmediata();
+    }
   }
 
-  toggleMenuUsuario() {
-    this.mostrarMenuUsuario = !this.mostrarMenuUsuario;
+  leerNotificacion(
+    notificacion: any,
+    index: number
+  ): void {
+    this.apiService
+      .marcarNotificacionLeida(
+        notificacion.id_notificacion
+      )
+      .subscribe({
+        next: () => {
+          this.notificaciones =
+            this.notificaciones.filter(
+              (_, posicion) =>
+                posicion !== index
+            );
+
+          this.contadorNotificaciones =
+            this.notificaciones.length;
+
+          const encontrada =
+            this.historialNotificaciones.find(
+              (item) =>
+                item.id_notificacion ===
+                notificacion.id_notificacion
+            );
+
+          if (encontrada) {
+            encontrada.leida = true;
+          }
+
+          this.cdr.detectChanges();
+        },
+
+        error: (error) => {
+          console.error(
+            'Error al marcar la notificación como leída:',
+            error
+          );
+        }
+      });
+  }
+
+  toggleMenuUsuario(): void {
+    this.mostrarMenuUsuario =
+      !this.mostrarMenuUsuario;
+
     if (this.mostrarMenuUsuario) {
       this.mostrarNotificaciones = false;
     }
   }
 
-  cerrarSesion() {
+  cerrarSesion(): void {
+    this.chatService.detener();
+
     localStorage.clear();
     sessionStorage.clear();
+
     this.mostrarMenuUsuario = false;
+    this.mostrarNotificaciones = false;
     this.viendoHistorial = false;
-    
-    this.apiService.actualizarSesionUsuario(null);
-    
+
+    this.apiService
+      .actualizarSesionUsuario(null);
+
     this.router.navigate(['/login']);
   }
 
-  @HostListener('document:click', ['$event'])
-  clickout(event: Event) {
-    if (!this.eRef.nativeElement.contains(event.target)) {
+  cantidadBadge(
+    cantidad: number
+  ): string {
+    return cantidad > 99
+      ? '99+'
+      : String(cantidad);
+  }
+
+  @HostListener(
+    'document:click',
+    ['$event']
+  )
+  clickout(event: Event): void {
+    if (
+      !this.eRef.nativeElement
+        .contains(event.target)
+    ) {
       this.mostrarMenuUsuario = false;
-      this.mostrarNotificaciones = false; 
+      this.mostrarNotificaciones = false;
     }
+  }
+
+  private iniciarPollingNotificaciones(): void {
+    this.suscripcionNotificaciones =
+      interval(15000)
+        .pipe(
+          startWith(0),
+          switchMap(() =>
+            this.apiService
+              .obtenerNotificaciones()
+          )
+        )
+        .subscribe({
+          next: (data) => {
+            this.aplicarNotificaciones(
+              data
+            );
+          },
+
+          error: (error) => {
+            console.error(
+              'Error al sincronizar notificaciones:',
+              error
+            );
+          }
+        });
+  }
+
+  private detenerPollingNotificaciones(): void {
+    this.suscripcionNotificaciones
+      ?.unsubscribe();
+
+    this.suscripcionNotificaciones = null;
+  }
+
+  private forzarCargaInmediata(): void {
+    this.apiService
+      .obtenerNotificaciones()
+      .subscribe({
+        next: (data) => {
+          this.aplicarNotificaciones(
+            data
+          );
+        },
+
+        error: (error) => {
+          console.error(
+            'Error al cargar notificaciones:',
+            error
+          );
+        }
+      });
+  }
+
+  private aplicarNotificaciones(
+    data: any
+  ): void {
+    const todas =
+      Array.isArray(data)
+        ? data
+        : [];
+
+    this.notificaciones =
+      todas.filter(
+        (notificacion) =>
+          notificacion.leida === false
+      );
+
+    this.contadorNotificaciones =
+      this.notificaciones.length;
+
+    if (this.viendoHistorial) {
+      this.historialNotificaciones =
+        todas;
+    }
+
+    this.cdr.detectChanges();
+  }
+
+  private aplicarAnchoGlobal(): void {
+    document.documentElement
+      .style
+      .setProperty(
+        '--app-sidebar-width',
+        this.colapsado
+          ? '76px'
+          : '260px'
+      );
   }
 }

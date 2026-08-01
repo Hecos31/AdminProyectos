@@ -26,8 +26,3 @@ app.include_router(tareas.router)
 app.include_router(mensajes.router)
 app.include_router(ai.router)
 app.include_router(notificaciones.router)
-
-# 5. Ruta de comprobación
-@app.get("/")
-def home():
-    return {"estado": "En línea", "mensaje": "Servidor modular funcionando correctamente."}
