@@ -22,6 +22,7 @@ from database import get_db
 from models import (
     ComentarioTareaDB,
     EvidenciaTareaDB,
+    ProyectoUsuarioDB,
     TareaAsignadaDB,
     TareaDB,
     UsuarioDB,
@@ -329,6 +330,32 @@ def eliminar_archivo_silenciosamente(ruta: Optional[Path]) -> None:
         pass
 
 
+# NOTIFICACIÓN HELPER: Enviar alerta a todos los administradores del proyecto
+async def notificar_administradores_proyecto(
+    id_proyecto: int,
+    id_usuario_emisor: int,
+    tipo: str,
+    mensaje: str,
+    db: Session
+):
+    admins = (
+        db.query(ProyectoUsuarioDB)
+        .filter(
+            ProyectoUsuarioDB.id_proyecto == id_proyecto,
+            ProyectoUsuarioDB.id_rol == 1
+        )
+        .all()
+    )
+    for admin in admins:
+        if admin.id_usuario != id_usuario_emisor:
+            await disparar_notificacion(
+                usuario_id=admin.id_usuario,
+                tipo=tipo,
+                mensaje=mensaje,
+                db=db
+            )
+
+
 # ============================================================
 # 1. CREAR TAREA
 # ============================================================
@@ -376,7 +403,6 @@ async def crear_tarea(
         db.flush()
 
         if tarea_in.id_usuario_asignado is not None:
-            # Verifica que el usuario pertenezca al proyecto.
             exigir_miembro_proyecto(
                 tarea_in.id_proyecto,
                 tarea_in.id_usuario_asignado,
@@ -396,7 +422,6 @@ async def crear_tarea(
     except HTTPException:
         db.rollback()
         raise
-
     except IntegrityError as exc:
         db.rollback()
         raise HTTPException(
@@ -411,9 +436,9 @@ async def crear_tarea(
             detail="Error al crear la tarea.",
         ) from exc
 
-    # La tarea ya se guardó correctamente.
     resultado = tarea_a_dict(nueva_tarea, db)
 
+    # NOTIFICACIÓN: Se le notifica al colaborador que se le asignó una nueva tarea
     if tarea_in.id_usuario_asignado is not None:
         await disparar_notificacion(
             usuario_id=tarea_in.id_usuario_asignado,
@@ -426,6 +451,7 @@ async def crear_tarea(
         )
 
     return resultado
+
 
 # ============================================================
 # 2. OBTENER DETALLE COMPLETO
@@ -499,7 +525,7 @@ def obtener_detalle_tarea(
     "/{id_tarea}/tomar",
     response_model=TomarTareaResponse,
 )
-def tomar_tarea(
+async def tomar_tarea(
     id_tarea: int,
     db: Session = Depends(get_db),
     id_usuario_actual: int = Depends(obtener_usuario_actual),
@@ -548,6 +574,15 @@ def tomar_tarea(
 
         asignacion_confirmada = obtener_asignacion(id_tarea, db)
 
+        # NOTIFICACIÓN: Notifica a los Admins que un colaborador tomó una tarea libre
+        await notificar_administradores_proyecto(
+            id_proyecto=tarea.id_proyecto,
+            id_usuario_emisor=id_usuario_actual,
+            tipo="TAREA_TOMADA",
+            mensaje=f"Un colaborador ha tomado la tarea '{tarea.titulo}'.",
+            db=db
+        )
+
         return {
             "mensaje": "Actividad tomada correctamente.",
             "tarea": tarea_a_dict(tarea, db),
@@ -580,7 +615,7 @@ def tomar_tarea(
     "/{id_tarea}/estado",
     status_code=status.HTTP_200_OK,
 )
-def cambiar_estado_tarea(
+async def cambiar_estado_tarea(
     id_tarea: int,
     estado_update: TareaEstadoUpdate,
     db: Session = Depends(get_db),
@@ -593,11 +628,62 @@ def cambiar_estado_tarea(
         db,
     )
 
-    tarea.estado = estado_update.estado.value
+    nuevo_estado = estado_update.estado.value
+    tarea.estado = nuevo_estado
     tarea.fecha_actualizacion = datetime.utcnow()
 
     try:
         db.commit()
+
+        # 1. Obtener los datos reales del usuario emisor
+        usuario_emisor = (
+            db.query(UsuarioDB)
+            .filter(UsuarioDB.id_usuario == id_usuario_actual)
+            .first()
+        )
+
+        # 2. Construir el nombre completo sin filtros que lo reemplacen por 'El colaborador'
+        if usuario_emisor and (usuario_emisor.nombre or usuario_emisor.apellido):
+            nombre_colaborador = f"{usuario_emisor.nombre or ''} {usuario_emisor.apellido or ''}".strip()
+        else:
+            nombre_colaborador = f"Usuario #{id_usuario_actual}"
+
+        # 3. Construir la acción según el estado recibido
+        estado_lower = str(nuevo_estado).lower()
+
+        if "paus" in estado_lower:
+            accion = "pausó"
+        elif "complet" in estado_lower or "finaliz" in estado_lower:
+            accion = "finalizó"
+        elif "progres" in estado_lower or "inici" in estado_lower:
+            accion = "inició"
+        elif "asignad" in estado_lower:
+            accion = "pausó"
+        else:
+            accion = f"cambió el estado a '{nuevo_estado}' en"
+
+        # 4. Formato final del mensaje
+        mensaje_notificacion = f"{nombre_colaborador} {accion} la tarea '{tarea.titulo}'."
+
+        # 5. NOTIFICACIÓN: Enviar a Administradores del proyecto
+        await notificar_administradores_proyecto(
+            id_proyecto=tarea.id_proyecto,
+            id_usuario_emisor=id_usuario_actual,
+            tipo="CAMBIO_ESTADO_TAREA",
+            mensaje=mensaje_notificacion,
+            db=db
+        )
+
+        # 6. NOTIFICACIÓN: Si un admin cambió el estado, notificar al colaborador asignado
+        asignacion = obtener_asignacion(id_tarea, db)
+        if asignacion and asignacion.id_usuario != id_usuario_actual:
+            await disparar_notificacion(
+                usuario_id=asignacion.id_usuario,
+                tipo="ESTADO_TAREA_CAMBIADO",
+                mensaje=f"El estado de tu tarea '{tarea.titulo}' cambió a: {nuevo_estado}.",
+                db=db
+            )
+
         return {
             "mensaje": "Estado actualizado.",
             "nuevo_estado": tarea.estado,
@@ -618,7 +704,7 @@ def cambiar_estado_tarea(
     "/{id_tarea}/asignar",
     status_code=status.HTTP_200_OK,
 )
-def asignar_reclamar_tarea(
+async def asignar_reclamar_tarea(
     id_tarea: int,
     asignacion_update: TareaAsignarUpdate,
     db: Session = Depends(get_db),
@@ -688,6 +774,15 @@ def asignar_reclamar_tarea(
         tarea.fecha_actualizacion = datetime.utcnow()
         db.commit()
 
+        # NOTIFICACIÓN: Notifica al colaborador si fue asignado a una tarea
+        if id_objetivo is not None and id_objetivo != id_usuario_actual:
+            await disparar_notificacion(
+                usuario_id=id_objetivo,
+                tipo="TAREA_ASIGNADA",
+                mensaje=f"Se te ha reasignado la tarea '{tarea.titulo}'.",
+                db=db
+            )
+
         return {
             "mensaje": "Asignación actualizada correctamente."
         }
@@ -715,7 +810,7 @@ def asignar_reclamar_tarea(
     response_model=TareaResponse,
     status_code=status.HTTP_200_OK,
 )
-def editar_detalles_tarea(
+async def editar_detalles_tarea(
     id_tarea: int,
     tarea_in: TareaUpdate,
     db: Session = Depends(get_db),
@@ -745,8 +840,6 @@ def editar_detalles_tarea(
             detail="No se enviaron datos para actualizar.",
         )
 
-    # Tomar las fechas nuevas si fueron enviadas.
-    # En caso contrario, conservar las actuales.
     fecha_inicio_final = update_data.get(
         "fecha_inicio",
         tarea.fecha_inicio,
@@ -782,6 +875,29 @@ def editar_detalles_tarea(
         db.commit()
         db.refresh(tarea)
 
+        # 1. Obtener el nombre completo del Administrador que realizó la edición
+        admin_emisor = (
+            db.query(UsuarioDB)
+            .filter(UsuarioDB.id_usuario == id_usuario_actual)
+            .first()
+        )
+        nombre_admin = (
+            f"{admin_emisor.nombre or ''} {admin_emisor.apellido or ''}".strip()
+            if admin_emisor and (admin_emisor.nombre or admin_emisor.apellido)
+            else "Un administrador"
+        )
+
+        # 2. NOTIFICACIÓN: Si la tarea está asignada a un colaborador (que no sea el admin actual), notificarle los cambios
+        asignacion = obtener_asignacion(id_tarea, db)
+        if asignacion and asignacion.id_usuario != id_usuario_actual:
+            mensaje_notificacion = f"El administrador {nombre_admin} editó los detalles de tu tarea '{tarea.titulo}'."
+            await disparar_notificacion(
+                usuario_id=asignacion.id_usuario,
+                tipo="TAREA_EDITADA",
+                mensaje=mensaje_notificacion,
+                db=db
+            )
+
         return tarea_a_dict(
             tarea,
             db,
@@ -805,7 +921,7 @@ def editar_detalles_tarea(
     response_model=ComentarioTareaResponse,
     status_code=status.HTTP_201_CREATED,
 )
-def crear_comentario(
+async def crear_comentario(
     id_tarea: int,
     comentario_in: ComentarioTareaCreate,
     db: Session = Depends(get_db),
@@ -838,6 +954,16 @@ def crear_comentario(
             )
             .first()
         )
+
+        # NOTIFICACIÓN: Notifica al colaborador si alguien más comenta en su tarea
+        asignacion = obtener_asignacion(id_tarea, db)
+        if asignacion and asignacion.id_usuario != id_usuario_actual:
+            await disparar_notificacion(
+                usuario_id=asignacion.id_usuario,
+                tipo="NUEVO_COMENTARIO",
+                mensaje=f"Alguien ha comentado en tu tarea '{tarea.titulo}'.",
+                db=db
+            )
 
         return comentario_a_dict(
             comentario,
@@ -987,7 +1113,7 @@ def eliminar_comentario(
     response_model=EvidenciaTareaResponse,
     status_code=status.HTTP_201_CREATED,
 )
-def agregar_evidencia_enlace(
+async def agregar_evidencia_enlace(
     id_tarea: int,
     evidencia_in: EvidenciaEnlaceCreate,
     db: Session = Depends(get_db),
@@ -1028,6 +1154,15 @@ def agregar_evidencia_enlace(
                 == evidencia.id_evidencia
             )
             .first()
+        )
+
+        # NOTIFICACIÓN: Notifica a los administradores que se añadió un enlace de evidencia
+        await notificar_administradores_proyecto(
+            id_proyecto=tarea.id_proyecto,
+            id_usuario_emisor=id_usuario_actual,
+            tipo="EVIDENCIA_ENLACE",
+            mensaje=f"Se ha añadido una nueva evidencia de enlace en la tarea '{tarea.titulo}'.",
+            db=db
         )
 
         return evidencia_a_dict(
@@ -1203,6 +1338,15 @@ async def agregar_evidencia_archivo(
             .first()
         )
 
+        # NOTIFICACIÓN: Notifica a los administradores que se subió un archivo de evidencia
+        await notificar_administradores_proyecto(
+            id_proyecto=tarea.id_proyecto,
+            id_usuario_emisor=id_usuario_actual,
+            tipo="EVIDENCIA_ARCHIVO",
+            mensaje=f"Se ha subido un nuevo archivo de evidencia en la tarea '{tarea.titulo}'.",
+            db=db
+        )
+
         return evidencia_a_dict(
             evidencia,
             id_usuario_actual,
@@ -1285,7 +1429,7 @@ def descargar_evidencia(
     "/evidencias/{id_evidencia}",
     status_code=status.HTTP_200_OK,
 )
-def eliminar_evidencia(
+async def eliminar_evidencia(
     id_evidencia: int,
     db: Session = Depends(get_db),
     id_usuario_actual: int = Depends(obtener_usuario_actual),
@@ -1328,6 +1472,16 @@ def eliminar_evidencia(
     try:
         db.delete(evidencia)
         db.commit()
+
+        # NOTIFICACIÓN: Notifica a los administradores si se elimina una evidencia
+        await notificar_administradores_proyecto(
+            id_proyecto=tarea.id_proyecto,
+            id_usuario_emisor=id_usuario_actual,
+            tipo="EVIDENCIA_ELIMINADA",
+            mensaje=f"Se ha eliminado una evidencia de la tarea '{tarea.titulo}'.",
+            db=db
+        )
+
     except Exception as exc:
         db.rollback()
         raise HTTPException(
@@ -1348,7 +1502,7 @@ def eliminar_evidencia(
     "/{id_tarea}",
     status_code=status.HTTP_200_OK,
 )
-def eliminar_tarea(
+async def eliminar_tarea(
     id_tarea: int,
     db: Session = Depends(get_db),
     id_usuario_actual: int = Depends(obtener_usuario_actual),
@@ -1375,6 +1529,8 @@ def eliminar_tarea(
         .all()
     )
 
+    asignacion = obtener_asignacion(id_tarea, db)
+
     try:
         (
             db.query(TareaAsignadaDB)
@@ -1383,6 +1539,16 @@ def eliminar_tarea(
         )
         db.delete(tarea)
         db.commit()
+
+        # NOTIFICACIÓN: Notifica al colaborador si se eliminó su tarea asignada
+        if asignacion and asignacion.id_usuario != id_usuario_actual:
+            await disparar_notificacion(
+                usuario_id=asignacion.id_usuario,
+                tipo="TAREA_ELIMINADA",
+                mensaje=f"La tarea '{tarea.titulo}' asignada a ti ha sido eliminada por un administrador.",
+                db=db
+            )
+
     except Exception as exc:
         db.rollback()
         raise HTTPException(
