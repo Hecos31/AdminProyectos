@@ -1,35 +1,16 @@
-import {
-  ChangeDetectorRef,
-  Component,
-  OnInit,
-  inject
-} from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
 
-import {
-  ActivatedRoute,
-  Router
-} from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 
-import {
-  CommonModule
-} from '@angular/common';
+import { CommonModule } from '@angular/common';
 
-import {
-  FormsModule
-} from '@angular/forms';
+import { FormsModule } from '@angular/forms';
 
-import {
-  finalize
-} from 'rxjs';
+import { finalize } from 'rxjs';
 
-import {
-  ApiServicio
-} from '../Servicios/api.servicio';
+import { ApiServicio } from '../Servicios/api.servicio';
 
-import {
-  ConfirmacionService
-} from '../Servicios/confirmacion.service';
-
+import { ConfirmacionService } from '../Servicios/confirmacion.service';
 
 interface ColaboradorProyecto {
   id_usuario: number;
@@ -49,105 +30,67 @@ interface ColaboradorProyecto {
   };
 }
 
-
 @Component({
-  selector:
-    'app-pantalla-configuracion-proyecto',
+  selector: 'app-pantalla-configuracion-proyecto',
 
   standalone: true,
 
-  imports: [
-    CommonModule,
-    FormsModule
-  ],
+  imports: [CommonModule, FormsModule],
 
-  templateUrl:
-    './pantallaconfiguracion.html',
+  templateUrl: './pantallaconfiguracion.html',
 
-  styleUrls: [
-    './pantallaconfiguracion.css'
-  ]
+  styleUrls: ['./pantallaconfiguracion.css'],
 })
-export class PantallaConfiguracionComponente
-  implements OnInit {
+export class PantallaConfiguracionComponente implements OnInit {
+  private route = inject(ActivatedRoute);
 
-  private route =
-    inject(ActivatedRoute);
+  private router = inject(Router);
 
-  private router =
-    inject(Router);
+  private apiService = inject(ApiServicio);
 
-  private apiService =
-    inject(ApiServicio);
+  private confirmacionService = inject(ConfirmacionService);
 
-  private confirmacionService =
-    inject(ConfirmacionService);
-
-  private cdr =
-    inject(ChangeDetectorRef);
-
+  private cdr = inject(ChangeDetectorRef);
 
   proyectoId = 0;
 
   proyecto: any = null;
 
-  colaboradores:
-    ColaboradorProyecto[] = [];
-
+  colaboradores: ColaboradorProyecto[] = [];
 
   nuevoColaborador = {
     correo: '',
-    rol: 'colaborador'
+    rol: 'colaborador',
   };
-
 
   cargando = true;
 
   agregandoColaborador = false;
 
-  eliminandoColaboradorId:
-    number | null = null;
+  eliminandoColaboradorId: number | null = null;
 
-  cambiandoRolUsuarioId:
-    number | null = null;
-
+  cambiandoRolUsuarioId: number | null = null;
 
   errorMessage = '';
   successMessage = '';
 
-
-  readonly rolesMap: Record<
-    string,
-    number
-  > = {
+  readonly rolesMap: Record<string, number> = {
     colaborador: 2,
-    admin: 1
+    admin: 1,
   };
 
-
-  readonly rolesInvertidos: Record<
-    number,
-    string
-  > = {
+  readonly rolesInvertidos: Record<number, string> = {
     1: 'admin',
-    2: 'colaborador'
+    2: 'colaborador',
   };
-
 
   ngOnInit(): void {
-    const idProyecto = Number(
-      this.route.snapshot.paramMap.get('id')
-    );
+    const idProyecto = Number(this.route.snapshot.paramMap.get('id'));
 
-    if (
-      !Number.isInteger(idProyecto) ||
-      idProyecto <= 0
-    ) {
+    if (!Number.isInteger(idProyecto) || idProyecto <= 0) {
       this.cargando = false;
 
-      this.mostrarError(
-        'No fue posible identificar el proyecto.'
-      );
+      this.mostrarError('No fue posible identificar el proyecto.');
 
       return;
     }
@@ -157,7 +100,6 @@ export class PantallaConfiguracionComponente
     this.cargarDatos();
   }
 
-
   // =========================================================
   // LECTURA
   // =========================================================
@@ -166,161 +108,104 @@ export class PantallaConfiguracionComponente
     this.cargando = true;
     this.errorMessage = '';
 
-    this.apiService
-      .obtenerProyecto(
-        this.proyectoId
-      )
-      .subscribe({
-        next: (proyecto) => {
-          this.proyecto = proyecto;
+    this.apiService.obtenerProyecto(this.proyectoId).subscribe({
+      next: (proyecto) => {
+        this.proyecto = proyecto;
 
-          this.cargarColaboradores();
-        },
+        this.cargarColaboradores();
+      },
 
-        error: (error) => {
-          this.cargando = false;
+      error: (error) => {
+        this.cargando = false;
 
-          this.mostrarError(
-            this.obtenerMensajeError(
-              error,
-              'No fue posible cargar el proyecto.'
-            )
-          );
+        this.mostrarError(this.obtenerMensajeError(error, 'No fue posible cargar el proyecto.'));
 
-          this.cdr.detectChanges();
-        }
-      });
+        this.cdr.detectChanges();
+      },
+    });
   }
-
 
   cargarColaboradores(): void {
-    this.apiService
-      .obtenerColaboradores(
-        this.proyectoId
-      )
-      .subscribe({
-        next: (data) => {
-          const lista =
-            Array.isArray(data)
-              ? data
-              : Array.isArray(
-                    (data as any)?.colaboradores
-                  )
-                ? (data as any).colaboradores
-                : [];
+    this.apiService.obtenerColaboradores(this.proyectoId).subscribe({
+      next: (data) => {
+        const lista = Array.isArray(data)
+          ? data
+          : Array.isArray((data as any)?.colaboradores)
+          ? (data as any).colaboradores
+          : [];
 
-          this.colaboradores = lista
-  .map(
-    (
-      colaborador: any
-    ): ColaboradorProyecto => {
-      const usuario =
-        colaborador?.usuario ??
-        colaborador;
+        this.colaboradores = lista
+          .map((colaborador: any): ColaboradorProyecto => {
+            const usuario = colaborador?.usuario ?? colaborador;
 
-      const idUsuario = Number(
-        colaborador?.id_usuario ??
-        usuario?.id_usuario
-      );
+            const idUsuario = Number(colaborador?.id_usuario ?? usuario?.id_usuario);
 
-      const idRol = Number(
-        colaborador?.id_rol ??
-        colaborador?.rol?.id_rol ??
-        2
-      );
+            const idRol = Number(colaborador?.id_rol ?? colaborador?.rol?.id_rol ?? 2);
 
-      return {
-        id_usuario: idUsuario,
-        id_rol: idRol,
+            return {
+              id_usuario: idUsuario,
+              id_rol: idRol,
 
-        nombre:
-          usuario?.nombre ??
-          colaborador?.nombre ??
-          '',
+              nombre: usuario?.nombre ?? colaborador?.nombre ?? '',
 
-        apellido:
-          usuario?.apellido ??
-          colaborador?.apellido ??
-          '',
+              apellido: usuario?.apellido ?? colaborador?.apellido ?? '',
 
-        correo:
-          usuario?.correo ??
-          colaborador?.correo ??
-          '',
+              correo: usuario?.correo ?? colaborador?.correo ?? '',
 
-        rol_nombre:
-          this.rolesInvertidos[idRol] ??
-          'colaborador',
+              rol_nombre: this.rolesInvertidos[idRol] ?? 'colaborador',
 
-        usuario:
-          colaborador?.usuario
-      };
-    }
-  )
-  .filter(
-    (
-      colaborador: ColaboradorProyecto
-    ): boolean =>
-      Number.isInteger(
-        colaborador.id_usuario
-      ) &&
-      colaborador.id_usuario > 0
-  );
-
-          this.cargando = false;
-          this.cdr.detectChanges();
-        },
-
-        error: (error) => {
-          this.colaboradores = [];
-          this.cargando = false;
-
-          this.mostrarError(
-            this.obtenerMensajeError(
-              error,
-              'No fue posible cargar los integrantes.'
-            )
+              usuario: colaborador?.usuario,
+            };
+          })
+          .filter(
+            (colaborador: ColaboradorProyecto): boolean =>
+              Number.isInteger(colaborador.id_usuario) && colaborador.id_usuario > 0
           );
 
-          this.cdr.detectChanges();
-        }
-      });
-  }
+        this.cargando = false;
+        this.cdr.detectChanges();
+      },
 
+      error: (error) => {
+        this.colaboradores = [];
+        this.cargando = false;
+
+        this.mostrarError(
+          this.obtenerMensajeError(error, 'No fue posible cargar los integrantes.')
+        );
+
+        this.cdr.detectChanges();
+      },
+    });
+  }
 
   // =========================================================
   // AGREGAR COLABORADOR
   // =========================================================
 
   agregarColaborador(): void {
-    const correo =
-      this.nuevoColaborador
-        .correo
-        .trim();
-
-    if (!correo) {
-      this.mostrarError(
-        'Ingresa un correo válido.'
-      );
-
-      return;
-    }
-
     if (this.agregandoColaborador) {
       return;
     }
 
+    const correo = this.nuevoColaborador.correo.trim().toLowerCase();
+
+    if (!correo) {
+      this.mostrarError('Ingresa el correo electrónico del colaborador.');
+
+      return;
+    }
+
+    if (!this.esCorreoValido(correo)) {
+      this.mostrarError('Ingresa un correo electrónico válido.');
+
+      return;
+    }
+
     const datos = {
-      id_proyecto:
-        this.proyectoId,
-
-      correo_colaborador:
-        correo,
-
-      id_rol:
-        this.rolesMap[
-          this.nuevoColaborador.rol
-        ] ?? 2
+      id_proyecto: this.proyectoId,
+      correo_colaborador: correo,
+      id_rol: this.rolesMap[this.nuevoColaborador.rol] ?? 2,
     };
 
     this.agregandoColaborador = true;
@@ -330,21 +215,17 @@ export class PantallaConfiguracionComponente
       .agregarColaborador(datos)
       .pipe(
         finalize(() => {
-          this.agregandoColaborador =
-            false;
-
+          this.agregandoColaborador = false;
           this.cdr.detectChanges();
         })
       )
       .subscribe({
         next: () => {
-          this.mostrarExito(
-            'Colaborador agregado exitosamente.'
-          );
+          this.mostrarExito('Colaborador agregado exitosamente.');
 
           this.nuevoColaborador = {
             correo: '',
-            rol: 'colaborador'
+            rol: 'colaborador',
           };
 
           this.cargarColaboradores();
@@ -352,223 +233,151 @@ export class PantallaConfiguracionComponente
 
         error: (error) => {
           this.mostrarError(
-            this.obtenerMensajeError(
-              error,
-              'No fue posible agregar al colaborador.'
-            )
+            this.obtenerMensajeError(error, 'No fue posible agregar al colaborador.')
           );
-        }
+        },
       });
   }
 
+  private esCorreoValido(correo: string): boolean {
+    const expresionCorreo = /^[^\s@]+@[^\s@.]+(?:\.[^\s@.]+)+$/;
+
+    return expresionCorreo.test(correo);
+  }
 
   // =========================================================
   // ELIMINAR COLABORADOR
   // =========================================================
 
-  async eliminarColaborador(
-    idUsuario: number
-  ): Promise<void> {
-    if (
-      this.eliminandoColaboradorId !==
-        null ||
-      !Number.isInteger(idUsuario) ||
-      idUsuario <= 0
-    ) {
+  async eliminarColaborador(idUsuario: number): Promise<void> {
+    if (this.eliminandoColaboradorId !== null || !Number.isInteger(idUsuario) || idUsuario <= 0) {
       return;
     }
 
-    const colaborador =
-      this.colaboradores.find(
-        (item) =>
-          item.id_usuario ===
-          idUsuario
-      );
+    const colaborador = this.colaboradores.find((item) => item.id_usuario === idUsuario);
 
-    const nombre =
-      this.obtenerNombreColaborador(
-        colaborador
-      );
+    const nombre = this.obtenerNombreColaborador(colaborador);
 
-    const correo =
-      colaborador?.correo ??
-      colaborador?.usuario?.correo ??
-      '';
+    const correo = colaborador?.correo ?? colaborador?.usuario?.correo ?? '';
 
-    const confirmado =
-      await this.confirmacionService
-        .solicitar({
-          titulo:
-            'Eliminar integrante',
+    const confirmado = await this.confirmacionService.solicitar({
+      titulo: 'Eliminar integrante',
 
-          mensaje:
-            `¿Deseas eliminar a ${nombre} del proyecto?`,
+      mensaje: `¿Deseas eliminar a ${nombre} del proyecto?`,
 
-          detalle:
-            correo
-              ? `${correo} dejará de tener acceso al proyecto y a sus actividades.`
-              : 'El usuario dejará de tener acceso al proyecto y a sus actividades.',
+      detalle: correo
+        ? `${correo} dejará de tener acceso al proyecto y a sus actividades.`
+        : 'El usuario dejará de tener acceso al proyecto y a sus actividades.',
 
-          tipo:
-            'danger',
+      tipo: 'danger',
 
-          textoBotonConfirmar:
-            'Eliminar integrante',
+      textoBotonConfirmar: 'Eliminar integrante',
 
-          textoBotonCancelar:
-            'Conservar integrante'
-        });
+      textoBotonCancelar: 'Conservar integrante',
+    });
 
     if (!confirmado) {
       return;
     }
 
-    this.ejecutarEliminacionColaborador(
-      idUsuario
-    );
+    this.ejecutarEliminacionColaborador(idUsuario);
   }
 
-
-  private ejecutarEliminacionColaborador(
-    idUsuario: number
-  ): void {
-    this.eliminandoColaboradorId =
-      idUsuario;
+  private ejecutarEliminacionColaborador(idUsuario: number): void {
+    this.eliminandoColaboradorId = idUsuario;
 
     this.limpiarMensajes();
 
     this.apiService
       .eliminarColaborador({
-        id_proyecto:
-          this.proyectoId,
+        id_proyecto: this.proyectoId,
 
-        id_usuario:
-          idUsuario
+        id_usuario: idUsuario,
       })
       .pipe(
         finalize(() => {
-          this.eliminandoColaboradorId =
-            null;
+          this.eliminandoColaboradorId = null;
 
           this.cdr.detectChanges();
         })
       )
       .subscribe({
         next: () => {
-          this.colaboradores =
-            this.colaboradores.filter(
-              (colaborador) =>
-                colaborador.id_usuario !==
-                idUsuario
-            );
-
-          this.mostrarExito(
-            'Colaborador eliminado exitosamente.'
+          this.colaboradores = this.colaboradores.filter(
+            (colaborador) => colaborador.id_usuario !== idUsuario
           );
 
-          this.apiService
-            .notificarCambio();
+          this.mostrarExito('Colaborador eliminado exitosamente.');
+
+          this.apiService.notificarCambio();
 
           this.cdr.detectChanges();
         },
 
         error: (error) => {
           this.mostrarError(
-            this.obtenerMensajeError(
-              error,
-              'No fue posible eliminar al colaborador.'
-            )
+            this.obtenerMensajeError(error, 'No fue posible eliminar al colaborador.')
           );
-        }
+        },
       });
   }
-
 
   // =========================================================
   // CAMBIAR ROL
   // =========================================================
 
-  cambiarRol(
-    idUsuario: number,
-    nuevoRol: string
-  ): void {
-    if (
-      this.cambiandoRolUsuarioId !==
-        null ||
-      !Number.isInteger(idUsuario) ||
-      idUsuario <= 0
-    ) {
+  cambiarRol(idUsuario: number, nuevoRol: string): void {
+    if (this.cambiandoRolUsuarioId !== null || !Number.isInteger(idUsuario) || idUsuario <= 0) {
       return;
     }
 
-    const idRolNuevo =
-      this.rolesMap[nuevoRol];
+    const idRolNuevo = this.rolesMap[nuevoRol];
 
     if (!idRolNuevo) {
-      this.mostrarError(
-        'El rol seleccionado no es válido.'
-      );
+      this.mostrarError('El rol seleccionado no es válido.');
 
       return;
     }
 
-    this.cambiandoRolUsuarioId =
-      idUsuario;
+    this.cambiandoRolUsuarioId = idUsuario;
 
     this.limpiarMensajes();
 
     this.apiService
       .cambiarRolColaborador({
-        id_proyecto:
-          this.proyectoId,
+        id_proyecto: this.proyectoId,
 
-        id_usuario:
-          idUsuario,
+        id_usuario: idUsuario,
 
-        id_rol_nuevo:
-          idRolNuevo
+        id_rol_nuevo: idRolNuevo,
       })
       .pipe(
         finalize(() => {
-          this.cambiandoRolUsuarioId =
-            null;
+          this.cambiandoRolUsuarioId = null;
 
           this.cdr.detectChanges();
         })
       )
       .subscribe({
         next: () => {
-          const colaborador =
-            this.colaboradores.find(
-              (item) =>
-                item.id_usuario ===
-                idUsuario
-            );
+          const colaborador = this.colaboradores.find((item) => item.id_usuario === idUsuario);
 
           if (colaborador) {
-            colaborador.id_rol =
-              idRolNuevo;
+            colaborador.id_rol = idRolNuevo;
 
-            colaborador.rol_nombre =
-              nuevoRol;
+            colaborador.rol_nombre = nuevoRol;
           }
 
-          this.mostrarExito(
-            'Rol actualizado correctamente.'
-          );
+          this.mostrarExito('Rol actualizado correctamente.');
 
-          this.apiService
-            .notificarCambio();
+          this.apiService.notificarCambio();
 
           this.cdr.detectChanges();
         },
 
         error: (error) => {
           this.mostrarError(
-            this.obtenerMensajeError(
-              error,
-              'No fue posible cambiar el rol del colaborador.'
-            )
+            this.obtenerMensajeError(error, 'No fue posible cambiar el rol del colaborador.')
           );
 
           /*
@@ -576,126 +385,76 @@ export class PantallaConfiguracionComponente
            * select ya cambió visualmente.
            */
           this.cargarColaboradores();
-        }
+        },
       });
   }
-
 
   // =========================================================
   // UTILIDADES
   // =========================================================
 
-  private obtenerNombreColaborador(
-    colaborador:
-      ColaboradorProyecto |
-      undefined
-  ): string {
+  private obtenerNombreColaborador(colaborador: ColaboradorProyecto | undefined): string {
     if (!colaborador) {
       return 'este integrante';
     }
 
-    const nombre =
-      colaborador.nombre ??
-      colaborador.usuario?.nombre ??
-      '';
+    const nombre = colaborador.nombre ?? colaborador.usuario?.nombre ?? '';
 
-    const apellido =
-      colaborador.apellido ??
-      colaborador.usuario?.apellido ??
-      '';
+    const apellido = colaborador.apellido ?? colaborador.usuario?.apellido ?? '';
 
-    const nombreCompleto =
-      `${nombre} ${apellido}`.trim();
+    const nombreCompleto = `${nombre} ${apellido}`.trim();
 
-    return (
-      nombreCompleto ||
-      colaborador.correo ||
-      colaborador.usuario?.correo ||
-      'este integrante'
-    );
+    return nombreCompleto || colaborador.correo || colaborador.usuario?.correo || 'este integrante';
   }
-
 
   private limpiarMensajes(): void {
     this.errorMessage = '';
     this.successMessage = '';
   }
 
-
-  mostrarError(
-    mensaje: string
-  ): void {
+  mostrarError(mensaje: string): void {
     this.errorMessage = mensaje;
     this.successMessage = '';
 
     window.setTimeout(() => {
-      if (
-        this.errorMessage === mensaje
-      ) {
+      if (this.errorMessage === mensaje) {
         this.errorMessage = '';
         this.cdr.detectChanges();
       }
     }, 4000);
   }
 
-
-  mostrarExito(
-    mensaje: string
-  ): void {
+  mostrarExito(mensaje: string): void {
     this.successMessage = mensaje;
     this.errorMessage = '';
 
     window.setTimeout(() => {
-      if (
-        this.successMessage === mensaje
-      ) {
+      if (this.successMessage === mensaje) {
         this.successMessage = '';
         this.cdr.detectChanges();
       }
     }, 4000);
   }
 
+  private obtenerMensajeError(error: any, mensajePredeterminado: string): string {
+    const detalle = error?.error?.detail;
 
-  private obtenerMensajeError(
-    error: any,
-    mensajePredeterminado: string
-  ): string {
-    const detalle =
-      error?.error?.detail;
-
-    if (
-      typeof detalle === 'string'
-    ) {
+    if (typeof detalle === 'string') {
       return detalle;
     }
 
     if (Array.isArray(detalle)) {
-      return detalle
-        .map(
-          (item: any) =>
-            item?.msg ??
-            'Dato no válido'
-        )
-        .join('. ');
+      return detalle.map((item: any) => item?.msg ?? 'Dato no válido').join('. ');
     }
 
     return mensajePredeterminado;
   }
 
-
   volverAlProyecto(): void {
-    this.router.navigate([
-      '/proyecto',
-      this.proyectoId
-    ]);
+    this.router.navigate(['/proyecto', this.proyectoId]);
   }
 
-
-  trackColaborador(
-    _index: number,
-    colaborador:
-      ColaboradorProyecto
-  ): number {
+  trackColaborador(_index: number, colaborador: ColaboradorProyecto): number {
     return colaborador.id_usuario;
   }
 }
