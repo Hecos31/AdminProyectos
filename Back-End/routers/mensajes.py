@@ -138,9 +138,9 @@ async def enviar_mensaje_conversacion(
     )
 
     nombre_remitente = (
-        f"{usuario.nombre} {usuario.apellido}".strip()
-        if usuario
-        else "Usuario"
+        f"{usuario.nombre or ''} {usuario.apellido or ''}".strip()
+        if usuario and (usuario.nombre or usuario.apellido) and usuario.nombre.lower() != "string"
+        else f"Usuario #{id_usuario_actual}"
     )
 
     mensaje_respuesta = {
@@ -163,10 +163,11 @@ async def enviar_mensaje_conversacion(
             "id_usuario"
         )
 
-        if participante_id is None:
+        if participante_id is None or participante_id == id_usuario_actual:
             continue
 
         try:
+            # Emisión en vivo únicamente por WebSocket
             await manager.enviar_mensaje_en_vivo(
                 mensaje_respuesta,
                 participante_id
