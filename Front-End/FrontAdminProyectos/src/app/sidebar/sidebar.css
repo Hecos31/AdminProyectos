@@ -92,9 +92,9 @@
   flex: 1 1 auto;
 
   align-items: center;
-  gap: 12px;
+  gap: 10px;
 
-  padding: 6px;
+  padding: 4px;
 
   color: inherit;
   text-align: left;
@@ -114,29 +114,49 @@
   position: relative;
 
   display: inline-flex;
-  width: 34px;
-  height: 34px;
+  width: 44px;
+  height: 44px;
 
   align-items: center;
   justify-content: center;
-  flex: 0 0 34px;
+  flex: 0 0 44px;
 
   color: #ffffff;
   background: var(--app-primary);
 
-  border-radius: 10px;
+  border-radius: 12px;
 
   box-shadow:
-    0 6px 16px rgba(37, 99, 235, 0.22);
+    0 7px 18px rgba(37, 99, 235, 0.26);
+
+  overflow: visible;
+}
+
+.orbita-logo {
+  display: block;
+
+  width: 37px;
+  height: 37px;
+
+  min-width: 37px;
+  min-height: 37px;
+
+  object-fit: contain;
+
+  opacity: 1;
+  visibility: visible;
+
+  pointer-events: none;
 }
 
 .logo-mark::after {
   position: absolute;
   right: -4px;
   bottom: -4px;
+  z-index: 2;
 
-  width: 9px;
-  height: 9px;
+  width: 10px;
+  height: 10px;
 
   background: var(--app-surface);
   border: 2px solid var(--app-primary);
@@ -144,7 +164,6 @@
 
   content: "";
 }
-
 .logo-text {
   min-width: 0;
 

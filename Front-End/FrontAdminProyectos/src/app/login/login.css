@@ -142,7 +142,22 @@
   border: 1px solid rgba(255, 255, 255, 0.22);
   border-radius: 12px;
 }
+.orbita-logo {
+  display: block;
 
+  width: 50px;
+  height: 50px;
+
+  min-width: 50px;
+  min-height: 50px;
+
+  object-fit: contain;
+
+  opacity: 1;
+  visibility: visible;
+
+  pointer-events: none;
+}
 .brand-logo strong {
   font-size: 1.15rem;
   font-weight: 700;
