@@ -19,9 +19,6 @@ def get_db():
     finally:
         db.close()
 
-# --- MONGODB (Atlas en la nube) ---
-# Reemplaza <db_username> y <db_password> con tus credenciales reales de Atlas
-MONGO_URL = "mongodb+srv://usuario:orbita123@cluster0.qdu0tg4.mongodb.net/?appName=Cluster0"
-
+MONGO_URL = "mongodb://localhost:27017"
 client = AsyncIOMotorClient(MONGO_URL)
 db_mongo = client.chat_db

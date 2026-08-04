@@ -200,6 +200,69 @@ export class SidebarComponente
     this.router.navigate(['/inicio']);
   }
 
+
+  async irAProyecto(
+    idProyecto: number,
+    evento?: Event
+  ): Promise<void> {
+    evento?.preventDefault();
+    evento?.stopPropagation();
+
+    if (
+      !Number.isInteger(idProyecto) ||
+      idProyecto <= 0
+    ) {
+      return;
+    }
+
+    const urlDestino =
+      `/proyecto/${idProyecto}`;
+
+    /*
+     * Angular reutiliza el mismo componente cuando solamente
+     * cambia el parámetro :id. La URL sí cambia, pero una vista
+     * que lee el ID con route.snapshot puede conservar los datos
+     * del proyecto anterior.
+     *
+     * La navegación intermedia destruye la vista actual y obliga
+     * a crear de nuevo el componente del proyecto.
+     */
+    if (
+      this.router.url.startsWith('/proyecto/')
+    ) {
+      await this.router.navigateByUrl(
+        '/inicio',
+        {
+          skipLocationChange: true
+        }
+      );
+    }
+
+    await this.router.navigateByUrl(
+      urlDestino
+    );
+
+    this.mostrarMenuUsuario = false;
+    this.mostrarNotificaciones = false;
+  }
+
+  esProyectoActivo(
+    idProyecto: number
+  ): boolean {
+    const segmentos =
+      this.router.url
+        .split('?')[0]
+        .split('#')[0]
+        .split('/')
+        .filter(Boolean);
+
+    return (
+      segmentos[0] === 'proyecto' &&
+      Number(segmentos[1]) === idProyecto
+    );
+  }
+
+
   toggleSidebar(
     evento?: Event
   ): void {

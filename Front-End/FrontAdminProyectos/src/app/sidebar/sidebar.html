@@ -315,11 +315,21 @@
         >
           <a
             class="project-link"
-            [routerLink]="[
-              '/proyecto',
+            [attr.href]="
+              '/proyecto/' +
               proyecto.id
-            ]"
-            routerLinkActive="active"
+            "
+            [class.active]="
+              esProyectoActivo(
+                proyecto.id
+              )
+            "
+            (click)="
+              irAProyecto(
+                proyecto.id,
+                $event
+              )
+            "
             [title]="proyecto.nombre"
             [attr.aria-label]="
               'Abrir proyecto ' +
