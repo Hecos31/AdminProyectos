@@ -1,6 +1,11 @@
 // === IMPORTACIONES ===
 import { Routes } from '@angular/router';
 
+// Página pública de presentación
+import {
+  PaginaPresentacionComponente
+} from './pagina-presentacion/pagina-presentacion';
+
 // Componentes de Autenticación
 import { LoginComponente } from './login/login';
 import { CrearUsuarioComponente } from './Crearusuario/crearusuario';
@@ -8,47 +13,129 @@ import { CrearUsuarioComponente } from './Crearusuario/crearusuario';
 // Componentes Globales
 import { PantallaInicioComponente } from './Pantalla-Inicio/pantallainicio';
 import { CrearProyectoComponente } from './CrearProyecto/crearproyecto';
-// import { ChatComponente } from './Chats/chat';
 
 // Componentes de Proyecto
-import { PantallaPrincipalProyectoComponente } from './Pantalla-PrincipalProyecto/pantallaprincipalproyecto';
-import { PantallaConfiguracionComponente } from './Pantalla-ConfiguracionProyecto/pantallaconfiguracion';
-import { MenuConfiguracionComponente } from './MenuConfiguracion/menuconfiguracion';
-import { TablonActividades } from './tablon-actividades/tablon-actividades';
-import { Actividadesusuario } from './actividadesusuario/actividadesusuario';
-import { Crearactividades } from './crearactividades/crearactividades';
+import {
+  PantallaPrincipalProyectoComponente
+} from './Pantalla-PrincipalProyecto/pantallaprincipalproyecto';
 
-// Guardianes de Seguridad (Te paso el código en el siguiente paso)
-import { authGuard } from './Guards/auth.guard';
+import {
+  PantallaConfiguracionComponente
+} from './Pantalla-ConfiguracionProyecto/pantallaconfiguracion';
 
-// === DEFINICIÓN DE RUTAS ===
+import {
+  MenuConfiguracionComponente
+} from './MenuConfiguracion/menuconfiguracion';
+
+import {
+  TablonActividades
+} from './tablon-actividades/tablon-actividades';
+
+import {
+  Actividadesusuario
+} from './actividadesusuario/actividadesusuario';
+
+import {
+  Crearactividades
+} from './crearactividades/crearactividades';
+
+// Guard de autenticación
+import {
+  authGuard
+} from './Guards/auth.guard';
+
+
 export const routes: Routes = [
-  // 1. ZONA PÚBLICA (Sin sesión iniciada)
-  { path: '', redirectTo: '/login', pathMatch: 'full' },
-  { path: 'login', component: LoginComponente },
-  { path: 'registro', component: CrearUsuarioComponente },
+  // =========================================================
+  // ZONA PÚBLICA
+  // =========================================================
 
-  // 2. ZONA GLOBAL PRIVADA
   {
     path: '',
-    canActivateChild: [authGuard],
-    children: [
-      { path: 'inicio', component: PantallaInicioComponente },
-      { path: 'crear-proyecto', component: CrearProyectoComponente },
-      // { path: 'chats', component: ChatComponente },
-
-      // 3. CONTEXTO DE PROYECTO (Requieren sesión y pertenecer al proyecto)
-      { path: 'proyecto/:id', component: PantallaPrincipalProyectoComponente },
-      { path: 'proyecto/:id/tablon', component: TablonActividades },
-      { path: 'proyecto/:id/mis-actividades', component: Actividadesusuario },
-
-      // 4. CONTEXTO DE ADMINISTRACIÓN (Requieren rol de Admin/Manager)
-      { path: 'proyecto/:id/crearactividades', component: Crearactividades },
-      { path: 'proyecto/:id/configuracion', component: MenuConfiguracionComponente },
-      { path: 'proyecto/:id/integrantes', component: PantallaConfiguracionComponente },
-    ],
+    component: PaginaPresentacionComponente,
+    pathMatch: 'full',
+    title: 'Orbita | Gestión de proyectos'
   },
 
-  // 5. RUTA DE ERROR
-  { path: '**', redirectTo: '/inicio' },
+  {
+    path: 'login',
+    component: LoginComponente,
+    title: 'Iniciar sesión | Orbita'
+  },
+
+  {
+    path: 'registro',
+    component: CrearUsuarioComponente,
+    title: 'Crear cuenta | Orbita'
+  },
+
+  // =========================================================
+  // ZONA PRIVADA
+  // =========================================================
+
+  {
+    path: '',
+    canActivateChild: [
+      authGuard
+    ],
+
+    children: [
+      {
+        path: 'inicio',
+        component: PantallaInicioComponente,
+        title: 'Mis proyectos | Orbita'
+      },
+
+      {
+        path: 'crear-proyecto',
+        component: CrearProyectoComponente,
+        title: 'Crear proyecto | Orbita'
+      },
+
+      {
+        path: 'proyecto/:id',
+        component: PantallaPrincipalProyectoComponente,
+        title: 'Proyecto | Orbita'
+      },
+
+      {
+        path: 'proyecto/:id/tablon',
+        component: TablonActividades,
+        title: 'Tablón | Orbita'
+      },
+
+      {
+        path: 'proyecto/:id/mis-actividades',
+        component: Actividadesusuario,
+        title: 'Mis actividades | Orbita'
+      },
+
+      {
+        path: 'proyecto/:id/crearactividades',
+        component: Crearactividades,
+        title: 'Administrar actividades | Orbita'
+      },
+
+      {
+        path: 'proyecto/:id/configuracion',
+        component: MenuConfiguracionComponente,
+        title: 'Configuración | Orbita'
+      },
+
+      {
+        path: 'proyecto/:id/integrantes',
+        component: PantallaConfiguracionComponente,
+        title: 'Integrantes | Orbita'
+      }
+    ]
+  },
+
+  // =========================================================
+  // RUTA NO ENCONTRADA
+  // =========================================================
+
+  {
+    path: '**',
+    redirectTo: ''
+  }
 ];
