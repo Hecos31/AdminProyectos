@@ -1248,3 +1248,322 @@
     animation: none;
   }
 }
+
+/* CONTENEDOR PRINCIPAL DE LA VISTA */
+.calendar-container {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 40px);
+  padding: 20px;
+  background-color: #0f172a;
+  color: #f8fafc;
+  box-sizing: border-box;
+  gap: 16px;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* HEADER Y CONTROLES DEL CALENDARIO */
+.calendar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #1e293b;
+  padding: 16px 24px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.title-section h2 {
+  margin: 0;
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #f8fafc;
+}
+
+.title-section p {
+  margin: 4px 0 0 0;
+  color: #94a3b8;
+  font-size: 0.85rem;
+}
+
+.controls-section {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.current-date-label {
+  font-size: 1.15rem;
+  font-weight: 600;
+  min-width: 170px;
+  text-align: center;
+  color: #cbd5e1;
+}
+
+.btn-nav, .btn-today {
+  background-color: #334155;
+  color: #f8fafc;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 6px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.9rem;
+  transition: all 0.2s ease;
+}
+
+.btn-nav:hover, .btn-today:hover {
+  background-color: #475569;
+  border-color: rgba(255, 255, 255, 0.2);
+  transform: translateY(-1px);
+}
+
+.btn-today {
+  background-color: #6366f1;
+}
+
+.btn-today:hover {
+  background-color: #4f46e5;
+}
+
+/* CUERPO DEL CALENDARIO Y DISPOSICIÓN FLEX */
+.calendar-body {
+  flex: 1;
+  display: flex;
+  gap: 16px;
+  overflow: hidden;
+}
+
+/* GRILLA MENSUAL */
+.grid-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background-color: #1e293b;
+  border-radius: 12px;
+  padding: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.day-names-row {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  text-align: center;
+  font-weight: 700;
+  color: #818cf8;
+  padding-bottom: 12px;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.days-grid {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  grid-template-rows: repeat(6, 1fr);
+  gap: 6px;
+}
+
+/* CÉLDAS / DÍAS DEL CALENDARIO */
+.day-cell {
+  background-color: #0f172a;
+  border-radius: 8px;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1px solid rgba(255, 255, 255, 0.03);
+  position: relative;
+  overflow: hidden;
+}
+
+.day-cell:hover {
+  background-color: #1a2332;
+  border-color: rgba(99, 102, 241, 0.4);
+}
+
+.day-cell.other-month {
+  opacity: 0.3;
+  background-color: #0b1120;
+}
+
+.day-cell.today {
+  border: 1.5px solid #6366f1;
+  background-color: rgba(99, 102, 241, 0.05);
+}
+
+.day-cell.today .day-number {
+  color: #818cf8;
+  font-weight: 700;
+}
+
+.day-cell.selected {
+  background-color: rgba(99, 102, 241, 0.18);
+  border-color: #818cf8;
+}
+
+.day-number {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #cbd5e1;
+}
+
+/* CHIPS Y ETIQUETAS DE TAREAS DENTRO DE LOS DÍAS */
+.tasks-indicators {
+  margin-top: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  overflow: hidden;
+}
+
+.task-chip {
+  font-size: 0.7rem;
+  padding: 2px 6px;
+  border-radius: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: #ffffff;
+  font-weight: 500;
+}
+
+.task-chip.completada {
+  background-color: #10b981;
+}
+
+.task-chip.progreso {
+  background-color: #3b82f6;
+}
+
+.task-chip.pendiente {
+  background-color: #f59e0b;
+}
+
+.more-counter {
+  font-size: 0.68rem;
+  color: #94a3b8;
+  margin-top: 2px;
+  font-weight: 600;
+}
+
+/* PANEL LATERAL DE DETALLE */
+.side-panel {
+  width: 320px;
+  background-color: #1e293b;
+  border-radius: 12px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding-bottom: 12px;
+}
+
+.panel-header h3 {
+  margin: 0;
+  font-size: 1.05rem;
+  color: #f8fafc;
+  font-weight: 600;
+}
+
+.badge-count {
+  font-size: 0.75rem;
+  background-color: rgba(99, 102, 241, 0.2);
+  color: #a5b4fc;
+  padding: 3px 8px;
+  border-radius: 12px;
+  font-weight: 600;
+}
+
+.panel-content {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-right: 4px;
+}
+
+/* TARJETAS DE ACTIVIDADES EN EL PANEL LATERAL */
+.task-card {
+  background-color: #0f172a;
+  padding: 14px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  transition: transform 0.2s ease;
+}
+
+.task-card:hover {
+  transform: translateX(2px);
+}
+
+.task-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.status-pill {
+  font-size: 0.65rem;
+  padding: 3px 8px;
+  border-radius: 6px;
+  text-transform: uppercase;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+}
+
+.status-pill.completada {
+  background: rgba(16, 185, 129, 0.15);
+  color: #34d399;
+}
+
+.status-pill.progreso {
+  background: rgba(59, 130, 246, 0.15);
+  color: #60a5fa;
+}
+
+.status-pill.pendiente {
+  background: rgba(245, 158, 11, 0.15);
+  color: #fbbf24;
+}
+
+.project-tag {
+  font-size: 0.72rem;
+  color: #94a3b8;
+  font-weight: 500;
+}
+
+.task-card h4 {
+  margin: 0 0 6px 0;
+  font-size: 0.92rem;
+  color: #f1f5f9;
+  font-weight: 600;
+}
+
+.desc {
+  margin: 0;
+  font-size: 0.8rem;
+  color: #94a3b8;
+  line-height: 1.4;
+}
+
+.empty-day {
+  text-align: center;
+  color: #64748b;
+  padding: 40px 10px;
+  font-size: 0.85rem;
+}

@@ -1,15 +1,48 @@
 // === IMPORTACIONES ===
 import { Routes } from '@angular/router';
 
+// =========================================================
+// PÁGINA PÚBLICA
+// =========================================================
+
 import {
   PaginaPresentacionComponente
 } from './pagina-presentacion/pagina-presentacion';
 
-import { LoginComponente } from './login/login';
-import { CrearUsuarioComponente } from './Crearusuario/crearusuario';
 
-import { PantallaInicioComponente } from './Pantalla-Inicio/pantallainicio';
-import { CrearProyectoComponente } from './CrearProyecto/crearproyecto';
+// =========================================================
+// AUTENTICACIÓN
+// =========================================================
+
+import {
+  LoginComponente
+} from './login/login';
+
+import {
+  CrearUsuarioComponente
+} from './Crearusuario/crearusuario';
+
+
+// =========================================================
+// COMPONENTES GLOBALES
+// =========================================================
+
+import {
+  PantallaInicioComponente
+} from './Pantalla-Inicio/pantallainicio';
+
+import {
+  CrearProyectoComponente
+} from './CrearProyecto/crearproyecto';
+
+import {
+  CalendarioComponent
+} from './calendario/calendario';
+
+
+// =========================================================
+// COMPONENTES DEL PROYECTO
+// =========================================================
 
 import {
   PantallaPrincipalProyectoComponente
@@ -39,12 +72,26 @@ import {
   Crearactividades
 } from './crearactividades/crearactividades';
 
+
+// =========================================================
+// GUARD DE AUTENTICACIÓN
+// =========================================================
+
 import {
   authGuard
 } from './Guards/auth.guard';
 
 
+// =========================================================
+// DEFINICIÓN DE RUTAS
+// =========================================================
+
 export const routes: Routes = [
+
+  // =======================================================
+  // ZONA PÚBLICA
+  // =======================================================
+
   {
     path: '',
     component: PaginaPresentacionComponente,
@@ -64,13 +111,24 @@ export const routes: Routes = [
     title: 'Crear cuenta | Orbita'
   },
 
+
+  // =======================================================
+  // ZONA PRIVADA
+  // =======================================================
+
   {
     path: '',
+
     canActivateChild: [
       authGuard
     ],
 
     children: [
+
+      // ===================================================
+      // RUTAS GLOBALES
+      // ===================================================
+
       {
         path: 'inicio',
         component: PantallaInicioComponente,
@@ -82,6 +140,17 @@ export const routes: Routes = [
         component: CrearProyectoComponente,
         title: 'Crear proyecto | Orbita'
       },
+
+      {
+        path: 'calendario',
+        component: CalendarioComponent,
+        title: 'Calendario | Orbita'
+      },
+
+
+      // ===================================================
+      // RUTAS DEL PROYECTO
+      // ===================================================
 
       {
         path: 'proyecto/:id',
@@ -101,16 +170,25 @@ export const routes: Routes = [
         title: 'Mis actividades | Orbita'
       },
 
+      /*
+       * Esta ruta permite abrir el calendario desde un proyecto
+       * conservando el ID en la URL.
+       */
+      {
+        path: 'proyecto/:id/calendario',
+        component: CalendarioComponent,
+        title: 'Calendario del proyecto | Orbita'
+      },
+
+
+      // ===================================================
+      // ADMINISTRACIÓN DEL PROYECTO
+      // ===================================================
+
       {
         path: 'proyecto/:id/crearactividades',
         component: Crearactividades,
         title: 'Administrar actividades | Orbita'
-      },
-
-      {
-        path: 'proyecto/:id/configuracion/editar',
-        component: EditarProyectoComponente,
-        title: 'Editar proyecto | Orbita'
       },
 
       {
@@ -120,12 +198,23 @@ export const routes: Routes = [
       },
 
       {
+        path: 'proyecto/:id/configuracion/editar',
+        component: EditarProyectoComponente,
+        title: 'Editar proyecto | Orbita'
+      },
+
+      {
         path: 'proyecto/:id/integrantes',
         component: PantallaConfiguracionComponente,
         title: 'Integrantes | Orbita'
       }
     ]
   },
+
+
+  // =======================================================
+  // RUTA NO ENCONTRADA
+  // =======================================================
 
   {
     path: '**',

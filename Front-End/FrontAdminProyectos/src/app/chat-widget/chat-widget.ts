@@ -16,6 +16,12 @@ import {
   ChatService
 } from '../Servicios/chats';
 
+
+interface GrupoMensajes {
+  fechaEtiqueta: string;
+  mensajes: ChatMensaje[];
+}
+
 @Component({
   selector: 'app-chat-widget',
   standalone: true,
@@ -38,6 +44,7 @@ export class ChatWidget implements OnInit, OnDestroy {
   conversaciones: ChatConversacion[] = [];
   chatActivo: ChatConversacion | null = null;
   mensajes: ChatMensaje[] = [];
+  gruposMensajes: GrupoMensajes[] = [];
 
   nuevoMensaje = '';
   correoDestino = '';
@@ -171,12 +178,14 @@ export class ChatWidget implements OnInit, OnDestroy {
     this.vistaActual = 'lista';
     this.chatActivo = null;
     this.mensajes = [];
+    this.gruposMensajes = [];
   }
 
   volverALista(): void {
     this.vistaActual = 'lista';
     this.chatActivo = null;
     this.mensajes = [];
+    this.gruposMensajes = [];
   }
 
   irANuevoChat(): void {
@@ -197,12 +206,75 @@ export class ChatWidget implements OnInit, OnDestroy {
     });
   }
 
+
+  formatearFechaLista(
+    fechaStr: string | null | undefined
+  ): string {
+    if (!fechaStr) {
+      return '';
+    }
+
+    const fechaMensaje =
+      new Date(fechaStr);
+
+    if (
+      !Number.isFinite(
+        fechaMensaje.getTime()
+      )
+    ) {
+      return '';
+    }
+
+    const hoy = new Date();
+    const ayer = new Date();
+
+    ayer.setDate(
+      hoy.getDate() - 1
+    );
+
+    if (
+      this.esMismoDia(
+        fechaMensaje,
+        hoy
+      )
+    ) {
+      return fechaMensaje
+        .toLocaleTimeString(
+          'es-MX',
+          {
+            hour: '2-digit',
+            minute: '2-digit'
+          }
+        );
+    }
+
+    if (
+      this.esMismoDia(
+        fechaMensaje,
+        ayer
+      )
+    ) {
+      return 'Ayer';
+    }
+
+    return fechaMensaje
+      .toLocaleDateString(
+        'es-MX',
+        {
+          day: '2-digit',
+          month: '2-digit',
+          year: 'numeric'
+        }
+      );
+  }
+
   abrirConversacion(chat: ChatConversacion): void {
     const idSolicitado = String(chat.id);
 
     this.chatActivo = chat;
     this.vistaActual = 'conversacion';
     this.mensajes = [];
+    this.gruposMensajes = [];
 
     this.chatService.marcarConversacionLeidaLocal(chat.id);
 
@@ -240,6 +312,7 @@ export class ChatWidget implements OnInit, OnDestroy {
           this.mensajes
         );
 
+        this.actualizarGruposMensajes();
         this.scrollAlFinal();
         this.cdr.detectChanges();
       },
@@ -345,6 +418,7 @@ export class ChatWidget implements OnInit, OnDestroy {
       }
     }
 
+    this.actualizarGruposMensajes();
     this.scrollAlFinal();
 
     if (
@@ -437,6 +511,114 @@ export class ChatWidget implements OnInit, OnDestroy {
       : String(cantidad);
   }
 
+
+  private actualizarGruposMensajes(): void {
+    this.gruposMensajes =
+      this.agruparMensajesPorFecha(
+        this.mensajes
+      );
+  }
+
+  private agruparMensajesPorFecha(
+    mensajes: ChatMensaje[]
+  ): GrupoMensajes[] {
+    const grupos =
+      new Map<string, ChatMensaje[]>();
+
+    for (const mensaje of mensajes) {
+      const etiqueta =
+        this.obtenerEtiquetaFecha(
+          mensaje.fecha_envio
+        );
+
+      const mensajesGrupo =
+        grupos.get(etiqueta) ?? [];
+
+      mensajesGrupo.push(mensaje);
+      grupos.set(
+        etiqueta,
+        mensajesGrupo
+      );
+    }
+
+    return Array.from(
+      grupos.entries()
+    ).map(
+      ([fechaEtiqueta, mensajesGrupo]) => ({
+        fechaEtiqueta,
+        mensajes: mensajesGrupo
+      })
+    );
+  }
+
+  private obtenerEtiquetaFecha(
+    fechaStr: string | null | undefined
+  ): string {
+    if (!fechaStr) {
+      return 'HOY';
+    }
+
+    const fechaMensaje =
+      new Date(fechaStr);
+
+    if (
+      !Number.isFinite(
+        fechaMensaje.getTime()
+      )
+    ) {
+      return 'HOY';
+    }
+
+    const hoy = new Date();
+    const ayer = new Date();
+
+    ayer.setDate(
+      hoy.getDate() - 1
+    );
+
+    if (
+      this.esMismoDia(
+        fechaMensaje,
+        hoy
+      )
+    ) {
+      return 'HOY';
+    }
+
+    if (
+      this.esMismoDia(
+        fechaMensaje,
+        ayer
+      )
+    ) {
+      return 'AYER';
+    }
+
+    return fechaMensaje
+      .toLocaleDateString(
+        'es-MX',
+        {
+          day: '2-digit',
+          month: '2-digit',
+          year: 'numeric'
+        }
+      );
+  }
+
+  private esMismoDia(
+    fechaA: Date,
+    fechaB: Date
+  ): boolean {
+    return (
+      fechaA.getFullYear() ===
+        fechaB.getFullYear() &&
+      fechaA.getMonth() ===
+        fechaB.getMonth() &&
+      fechaA.getDate() ===
+        fechaB.getDate()
+    );
+  }
+
   private cargarUsuarioActual(): boolean {
     const usuarioStr = localStorage.getItem('usuario');
 
@@ -494,6 +676,8 @@ export class ChatWidget implements OnInit, OnDestroy {
           historial,
           this.mensajes
         );
+
+        this.actualizarGruposMensajes();
 
         if (this.conversacionEsVisible(idActivo)) {
           this.marcarActivaComoLeida();

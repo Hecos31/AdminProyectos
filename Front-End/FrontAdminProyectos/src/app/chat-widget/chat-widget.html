@@ -261,6 +261,20 @@
             </span>
 
             <span
+              class="chat-date-list"
+              *ngIf="
+                chat.ultimoMensaje?.fecha
+                  as fechaUltimoMensaje
+              "
+            >
+              {{
+                formatearFechaLista(
+                  fechaUltimoMensaje
+                )
+              }}
+            </span>
+
+            <span
               class="chat-unread-badge"
               *ngIf="(chat.noLeidos || 0) > 0"
             >
@@ -439,7 +453,7 @@
 
         <div
           class="conversation-empty"
-          *ngIf="mensajes.length === 0"
+          *ngIf="gruposMensajes.length === 0"
         >
           <span class="conversation-empty-icon" aria-hidden="true">
             <svg
@@ -463,37 +477,50 @@
         </div>
 
 
-        <div
-          class="msg-wrapper"
-          *ngFor="
-  let msg of mensajes;
-  trackBy: trackMensaje
-"
-          [class.sent]="esMiMensaje(msg)"
-          [class.received]="!esMiMensaje(msg)"
+        <section
+          class="message-date-group"
+          *ngFor="let grupo of gruposMensajes"
         >
-          <div class="msg-bubble">
-
-            <span
-              class="msg-sender"
-              *ngIf="
-                !esMiMensaje(msg) &&
-                chatActivo?.tipo !== 'privado'
-              "
-            >
-              {{ msg.remitente?.nombre || 'Usuario' }}
+          <div class="chat-date-divider">
+            <span>
+              {{ grupo.fechaEtiqueta }}
             </span>
-
-            <span class="msg-content">
-              {{ msg.contenido }}
-            </span>
-
-            <span class="msg-time">
-              {{ msg.fecha_envio | date:'shortTime' }}
-            </span>
-
           </div>
-        </div>
+
+          <div class="date-group-messages">
+            <div
+              class="msg-wrapper"
+              *ngFor="
+                let msg of grupo.mensajes;
+                trackBy: trackMensaje
+              "
+              [class.sent]="esMiMensaje(msg)"
+              [class.received]="!esMiMensaje(msg)"
+            >
+              <div class="msg-bubble">
+
+                <span
+                  class="msg-sender"
+                  *ngIf="
+                    !esMiMensaje(msg) &&
+                    chatActivo?.tipo !== 'privado'
+                  "
+                >
+                  {{ msg.remitente?.nombre || 'Usuario' }}
+                </span>
+
+                <span class="msg-content">
+                  {{ msg.contenido }}
+                </span>
+
+                <span class="msg-time">
+                  {{ msg.fecha_envio | date:'shortTime' }}
+                </span>
+
+              </div>
+            </div>
+          </div>
+        </section>
 
       </div>
 

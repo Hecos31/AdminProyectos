@@ -210,12 +210,29 @@ export class DetallesActividades implements OnChanges {
       return;
     }
 
+    const fechaInicio = this.normalizarFechaParaBackend(
+      this.formularioEdicion.fecha_inicio
+    );
+
+    const fechaLimite = this.normalizarFechaParaBackend(
+      this.formularioEdicion.fecha_limite
+    );
+
+    const fechaInicioComparacion = this.crearFechaLocal(
+      this.formularioEdicion.fecha_inicio
+    );
+
+    const fechaLimiteComparacion = this.crearFechaLocal(
+      this.formularioEdicion.fecha_limite
+    );
+
     if (
-      this.formularioEdicion.fecha_inicio &&
-      this.formularioEdicion.fecha_limite &&
-      new Date(this.formularioEdicion.fecha_limite) < new Date(this.formularioEdicion.fecha_inicio)
+      fechaInicioComparacion &&
+      fechaLimiteComparacion &&
+      fechaLimiteComparacion.getTime() < fechaInicioComparacion.getTime()
     ) {
-      this.errorMessage = 'La fecha límite no puede ser anterior a la fecha de inicio.';
+      this.errorMessage =
+        'La fecha límite no puede ser anterior a la fecha de inicio.';
 
       return;
     }
@@ -233,8 +250,8 @@ export class DetallesActividades implements OnChanges {
       titulo,
       descripcion: this.formularioEdicion.descripcion.trim() || null,
       prioridad: this.formularioEdicion.prioridad,
-      fecha_inicio: this.formularioEdicion.fecha_inicio || null,
-      fecha_limite: this.formularioEdicion.fecha_limite || null,
+      fecha_inicio: fechaInicio,
+      fecha_limite: fechaLimite,
     };
 
     this.guardandoTarea = true;
@@ -943,20 +960,91 @@ export class DetallesActividades implements OnChanges {
     };
   }
 
-  private convertirFechaParaInput(valor: string | null): string {
+  private convertirFechaParaInput(
+    valor: string | null
+  ): string {
     if (!valor) {
       return '';
     }
 
-    const fecha = new Date(valor);
+    /*
+     * Los controles datetime-local no manejan zona horaria.
+     * Por eso no usamos new Date(...).toISOString(), ya que
+     * puede mover la fecha varias horas o incluso al día anterior.
+     */
+    const fechaNormalizada = String(valor)
+      .trim()
+      .replace(' ', 'T');
 
-    if (Number.isNaN(fecha.getTime())) {
-      return valor.slice(0, 16);
+    const coincidencia =
+      /^(\d{4}-\d{2}-\d{2})(?:T(\d{2}):(\d{2}))?/.exec(
+        fechaNormalizada
+      );
+
+    if (!coincidencia) {
+      return '';
     }
 
-    const desplazamiento = fecha.getTimezoneOffset() * 60000;
+    const fecha = coincidencia[1];
+    const hora = coincidencia[2] ?? '00';
+    const minutos = coincidencia[3] ?? '00';
 
-    return new Date(fecha.getTime() - desplazamiento).toISOString().slice(0, 16);
+    return `${fecha}T${hora}:${minutos}`;
+  }
+
+
+  private normalizarFechaParaBackend(
+    valor: string
+  ): string | null {
+    const fechaLocal = this.convertirFechaParaInput(
+      valor
+    );
+
+    if (!fechaLocal) {
+      return null;
+    }
+
+    /*
+     * Se agregan los segundos para enviar un datetime ISO
+     * completo y estable a FastAPI/Pydantic.
+     */
+    return `${fechaLocal}:00`;
+  }
+
+
+  private crearFechaLocal(
+    valor: string
+  ): Date | null {
+    const fechaLocal = this.convertirFechaParaInput(
+      valor
+    );
+
+    if (!fechaLocal) {
+      return null;
+    }
+
+    const coincidencia =
+      /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})$/.exec(
+        fechaLocal
+      );
+
+    if (!coincidencia) {
+      return null;
+    }
+
+    const fecha = new Date(
+      Number(coincidencia[1]),
+      Number(coincidencia[2]) - 1,
+      Number(coincidencia[3]),
+      Number(coincidencia[4]),
+      Number(coincidencia[5]),
+      0,
+      0
+    );
+
+    return Number.isNaN(fecha.getTime())
+      ? null
+      : fecha;
   }
 
   private esUrlValida(valor: string): boolean {

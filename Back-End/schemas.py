@@ -142,6 +142,12 @@ class TareaResponse(ORMResponseModel):
     usuario_asignado: Optional[UsuarioAsignado] = None
 
 
+class TareaCalendarioResponse(TareaResponse):
+    """Tarea preparada para mostrarse en el calendario global o de proyecto."""
+
+    nombre_proyecto: str
+
+
 class TareaUpdate(BaseModel):
     titulo: Optional[str] = Field(
         default=None,
@@ -204,6 +210,15 @@ class ProyectoResponse(ORMResponseModel):
     fecha_fin: Optional[datetime] = None
     estado: str
     fecha_creacion: datetime
+
+
+class CalendarioProyectoResponse(BaseModel):
+    """Contexto y actividades visibles para el usuario dentro de un proyecto."""
+
+    proyecto: ProyectoResponse
+    id_rol: int
+    es_administrador: bool
+    tareas: List[TareaCalendarioResponse] = Field(default_factory=list)
 
 
 class ProyectoUpdate(BaseModel):

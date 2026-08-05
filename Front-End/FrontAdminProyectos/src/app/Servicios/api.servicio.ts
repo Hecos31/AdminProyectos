@@ -58,6 +58,19 @@ export interface TareaApi {
 }
 
 
+export interface TareaCalendarioApi extends TareaApi {
+  nombre_proyecto?: string;
+}
+
+
+export interface CalendarioProyectoApi {
+  proyecto: ProyectoApi;
+  id_rol: number;
+  es_administrador: boolean;
+  tareas: TareaCalendarioApi[];
+}
+
+
 export interface TareaUpdatePayload {
   titulo?: string;
   descripcion?: string | null;
@@ -373,6 +386,22 @@ export class ApiServicio {
   ): Observable<TareaApi[]> {
     return this.http.get<TareaApi[]>(
       `${this.apiUrl}/proyectos/${idProyecto}/mis-tareas`
+    );
+  }
+
+
+  obtenerCalendarioGlobal(): Observable<TareaCalendarioApi[]> {
+    return this.http.get<TareaCalendarioApi[]>(
+      `${this.apiUrl}/proyectos/calendario/todas-mis-tareas`
+    );
+  }
+
+
+  obtenerCalendarioProyecto(
+    idProyecto: number
+  ): Observable<CalendarioProyectoApi> {
+    return this.http.get<CalendarioProyectoApi>(
+      `${this.apiUrl}/proyectos/${idProyecto}/calendario`
     );
   }
 
