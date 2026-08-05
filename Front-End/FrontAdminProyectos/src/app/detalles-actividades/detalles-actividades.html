@@ -144,6 +144,15 @@
               <span class="section-eyebrow"> Administración </span>
 
               <h3>Editar actividad</h3>
+
+              <span
+                class="field-help"
+                *ngIf="hayCambiosPendientes()"
+                role="status"
+                aria-live="polite"
+              >
+                Tienes cambios sin guardar.
+              </span>
             </div>
           </div>
 
@@ -214,7 +223,7 @@
               <input
                 id="editar-fecha-inicio"
                 name="fechaInicio"
-                type="datetime-local"
+                type="date"
                 class="form-control"
                 [(ngModel)]="formularioEdicion.fecha_inicio"
               />
@@ -226,7 +235,7 @@
               <input
                 id="editar-fecha-limite"
                 name="fechaLimite"
-                type="datetime-local"
+                type="date"
                 class="form-control"
                 [(ngModel)]="formularioEdicion.fecha_limite"
               />
@@ -345,7 +354,7 @@
               <span class="detail-label"> Fecha de inicio </span>
 
               <p *ngIf="detalle.tarea.fecha_inicio">
-                {{ detalle.tarea.fecha_inicio | date : 'medium' }}
+                {{ detalle.tarea.fecha_inicio | date : 'dd/MM/yyyy' }}
               </p>
 
               <p *ngIf="!detalle.tarea.fecha_inicio" class="texto-vacio">Sin definir</p>
@@ -355,7 +364,7 @@
               <span class="detail-label"> Fecha límite </span>
 
               <p class="deadline" *ngIf="detalle.tarea.fecha_limite">
-                {{ detalle.tarea.fecha_limite | date : 'medium' }}
+                {{ detalle.tarea.fecha_limite | date : 'dd/MM/yyyy' }}
               </p>
 
               <p *ngIf="!detalle.tarea.fecha_limite" class="texto-vacio">Sin definir</p>

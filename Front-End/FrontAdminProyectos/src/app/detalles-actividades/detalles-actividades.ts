@@ -89,6 +89,12 @@ export class DetallesActividades implements OnChanges {
     id_usuario_asignado: null,
   };
 
+  /*
+   * Copia del formulario en el momento en que se activa la edición.
+   * Se usa para detectar modificaciones todavía no guardadas.
+   */
+  private formularioOriginal: FormularioEdicionTarea | null = null;
+
   // Comentarios
   nuevoComentario = '';
   enviandoComentario = false;
@@ -127,11 +133,40 @@ export class DetallesActividades implements OnChanges {
   @HostListener('document:keydown.escape')
   cerrarConEscape(): void {
     if (this.tarea) {
-      this.cerrarModal();
+      void this.cerrarModal();
     }
   }
 
-  cerrarModal(): void {
+  /*
+   * También protege una recarga o el cierre de la pestaña.
+   * El navegador mostrará su aviso estándar cuando existan
+   * modificaciones pendientes.
+   */
+  @HostListener('window:beforeunload', ['$event'])
+  advertirCambiosAntesDeSalir(
+    evento: BeforeUnloadEvent
+  ): void {
+    if (!this.hayCambiosPendientes()) {
+      return;
+    }
+
+    evento.preventDefault();
+    evento.returnValue = '';
+  }
+
+  async cerrarModal(): Promise<void> {
+    if (this.guardandoTarea) {
+      return;
+    }
+
+    const puedeCerrar =
+      await this.confirmarDescartarCambios();
+
+    if (!puedeCerrar) {
+      return;
+    }
+
+    this.formularioOriginal = null;
     this.cerrar.emit();
   }
 
@@ -190,11 +225,24 @@ export class DetallesActividades implements OnChanges {
 
     this.limpiarMensajes();
     this.prepararFormularioEdicion();
+
+    this.formularioOriginal = {
+      ...this.formularioEdicion
+    };
+
     this.modoEdicion = true;
   }
 
-  cancelarEdicion(): void {
+  async cancelarEdicion(): Promise<void> {
+    const puedeCancelar =
+      await this.confirmarDescartarCambios();
+
+    if (!puedeCancelar) {
+      return;
+    }
+
     this.prepararFormularioEdicion();
+    this.formularioOriginal = null;
     this.modoEdicion = false;
   }
 
@@ -283,6 +331,7 @@ export class DetallesActividades implements OnChanges {
 
     solicitud.subscribe({
       next: () => {
+        this.formularioOriginal = null;
         this.modoEdicion = false;
         this.successMessage = 'La actividad fue actualizada correctamente.';
 
@@ -340,7 +389,10 @@ export class DetallesActividades implements OnChanges {
         next: () => {
           this.apiServicio.notificarCambio();
           this.tareaEliminada.emit(idTarea);
-          this.cerrarModal();
+
+          this.formularioOriginal = null;
+          this.modoEdicion = false;
+          this.cerrar.emit();
         },
         error: (error) => {
           this.errorMessage =
@@ -942,6 +994,47 @@ export class DetallesActividades implements OnChanges {
   // UTILIDADES
   // =========================================================
 
+  hayCambiosPendientes(): boolean {
+    if (
+      !this.modoEdicion ||
+      !this.formularioOriginal
+    ) {
+      return false;
+    }
+
+    const original = this.formularioOriginal;
+    const actual = this.formularioEdicion;
+
+    return (
+      actual.titulo !== original.titulo ||
+      actual.descripcion !== original.descripcion ||
+      actual.prioridad !== original.prioridad ||
+      actual.estado !== original.estado ||
+      actual.fecha_inicio !== original.fecha_inicio ||
+      actual.fecha_limite !== original.fecha_limite ||
+      actual.id_usuario_asignado !==
+        original.id_usuario_asignado
+    );
+  }
+
+  private async confirmarDescartarCambios():
+    Promise<boolean> {
+    if (!this.hayCambiosPendientes()) {
+      return true;
+    }
+
+    return this.confirmacionService.solicitar({
+      titulo: 'Cambios sin guardar',
+      mensaje:
+        'La actividad contiene cambios que todavía no has guardado.',
+      detalle:
+        'Al cerrar o cancelar la edición, los cambios realizados se perderán.',
+      tipo: 'danger',
+      textoBotonConfirmar:
+        'Descartar cambios',
+    });
+  }
+
   private prepararFormularioEdicion(): void {
     if (!this.detalle) {
       return;
@@ -968,63 +1061,51 @@ export class DetallesActividades implements OnChanges {
     }
 
     /*
-     * Los controles datetime-local no manejan zona horaria.
-     * Por eso no usamos new Date(...).toISOString(), ya que
-     * puede mover la fecha varias horas o incluso al día anterior.
+     * El control type="date" trabaja únicamente con YYYY-MM-DD.
+     * Extraemos la fecha sin convertirla a UTC para evitar
+     * desplazamientos al día anterior.
      */
-    const fechaNormalizada = String(valor)
-      .trim()
-      .replace(' ', 'T');
-
     const coincidencia =
-      /^(\d{4}-\d{2}-\d{2})(?:T(\d{2}):(\d{2}))?/.exec(
-        fechaNormalizada
+      /^(\d{4}-\d{2}-\d{2})/.exec(
+        String(valor).trim()
       );
 
-    if (!coincidencia) {
-      return '';
-    }
-
-    const fecha = coincidencia[1];
-    const hora = coincidencia[2] ?? '00';
-    const minutos = coincidencia[3] ?? '00';
-
-    return `${fecha}T${hora}:${minutos}`;
+    return coincidencia
+      ? coincidencia[1]
+      : '';
   }
 
 
   private normalizarFechaParaBackend(
     valor: string
   ): string | null {
-    const fechaLocal = this.convertirFechaParaInput(
-      valor
-    );
+    const fechaLocal =
+      this.convertirFechaParaInput(valor);
 
     if (!fechaLocal) {
       return null;
     }
 
     /*
-     * Se agregan los segundos para enviar un datetime ISO
-     * completo y estable a FastAPI/Pydantic.
+     * FastAPI conserva campos datetime, por eso enviamos la fecha
+     * seleccionada a medianoche sin mostrar ni pedir una hora.
      */
-    return `${fechaLocal}:00`;
+    return `${fechaLocal}T00:00:00`;
   }
 
 
   private crearFechaLocal(
     valor: string
   ): Date | null {
-    const fechaLocal = this.convertirFechaParaInput(
-      valor
-    );
+    const fechaLocal =
+      this.convertirFechaParaInput(valor);
 
     if (!fechaLocal) {
       return null;
     }
 
     const coincidencia =
-      /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})$/.exec(
+      /^(\d{4})-(\d{2})-(\d{2})$/.exec(
         fechaLocal
       );
 
@@ -1036,8 +1117,8 @@ export class DetallesActividades implements OnChanges {
       Number(coincidencia[1]),
       Number(coincidencia[2]) - 1,
       Number(coincidencia[3]),
-      Number(coincidencia[4]),
-      Number(coincidencia[5]),
+      0,
+      0,
       0,
       0
     );
@@ -1069,6 +1150,7 @@ export class DetallesActividades implements OnChanges {
     this.colaboradores = [];
 
     this.modoEdicion = false;
+    this.formularioOriginal = null;
 
     this.errorMessage = '';
     this.successMessage = '';
