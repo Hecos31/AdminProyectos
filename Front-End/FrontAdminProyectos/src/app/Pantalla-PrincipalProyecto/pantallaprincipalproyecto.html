@@ -1,19 +1,17 @@
-<div class="principal-container page-shell">
-  <main class="principal-main page-content">
+<div class="dashboard-page page-shell">
+  <main class="dashboard-container page-content">
 
     <!-- =====================================================
-         CABECERA DEL PROYECTO
+         CABECERA
     ====================================================== -->
-    <header class="proyecto-header">
-
-      <div class="header-left">
-
+    <header class="dashboard-header">
+      <div class="dashboard-heading">
         <button
           type="button"
+          class="back-button"
           (click)="volverAInicio()"
-          class="btn-volver"
-          title="Volver al inicio"
-          aria-label="Volver al inicio"
+          aria-label="Volver a mis proyectos"
+          title="Volver a mis proyectos"
         >
           <svg
             width="18"
@@ -21,18 +19,19 @@
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
-            stroke-width="2.5"
+            stroke-width="2.4"
             stroke-linecap="round"
             stroke-linejoin="round"
             aria-hidden="true"
           >
-            <line x1="19" y1="12" x2="5" y2="12"></line>
-            <polyline points="12 19 5 12 12 5"></polyline>
+            <path d="m15 18-6-6 6-6"></path>
           </svg>
         </button>
 
-
-        <div class="project-symbol" aria-hidden="true">
+        <span
+          class="project-icon"
+          aria-hidden="true"
+        >
           <svg
             width="23"
             height="23"
@@ -50,52 +49,76 @@
               height="18"
               rx="3"
             ></rect>
-
             <path d="M8 8h8"></path>
             <path d="M8 12h5"></path>
             <path d="M8 16h7"></path>
           </svg>
-        </div>
+        </span>
 
-
-        <div class="project-heading">
-
-          <span class="project-eyebrow">
-            Vista general del proyecto
+        <div class="heading-copy">
+          <span class="eyebrow">
+            Resumen visual del proyecto
           </span>
 
-          <div class="title-group">
+          <div class="title-row">
             <h1>
-              {{ proyecto?.nombre || 'Cargando información...' }}
+              {{
+                proyecto?.nombre ||
+                'Cargando proyecto...'
+              }}
             </h1>
 
             <span
-              class="status-badge"
               *ngIf="proyecto"
-              [attr.data-status]="proyecto.estado?.toLowerCase()"
+              class="project-status"
+              [attr.data-status]="
+                proyecto.estado?.toLowerCase()
+              "
             >
               <span class="status-dot"></span>
-
               {{ proyecto.estado }}
             </span>
           </div>
 
-          <p class="project-subtitle">
-            Consulta la información principal y administra la configuración
-            general de este espacio de trabajo.
+          <p>
+            Consulta el progreso, la distribución de actividades,
+            las fechas próximas y el equipo del proyecto.
           </p>
-
         </div>
-
       </div>
 
-
-      <div class="header-right">
+      <div class="header-actions">
         <button
           type="button"
+          class="button button-secondary"
+          (click)="cargarDashboard()"
+          [disabled]="cargando"
+        >
+          <svg
+            width="17"
+            height="17"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <path d="M20 11a8.1 8.1 0 0 0-15.5-2"></path>
+            <path d="M4 4v5h5"></path>
+            <path d="M4 13a8.1 8.1 0 0 0 15.5 2"></path>
+            <path d="M20 20v-5h-5"></path>
+          </svg>
+
+          Actualizar
+        </button>
+
+        <button
           *ngIf="esAdmin"
+          type="button"
+          class="button button-primary"
           (click)="irAConfiguracion()"
-          class="btn-configuracion"
         >
           <svg
             width="17"
@@ -109,113 +132,202 @@
             aria-hidden="true"
           >
             <circle cx="12" cy="12" r="3"></circle>
-
             <path
-              d="M19.4 15a1.65 1.65 0 0 0
-                 .33 1.82l.06.06a2 2 0 0 1
-                 0 2.83 2 2 0 0 1-2.83 0
-                 l-.06-.06a1.65 1.65 0 0 0
-                 -1.82-.33 1.65 1.65 0 0 0
-                 -1 1.51V21a2 2 0 0 1-2 2
-                 2 2 0 0 1-2-2v-.09A1.65
-                 1.65 0 0 0 9 19.4a1.65
-                 1.65 0 0 0-1.82.33l-.06.06
-                 a2 2 0 0 1-2.83 0 2 2 0 0 1
-                 0-2.83l.06-.06a1.65 1.65
-                 0 0 0 .33-1.82 1.65 1.65
-                 0 0 0-1.51-1H3a2 2 0 0 1
-                 -2-2 2 2 0 0 1 2-2h.09A1.65
-                 1.65 0 0 0 4.6 9a1.65
-                 1.65 0 0 0-.33-1.82l-.06-.06
-                 a2 2 0 0 1 0-2.83 2 2 0 0 1
-                 2.83 0l.06.06a1.65 1.65
-                 0 0 0 1.82.33H9a1.65 1.65
-                 0 0 0 1-1.51V3a2 2 0 0 1
-                 2-2 2 2 0 0 1 2 2v.09a1.65
-                 1.65 0 0 0 1 1.51 1.65
-                 1.65 0 0 0 1.82-.33l.06-.06
-                 a2 2 0 0 1 2.83 0 2 2 0 0 1
-                 0 2.83l-.06.06a1.65 1.65
-                 0 0 0-.33 1.82V9a1.65
-                 1.65 0 0 0 1.51 1H21a2 2
-                 0 0 1 2 2 2 2 0 0 1-2 2
-                 h-.09a1.65 1.65 0 0 0-1.51 1z"
+              d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.05.05a2 2 0 1 1-2.83 2.83l-.05-.05a1.7 1.7 0 0 0-1.88-.34 1.7 1.7 0 0 0-1.03 1.55V21a2 2 0 1 1-4 0v-.08A1.7 1.7 0 0 0 9 19.37a1.7 1.7 0 0 0-1.88.34l-.05.05a2 2 0 1 1-2.83-2.83l.05-.05A1.7 1.7 0 0 0 4.63 15a1.7 1.7 0 0 0-1.55-1.03H3a2 2 0 1 1 0-4h.08A1.7 1.7 0 0 0 4.63 9a1.7 1.7 0 0 0-.34-1.88l-.05-.05a2 2 0 1 1 2.83-2.83l.05.05A1.7 1.7 0 0 0 9 4.63a1.7 1.7 0 0 0 1-1.55V3a2 2 0 1 1 4 0v.08a1.7 1.7 0 0 0 1.03 1.55 1.7 1.7 0 0 0 1.88-.34l.05-.05a2 2 0 1 1 2.83 2.83l-.05.05A1.7 1.7 0 0 0 19.37 9c.18.61.74 1.03 1.37 1.03H21a2 2 0 1 1 0 4h-.08A1.7 1.7 0 0 0 19.4 15Z"
             ></path>
           </svg>
 
-          <span>Configuración</span>
+          Configuración
         </button>
       </div>
-
     </header>
 
 
     <!-- =====================================================
-         CARGA
+         ESTADOS DE CARGA
     ====================================================== -->
     <section
       *ngIf="cargando"
-      class="loading-card"
+      class="loading-panel"
       aria-live="polite"
     >
-      <div class="spinner" aria-hidden="true"></div>
+      <span
+        class="spinner"
+        aria-hidden="true"
+      ></span>
 
-      <div class="loading-copy">
-        <strong>Cargando proyecto</strong>
+      <div>
+        <strong>
+          Preparando el dashboard
+        </strong>
 
         <p>
-          Estamos obteniendo la información principal.
+          Estamos reuniendo la información del proyecto,
+          las actividades y el equipo.
         </p>
       </div>
     </section>
 
 
-    <!-- =====================================================
-         ERROR
-    ====================================================== -->
-    <div
-      *ngIf="errorMessage"
-      class="alert error-message"
+    <section
+      *ngIf="!cargando && errorMessage"
+      class="message message-error"
       role="alert"
     >
-      <span class="alert-icon" aria-hidden="true">
-        <svg
-          width="19"
-          height="19"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-        >
-          <circle cx="12" cy="12" r="10"></circle>
-          <line x1="12" y1="8" x2="12" y2="12"></line>
-          <line x1="12" y1="16" x2="12.01" y2="16"></line>
-        </svg>
-      </span>
+      <svg
+        width="20"
+        height="20"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        aria-hidden="true"
+      >
+        <circle cx="12" cy="12" r="10"></circle>
+        <path d="M12 8v4"></path>
+        <path d="M12 16h.01"></path>
+      </svg>
 
       <div>
-        <strong>No fue posible cargar el proyecto</strong>
-        <p>{{ errorMessage }}</p>
+        <strong>
+          No se pudo cargar el dashboard
+        </strong>
+
+        <p>
+          {{ errorMessage }}
+        </p>
       </div>
-    </div>
+    </section>
 
 
-    <!-- =====================================================
-         INFORMACIÓN DEL PROYECTO
-    ====================================================== -->
     <section
-      *ngIf="!cargando && proyecto"
-      class="proyecto-contenido"
+      *ngIf="
+        !cargando &&
+        !errorMessage &&
+        warningMessage
+      "
+      class="message message-warning"
     >
+      <svg
+        width="20"
+        height="20"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        aria-hidden="true"
+      >
+        <path d="M12 9v4"></path>
+        <path d="M12 17h.01"></path>
+        <path d="M10.3 3.7 2.2 18a2 2 0 0 0 1.7 3h16.2a2 2 0 0 0 1.7-3L13.7 3.7a2 2 0 0 0-3.4 0Z"></path>
+      </svg>
 
-      <!-- DESCRIPCIÓN -->
-      <article class="info-card description-card">
+      <span>
+        {{ warningMessage }}
+      </span>
+    </section>
 
-        <div class="card-header">
 
-          <span class="card-icon card-icon-primary" aria-hidden="true">
+    <ng-container
+      *ngIf="
+        !cargando &&
+        !errorMessage &&
+        proyecto
+      "
+    >
+      <!-- ===================================================
+           ACCESOS RÁPIDOS
+      ==================================================== -->
+      <section class="quick-actions">
+        <button
+          type="button"
+          class="quick-action"
+          (click)="irATablon()"
+        >
+          <span class="quick-action-icon">
+            <svg
+              width="19"
+              height="19"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              aria-hidden="true"
+            >
+              <rect x="3" y="3" width="7" height="7" rx="1"></rect>
+              <rect x="14" y="3" width="7" height="7" rx="1"></rect>
+              <rect x="3" y="14" width="7" height="7" rx="1"></rect>
+              <rect x="14" y="14" width="7" height="7" rx="1"></rect>
+            </svg>
+          </span>
+
+          <span>
+            <strong>Tablón</strong>
+            <small>Ver todas las actividades</small>
+          </span>
+        </button>
+
+        <button
+          type="button"
+          class="quick-action"
+          (click)="irAMisActividades()"
+        >
+          <span class="quick-action-icon">
+            <svg
+              width="19"
+              height="19"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              aria-hidden="true"
+            >
+              <path d="M9 11l3 3L22 4"></path>
+              <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+            </svg>
+          </span>
+
+          <span>
+            <strong>Mis actividades</strong>
+            <small>Consultar responsabilidades</small>
+          </span>
+        </button>
+
+        <button
+          *ngIf="esAdmin"
+          type="button"
+          class="quick-action"
+          (click)="irACrearActividades()"
+        >
+          <span class="quick-action-icon">
+            <svg
+              width="19"
+              height="19"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              aria-hidden="true"
+            >
+              <path d="M12 5v14"></path>
+              <path d="M5 12h14"></path>
+            </svg>
+          </span>
+
+          <span>
+            <strong>Administrar</strong>
+            <small>Crear y organizar actividades</small>
+          </span>
+        </button>
+      </section>
+
+
+      <!-- ===================================================
+           INDICADORES PRINCIPALES
+      ==================================================== -->
+      <section class="metrics-grid">
+        <article class="metric-card">
+          <span class="metric-icon metric-blue">
             <svg
               width="20"
               height="20"
@@ -223,114 +335,745 @@
               fill="none"
               stroke="currentColor"
               stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
+              aria-hidden="true"
             >
-              <path
-                d="M21 15a2 2 0 0 1-2 2H8l-5 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"
-              ></path>
+              <rect x="4" y="4" width="16" height="16" rx="3"></rect>
+              <path d="M8 9h8"></path>
+              <path d="M8 13h5"></path>
             </svg>
           </span>
 
-          <div class="card-title">
-            <span class="card-label">Información general</span>
-            <h2>Acerca del proyecto</h2>
-          </div>
-
-        </div>
-
-
-        <div class="description-content">
-          <p>
-            {{
-              proyecto.descripcion ||
-              'Sin descripción general establecida para este proyecto.'
-            }}
-          </p>
-        </div>
-
-      </article>
-
-
-      <!-- DETALLES RÁPIDOS -->
-      <aside class="info-card details-card">
-
-        <div class="card-header">
-
-          <span class="card-icon" aria-hidden="true">
-            <svg
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <circle cx="12" cy="12" r="10"></circle>
-              <line x1="12" y1="16" x2="12" y2="12"></line>
-              <line x1="12" y1="8" x2="12.01" y2="8"></line>
-            </svg>
-          </span>
-
-          <div class="card-title">
-            <span class="card-label">Resumen</span>
-            <h2>Detalles del proyecto</h2>
-          </div>
-
-        </div>
-
-
-        <div class="details-list">
-
-          <!-- NOMBRE -->
-          <div class="detail-row">
-
-            <span class="detail-row-icon" aria-hidden="true">
-              <svg
-                width="17"
-                height="17"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              >
-                <rect
-                  x="3"
-                  y="3"
-                  width="18"
-                  height="18"
-                  rx="2"
-                ></rect>
-
-                <path d="M8 9h8"></path>
-                <path d="M8 13h6"></path>
-              </svg>
+          <div>
+            <span class="metric-label">
+              Actividades totales
             </span>
 
-            <div class="detail-row-content">
-              <span class="detalle-label">
-                Nombre
+            <strong>
+              {{ totalTareas }}
+            </strong>
+
+            <small>
+              En todo el proyecto
+            </small>
+          </div>
+        </article>
+
+
+        <article class="metric-card">
+          <span class="metric-icon metric-violet">
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              aria-hidden="true"
+            >
+              <polygon points="5 3 19 12 5 21 5 3"></polygon>
+            </svg>
+          </span>
+
+          <div>
+            <span class="metric-label">
+              En progreso
+            </span>
+
+            <strong>
+              {{ tareasEnProgreso }}
+            </strong>
+
+            <small>
+              Actividades en ejecución
+            </small>
+          </div>
+        </article>
+
+
+        <article class="metric-card">
+          <span class="metric-icon metric-green">
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.3"
+              aria-hidden="true"
+            >
+              <path d="m20 6-11 11-5-5"></path>
+            </svg>
+          </span>
+
+          <div>
+            <span class="metric-label">
+              Concluidas
+            </span>
+
+            <strong>
+              {{ tareasConcluidas }}
+            </strong>
+
+            <small>
+              {{ porcentajeAvance }}% completado
+            </small>
+          </div>
+        </article>
+
+
+        <article class="metric-card">
+          <span class="metric-icon metric-orange">
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              aria-hidden="true"
+            >
+              <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+              <circle cx="9" cy="7" r="4"></circle>
+              <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
+              <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+            </svg>
+          </span>
+
+          <div>
+            <span class="metric-label">
+              Integrantes
+            </span>
+
+            <strong>
+              {{ totalColaboradores }}
+            </strong>
+
+            <small>
+              Personas en el equipo
+            </small>
+          </div>
+        </article>
+      </section>
+
+
+      <!-- ===================================================
+           PROGRESO Y ESTADOS
+      ==================================================== -->
+      <section class="dashboard-grid dashboard-grid-main">
+        <article class="dashboard-card progress-card">
+          <header class="card-header">
+            <div>
+              <span class="card-eyebrow">
+                Avance general
               </span>
 
-              <strong
-                class="detalle-valor"
-                [title]="proyecto.nombre"
-              >
-                {{ proyecto.nombre }}
-              </strong>
+              <h2>
+                Progreso del proyecto
+              </h2>
             </div>
 
+            <span class="card-badge">
+              {{ tareasConcluidas }}/{{ totalTareas }}
+            </span>
+          </header>
+
+          <div class="progress-content">
+            <div
+              class="progress-ring"
+              [style.--dash-progress]="
+                porcentajeAvance + '%'
+              "
+            >
+              <div class="progress-ring-inner">
+                <strong>
+                  {{ porcentajeAvance }}%
+                </strong>
+
+                <span>
+                  completado
+                </span>
+              </div>
+            </div>
+
+            <div class="progress-summary">
+              <div>
+                <span class="summary-dot dot-green"></span>
+
+                <span>
+                  Concluidas
+                </span>
+
+                <strong>
+                  {{ tareasConcluidas }}
+                </strong>
+              </div>
+
+              <div>
+                <span class="summary-dot dot-violet"></span>
+
+                <span>
+                  En progreso
+                </span>
+
+                <strong>
+                  {{ tareasEnProgreso }}
+                </strong>
+              </div>
+
+              <div>
+                <span class="summary-dot dot-blue"></span>
+
+                <span>
+                  Por comenzar
+                </span>
+
+                <strong>
+                  {{ tareasAsignadas }}
+                </strong>
+              </div>
+
+              <div>
+                <span class="summary-dot dot-gray"></span>
+
+                <span>
+                  Sin asignar
+                </span>
+
+                <strong>
+                  {{ tareasPendientesAsignacion }}
+                </strong>
+              </div>
+            </div>
           </div>
 
+          <footer class="progress-footer">
+            <span
+              [class.warning]="
+                tareasVencidas.length > 0
+              "
+            >
+              <svg
+                width="15"
+                height="15"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                aria-hidden="true"
+              >
+                <circle cx="12" cy="12" r="9"></circle>
+                <path d="M12 7v5"></path>
+                <path d="M12 16h.01"></path>
+              </svg>
 
-          <!-- FECHA -->
-          <div class="detail-row">
+              {{
+                tareasVencidas.length > 0
+                  ? tareasVencidas.length +
+                    ' actividades vencidas'
+                  : 'Sin actividades vencidas'
+              }}
+            </span>
 
-            <span class="detail-row-icon" aria-hidden="true">
+            <span>
+              {{
+                tareasPorVencer.length
+              }}
+              por vencer esta semana
+            </span>
+          </footer>
+        </article>
+
+
+        <article class="dashboard-card states-card">
+          <header class="card-header">
+            <div>
+              <span class="card-eyebrow">
+                Distribución
+              </span>
+
+              <h2>
+                Actividades por estado
+              </h2>
+            </div>
+
+            <span class="card-helper">
+              Selecciona una barra
+            </span>
+          </header>
+
+          <div class="state-chart">
+            <button
+              type="button"
+              class="chart-row"
+              [class.active]="
+                filtroEstado ===
+                'Pendiente por asignar'
+              "
+              (click)="
+                seleccionarFiltro(
+                  'Pendiente por asignar'
+                )
+              "
+            >
+              <span class="chart-label">
+                <i class="chart-dot gray"></i>
+                Sin asignar
+              </span>
+
+              <span class="chart-track">
+                <span
+                  class="chart-fill fill-gray"
+                  [style.width.%]="
+                    porcentajeEstado(
+                      'Pendiente por asignar'
+                    )
+                  "
+                ></span>
+              </span>
+
+              <strong>
+                {{ tareasPendientesAsignacion }}
+              </strong>
+            </button>
+
+            <button
+              type="button"
+              class="chart-row"
+              [class.active]="
+                filtroEstado === 'Asignada'
+              "
+              (click)="
+                seleccionarFiltro(
+                  'Asignada'
+                )
+              "
+            >
+              <span class="chart-label">
+                <i class="chart-dot blue"></i>
+                Asignadas
+              </span>
+
+              <span class="chart-track">
+                <span
+                  class="chart-fill fill-blue"
+                  [style.width.%]="
+                    porcentajeEstado(
+                      'Asignada'
+                    )
+                  "
+                ></span>
+              </span>
+
+              <strong>
+                {{ tareasAsignadas }}
+              </strong>
+            </button>
+
+            <button
+              type="button"
+              class="chart-row"
+              [class.active]="
+                filtroEstado ===
+                'En progreso'
+              "
+              (click)="
+                seleccionarFiltro(
+                  'En progreso'
+                )
+              "
+            >
+              <span class="chart-label">
+                <i class="chart-dot violet"></i>
+                En progreso
+              </span>
+
+              <span class="chart-track">
+                <span
+                  class="chart-fill fill-violet"
+                  [style.width.%]="
+                    porcentajeEstado(
+                      'En progreso'
+                    )
+                  "
+                ></span>
+              </span>
+
+              <strong>
+                {{ tareasEnProgreso }}
+              </strong>
+            </button>
+
+            <button
+              type="button"
+              class="chart-row"
+              [class.active]="
+                filtroEstado ===
+                'Concluida'
+              "
+              (click)="
+                seleccionarFiltro(
+                  'Concluida'
+                )
+              "
+            >
+              <span class="chart-label">
+                <i class="chart-dot green"></i>
+                Concluidas
+              </span>
+
+              <span class="chart-track">
+                <span
+                  class="chart-fill fill-green"
+                  [style.width.%]="
+                    porcentajeEstado(
+                      'Concluida'
+                    )
+                  "
+                ></span>
+              </span>
+
+              <strong>
+                {{ tareasConcluidas }}
+              </strong>
+            </button>
+          </div>
+        </article>
+      </section>
+
+
+      <!-- ===================================================
+           PRIORIDADES Y FECHAS
+      ==================================================== -->
+      <section class="dashboard-grid dashboard-grid-secondary">
+        <article class="dashboard-card priority-card">
+          <header class="card-header">
+            <div>
+              <span class="card-eyebrow">
+                Carga de trabajo
+              </span>
+
+              <h2>
+                Distribución por prioridad
+              </h2>
+            </div>
+          </header>
+
+          <div class="priority-chart">
+            <div class="priority-row">
+              <div class="priority-copy">
+                <span>
+                  <i class="priority-mark high"></i>
+                  Alta
+                </span>
+
+                <strong>
+                  {{ contarPrioridad('Alta') }}
+                </strong>
+              </div>
+
+              <div class="priority-track">
+                <span
+                  class="priority-fill high"
+                  [style.width.%]="
+                    porcentajePrioridad(
+                      'Alta'
+                    )
+                  "
+                ></span>
+              </div>
+            </div>
+
+            <div class="priority-row">
+              <div class="priority-copy">
+                <span>
+                  <i class="priority-mark medium"></i>
+                  Media
+                </span>
+
+                <strong>
+                  {{ contarPrioridad('Media') }}
+                </strong>
+              </div>
+
+              <div class="priority-track">
+                <span
+                  class="priority-fill medium"
+                  [style.width.%]="
+                    porcentajePrioridad(
+                      'Media'
+                    )
+                  "
+                ></span>
+              </div>
+            </div>
+
+            <div class="priority-row">
+              <div class="priority-copy">
+                <span>
+                  <i class="priority-mark low"></i>
+                  Baja
+                </span>
+
+                <strong>
+                  {{ contarPrioridad('Baja') }}
+                </strong>
+              </div>
+
+              <div class="priority-track">
+                <span
+                  class="priority-fill low"
+                  [style.width.%]="
+                    porcentajePrioridad(
+                      'Baja'
+                    )
+                  "
+                ></span>
+              </div>
+            </div>
+          </div>
+        </article>
+
+
+        <article class="dashboard-card deadlines-card">
+          <header class="card-header">
+            <div>
+              <span class="card-eyebrow">
+                Próximos compromisos
+              </span>
+
+              <h2>
+                Fechas límite cercanas
+              </h2>
+            </div>
+
+            <button
+              type="button"
+              class="text-button"
+              (click)="irATablon()"
+            >
+              Ver tablón
+            </button>
+          </header>
+
+          <div
+            *ngIf="proximasFechas.length > 0"
+            class="deadline-list"
+          >
+            <button
+              *ngFor="
+                let tarea of proximasFechas;
+                trackBy: trackTarea
+              "
+              type="button"
+              class="deadline-item"
+              (click)="abrirDetalleTarea(tarea)"
+            >
+              <span class="deadline-date">
+                <strong>
+                  {{
+                    tarea.fecha_limite |
+                    date:'dd'
+                  }}
+                </strong>
+
+                <small>
+                  {{
+                    tarea.fecha_limite |
+                    date:'MMM'
+                  }}
+                </small>
+              </span>
+
+              <span class="deadline-copy">
+                <strong>
+                  {{ tarea.titulo }}
+                </strong>
+
+                <small>
+                  {{
+                    tarea.usuario_asignado
+                      ? tarea.usuario_asignado.nombre +
+                        ' ' +
+                        tarea.usuario_asignado.apellido
+                      : 'Sin responsable'
+                  }}
+                </small>
+              </span>
+
+              <span
+                class="priority-pill"
+                [attr.data-priority]="
+                  tarea.prioridad?.toLowerCase()
+                "
+              >
+                {{
+                  tarea.prioridad ||
+                  'Sin prioridad'
+                }}
+              </span>
+            </button>
+          </div>
+
+          <div
+            *ngIf="proximasFechas.length === 0"
+            class="empty-card-state"
+          >
+            <svg
+              width="28"
+              height="28"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+              aria-hidden="true"
+            >
+              <rect x="3" y="4" width="18" height="18" rx="2"></rect>
+              <path d="M16 2v4"></path>
+              <path d="M8 2v4"></path>
+              <path d="M3 10h18"></path>
+            </svg>
+
+            <strong>
+              Sin fechas próximas
+            </strong>
+
+            <span>
+              No hay actividades pendientes con fecha límite.
+            </span>
+          </div>
+        </article>
+      </section>
+
+
+      <!-- ===================================================
+           LISTADO INTERACTIVO Y EQUIPO
+      ==================================================== -->
+      <section class="dashboard-grid dashboard-grid-bottom">
+        <article class="dashboard-card task-overview-card">
+          <header class="card-header card-header-wrap">
+            <div>
+              <span class="card-eyebrow">
+                Explorador rápido
+              </span>
+
+              <h2>
+                Actividades del proyecto
+              </h2>
+            </div>
+
+            <div class="filter-tabs">
+              <button
+                type="button"
+                [class.active]="
+                  filtroEstado === 'Todas'
+                "
+                (click)="
+                  seleccionarFiltro('Todas')
+                "
+              >
+                Todas
+              </button>
+
+              <button
+                type="button"
+                [class.active]="
+                  filtroEstado === 'Asignada'
+                "
+                (click)="
+                  seleccionarFiltro('Asignada')
+                "
+              >
+                Asignadas
+              </button>
+
+              <button
+                type="button"
+                [class.active]="
+                  filtroEstado ===
+                  'En progreso'
+                "
+                (click)="
+                  seleccionarFiltro(
+                    'En progreso'
+                  )
+                "
+              >
+                En progreso
+              </button>
+
+              <button
+                type="button"
+                [class.active]="
+                  filtroEstado ===
+                  'Concluida'
+                "
+                (click)="
+                  seleccionarFiltro(
+                    'Concluida'
+                  )
+                "
+              >
+                Concluidas
+              </button>
+            </div>
+          </header>
+
+          <div
+            *ngIf="tareasFiltradas.length > 0"
+            class="dashboard-task-list"
+          >
+            <button
+              *ngFor="
+                let tarea of
+                  tareasFiltradas |
+                  slice:0:6;
+                trackBy: trackTarea
+              "
+              type="button"
+              class="dashboard-task"
+              (click)="abrirDetalleTarea(tarea)"
+            >
+              <span
+                class="task-state-line"
+                [attr.data-state]="
+                  tarea.estado
+                "
+              ></span>
+
+              <span class="task-copy">
+                <strong>
+                  {{ tarea.titulo }}
+                </strong>
+
+                <small>
+                  {{
+                    tarea.descripcion ||
+                    'Sin descripción'
+                  }}
+                </small>
+              </span>
+
+              <span class="task-meta">
+                <span
+                  class="state-pill"
+                  [attr.data-state]="
+                    tarea.estado
+                  "
+                >
+                  {{ tarea.estado }}
+                </span>
+
+                <span
+                  *ngIf="tarea.fecha_limite"
+                  class="task-date"
+                >
+                  {{
+                    tarea.fecha_limite |
+                    date:'dd MMM'
+                  }}
+                </span>
+              </span>
+
               <svg
                 width="17"
                 height="17"
@@ -338,29 +1081,173 @@
                 fill="none"
                 stroke="currentColor"
                 stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
+                aria-hidden="true"
               >
-                <rect
-                  x="3"
-                  y="4"
-                  width="18"
-                  height="18"
-                  rx="2"
-                ></rect>
-
-                <line x1="16" y1="2" x2="16" y2="6"></line>
-                <line x1="8" y1="2" x2="8" y2="6"></line>
-                <line x1="3" y1="10" x2="21" y2="10"></line>
+                <path d="m9 18 6-6-6-6"></path>
               </svg>
+            </button>
+          </div>
+
+          <div
+            *ngIf="tareasFiltradas.length === 0"
+            class="empty-card-state compact"
+          >
+            <strong>
+              Sin actividades
+            </strong>
+
+            <span>
+              No existen actividades para el filtro seleccionado.
+            </span>
+          </div>
+
+          <footer
+            *ngIf="tareasFiltradas.length > 6"
+            class="card-footer"
+          >
+            <span>
+              Mostrando 6 de
+              {{ tareasFiltradas.length }}
             </span>
 
-            <div class="detail-row-content">
-              <span class="detalle-label">
+            <button
+              type="button"
+              class="text-button"
+              (click)="irATablon()"
+            >
+              Ver todas
+            </button>
+          </footer>
+        </article>
+
+
+        <aside class="dashboard-card team-card">
+          <header class="card-header">
+            <div>
+              <span class="card-eyebrow">
+                Colaboración
+              </span>
+
+              <h2>
+                Equipo del proyecto
+              </h2>
+            </div>
+
+            <span class="card-badge">
+              {{ totalColaboradores }}
+            </span>
+          </header>
+
+          <div
+            *ngIf="
+              colaboradoresVisibles.length > 0
+            "
+            class="team-list"
+          >
+            <div
+              *ngFor="
+                let colaborador of
+                  colaboradoresVisibles;
+                trackBy: trackColaborador
+              "
+              class="team-member"
+            >
+              <span class="member-avatar">
+                {{
+                  obtenerIniciales(
+                    colaborador
+                  )
+                }}
+              </span>
+
+              <span class="member-copy">
+                <strong>
+                  {{
+                    obtenerNombreColaborador(
+                      colaborador
+                    )
+                  }}
+                </strong>
+
+                <small>
+                  {{
+                    obtenerRolColaborador(
+                      colaborador
+                    )
+                  }}
+                </small>
+              </span>
+            </div>
+          </div>
+
+          <div
+            *ngIf="
+              colaboradoresVisibles.length === 0
+            "
+            class="empty-card-state compact"
+          >
+            <strong>
+              Equipo no disponible
+            </strong>
+
+            <span>
+              No fue posible mostrar los integrantes.
+            </span>
+          </div>
+
+          <footer
+            *ngIf="
+              totalColaboradores >
+              colaboradoresVisibles.length
+            "
+            class="card-footer"
+          >
+            <span>
+              Y
+              {{
+                totalColaboradores -
+                colaboradoresVisibles.length
+              }}
+              integrantes más
+            </span>
+          </footer>
+        </aside>
+      </section>
+
+
+      <!-- ===================================================
+           INFORMACIÓN GENERAL DEL PROYECTO
+      ==================================================== -->
+      <section class="dashboard-card project-info-card">
+        <header class="card-header">
+          <div>
+            <span class="card-eyebrow">
+              Información general
+            </span>
+
+            <h2>
+              Acerca del proyecto
+            </h2>
+          </div>
+        </header>
+
+        <div class="project-info-grid">
+          <div class="project-description">
+            <p>
+              {{
+                proyecto.descripcion ||
+                'Este proyecto todavía no cuenta con una descripción general.'
+              }}
+            </p>
+          </div>
+
+          <div class="project-details">
+            <div>
+              <span>
                 Fecha de creación
               </span>
 
-              <strong class="detalle-valor">
+              <strong>
                 {{
                   proyecto.fecha_creacion |
                   date:'mediumDate'
@@ -368,50 +1255,51 @@
               </strong>
             </div>
 
-          </div>
-
-
-          <!-- ESTADO -->
-          <div class="detail-row">
-
-            <span class="detail-row-icon" aria-hidden="true">
-              <svg
-                width="17"
-                height="17"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              >
-                <circle cx="12" cy="12" r="9"></circle>
-                <polyline points="9 12 11 14 15 10"></polyline>
-              </svg>
-            </span>
-
-            <div class="detail-row-content">
-              <span class="detalle-label">
-                Estado actual
+            <div>
+              <span>
+                Estado
               </span>
 
-              <span
-                class="status-badge detail-status"
-                [attr.data-status]="proyecto.estado?.toLowerCase()"
-              >
-                <span class="status-dot"></span>
-
+              <strong>
                 {{ proyecto.estado }}
-              </span>
+              </strong>
             </div>
 
+            <div>
+              <span>
+                Actividades vencidas
+              </span>
+
+              <strong>
+                {{ tareasVencidas.length }}
+              </strong>
+            </div>
+
+            <div>
+              <span>
+                Próximas esta semana
+              </span>
+
+              <strong>
+                {{ tareasPorVencer.length }}
+              </strong>
+            </div>
           </div>
-
         </div>
-
-      </aside>
-
-    </section>
-
+      </section>
+    </ng-container>
   </main>
 </div>
+
+
+<app-detalles-actividades
+  *ngIf="tareaSeleccionada"
+  [tarea]="tareaSeleccionada"
+  (cerrar)="cerrarDetalleTarea()"
+  (tareaActualizada)="
+    procesarTareaActualizada($event)
+  "
+  (tareaEliminada)="
+    procesarTareaEliminada($event)
+  "
+></app-detalles-actividades>

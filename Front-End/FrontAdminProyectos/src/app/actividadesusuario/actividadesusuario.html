@@ -242,6 +242,30 @@
             <div class="task-actions">
               <button
                 type="button"
+                class="btn btn-secondary"
+                (click)="abrirDetalles(misTareasProgreso[0], $event)"
+              >
+                <svg
+                  width="15"
+                  height="15"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                >
+                  <circle cx="12" cy="12" r="9"></circle>
+                  <path d="M12 11v5"></path>
+                  <path d="M12 8h.01"></path>
+                </svg>
+
+                Ver detalles completos
+              </button>
+
+              <button
+                type="button"
                 class="btn btn-success"
                 (click)="cambiarEstado(misTareasProgreso[0], 'Concluida', $event)"
               >
@@ -395,6 +419,30 @@
               <div class="task-actions">
                 <button
                   type="button"
+                  class="btn btn-secondary"
+                  (click)="abrirDetalles(t, $event)"
+                >
+                  <svg
+                    width="15"
+                    height="15"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    aria-hidden="true"
+                  >
+                    <circle cx="12" cy="12" r="9"></circle>
+                    <path d="M12 11v5"></path>
+                    <path d="M12 8h.01"></path>
+                  </svg>
+
+                  Ver detalles completos
+                </button>
+
+                <button
+                  type="button"
                   class="btn btn-success"
                   (click)="cambiarEstado(t, 'Concluida', $event)"
                 >
@@ -536,6 +584,30 @@
               </div>
 
               <div class="task-actions">
+                <button
+                  type="button"
+                  class="btn btn-secondary"
+                  (click)="abrirDetalles(t, $event)"
+                >
+                  <svg
+                    width="15"
+                    height="15"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    aria-hidden="true"
+                  >
+                    <circle cx="12" cy="12" r="9"></circle>
+                    <path d="M12 11v5"></path>
+                    <path d="M12 8h.01"></path>
+                  </svg>
+
+                  Ver detalles completos
+                </button>
+
                 <button
                   type="button"
                   class="btn btn-primary"
@@ -713,4 +785,16 @@
       <p>Actualmente no tienes actividades asignadas dentro de este proyecto.</p>
     </section>
   </main>
+
+
+  <!-- =====================================================
+       MODAL CON LA INFORMACIÓN COMPLETA DE LA ACTIVIDAD
+  ====================================================== -->
+  <app-detalles-actividades
+    *ngIf="tareaSeleccionada"
+    [tarea]="tareaSeleccionada"
+    (cerrar)="cerrarDetalles()"
+    (tareaActualizada)="procesarTareaActualizada($event)"
+    (tareaEliminada)="procesarTareaEliminada($event)"
+  ></app-detalles-actividades>
 </div>

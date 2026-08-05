@@ -18,13 +18,20 @@ import {
   TareaApi
 } from '../Servicios/api.servicio';
 
+import {
+  DetallesActividades
+} from '../detalles-actividades/detalles-actividades';
+
 
 @Component({
   selector: 'app-actividadesusuario',
   standalone: true,
+
   imports: [
-    CommonModule
+    CommonModule,
+    DetallesActividades
   ],
+
   templateUrl: './actividadesusuario.html',
   styleUrl: './actividadesusuario.css'
 })
@@ -46,6 +53,12 @@ export class Actividadesusuario implements OnInit {
   cargando = true;
 
   tareaExpandidaId: number | null = null;
+
+  /**
+   * Tarea que se mostrará en el componente de detalles.
+   * Cuando es null, el modal permanece cerrado.
+   */
+  tareaSeleccionada: TareaApi | null = null;
 
   errorMessage = '';
 
@@ -97,21 +110,8 @@ export class Actividadesusuario implements OnInit {
       .obtenerMisTareasProyecto(this.proyectoId)
       .subscribe({
         next: (misTareas: TareaApi[]) => {
-          const tareas = misTareas ?? [];
-
-          this.misTareasNuevas = tareas.filter(
-            (tarea) =>
-              tarea.estado === 'Asignada'
-          );
-
-          this.misTareasProgreso = tareas.filter(
-            (tarea) =>
-              tarea.estado === 'En progreso'
-          );
-
-          this.misTareasTerminadas = tareas.filter(
-            (tarea) =>
-              tarea.estado === 'Concluida'
+          this.organizarTareas(
+            misTareas ?? []
           );
 
           this.cargando = false;
@@ -123,9 +123,7 @@ export class Actividadesusuario implements OnInit {
             error
           );
 
-          this.misTareasNuevas = [];
-          this.misTareasProgreso = [];
-          this.misTareasTerminadas = [];
+          this.limpiarListas();
 
           this.errorMessage =
             error?.error?.detail ||
@@ -137,8 +135,86 @@ export class Actividadesusuario implements OnInit {
   }
 
 
+  private organizarTareas(
+    tareas: TareaApi[]
+  ): void {
+    this.misTareasNuevas = tareas.filter(
+      (tarea) =>
+        tarea.estado === 'Asignada'
+    );
+
+    this.misTareasProgreso = tareas.filter(
+      (tarea) =>
+        tarea.estado === 'En progreso'
+    );
+
+    this.misTareasTerminadas = tareas.filter(
+      (tarea) =>
+        tarea.estado === 'Concluida'
+    );
+  }
+
+
+  private limpiarListas(): void {
+    this.misTareasNuevas = [];
+    this.misTareasProgreso = [];
+    this.misTareasTerminadas = [];
+  }
+
+
   // =========================================================
-  // EXPANDIR O CONTRAER DETALLES
+  // DETALLES COMPLETOS DE LA ACTIVIDAD
+  // =========================================================
+
+  abrirDetalles(
+    tarea: TareaApi,
+    evento?: Event
+  ): void {
+    evento?.stopPropagation();
+
+    this.tareaExpandidaId = null;
+    this.tareaSeleccionada = tarea;
+  }
+
+
+  cerrarDetalles(): void {
+    this.tareaSeleccionada = null;
+  }
+
+
+  procesarTareaActualizada(
+    tareaActualizada: TareaApi
+  ): void {
+    /*
+     * El componente de detalles puede modificar título,
+     * descripción, prioridad, fechas, estado o responsable.
+     * Se actualiza la vista local sin buscar la actividad
+     * nuevamente en el tablón.
+     */
+    this.moverTareaLocalmente(
+      tareaActualizada,
+      tareaActualizada.estado as EstadoTareaApi
+    );
+
+    /*
+     * Mantiene abierta la misma actividad con sus datos nuevos.
+     */
+    this.tareaSeleccionada = {
+      ...tareaActualizada
+    };
+  }
+
+
+  procesarTareaEliminada(
+    idTarea: number
+  ): void {
+    this.retirarTareaDeListas(idTarea);
+    this.tareaSeleccionada = null;
+  }
+
+
+  // =========================================================
+  // EXPANDIR O CONTRAER RESUMEN
   // =========================================================
 
   toggleDetalles(idTarea: number): void {
@@ -210,31 +286,14 @@ export class Actividadesusuario implements OnInit {
     tarea: TareaApi,
     nuevoEstado: EstadoTareaApi
   ): void {
-    // Retirar la tarea de todas las listas.
-    this.misTareasNuevas =
-      this.misTareasNuevas.filter(
-        (item) =>
-          item.id_tarea !== tarea.id_tarea
-      );
-
-    this.misTareasProgreso =
-      this.misTareasProgreso.filter(
-        (item) =>
-          item.id_tarea !== tarea.id_tarea
-      );
-
-    this.misTareasTerminadas =
-      this.misTareasTerminadas.filter(
-        (item) =>
-          item.id_tarea !== tarea.id_tarea
-      );
-
+    this.retirarTareaDeListas(
+      tarea.id_tarea
+    );
 
     const tareaActualizada: TareaApi = {
       ...tarea,
       estado: nuevoEstado
     };
-
 
     switch (nuevoEstado) {
       case 'Asignada':
@@ -262,6 +321,29 @@ export class Actividadesusuario implements OnInit {
          */
         break;
     }
+  }
+
+
+  private retirarTareaDeListas(
+    idTarea: number
+  ): void {
+    this.misTareasNuevas =
+      this.misTareasNuevas.filter(
+        (item) =>
+          item.id_tarea !== idTarea
+      );
+
+    this.misTareasProgreso =
+      this.misTareasProgreso.filter(
+        (item) =>
+          item.id_tarea !== idTarea
+      );
+
+    this.misTareasTerminadas =
+      this.misTareasTerminadas.filter(
+        (item) =>
+          item.id_tarea !== idTarea
+      );
   }
 
 
