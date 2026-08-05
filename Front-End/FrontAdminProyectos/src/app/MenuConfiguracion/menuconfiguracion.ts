@@ -27,7 +27,11 @@ import {
 
 
 interface OpcionConfiguracion {
-  id: 'integrantes' | 'eliminar';
+  id:
+    | 'editar'
+    | 'integrantes'
+    | 'eliminar';
+
   nombre: string;
   descripcion: string;
   peligroso: boolean;
@@ -69,6 +73,13 @@ export class MenuConfiguracionComponente
 
 
   opciones: OpcionConfiguracion[] = [
+    {
+      id: 'editar',
+      nombre: 'Información del Proyecto',
+      descripcion:
+        'Editar el nombre, la descripción y el estado actual del proyecto.',
+      peligroso: false
+    },
     {
       id: 'integrantes',
       nombre: 'Gestión de Integrantes',
@@ -152,6 +163,11 @@ export class MenuConfiguracionComponente
   async irAOpcion(
     opcion: OpcionConfiguracion
   ): Promise<void> {
+    if (opcion.id === 'editar') {
+      this.irAEditarProyecto();
+      return;
+    }
+
     if (opcion.id === 'integrantes') {
       this.irAIntegrantes();
       return;
@@ -160,6 +176,20 @@ export class MenuConfiguracionComponente
     if (opcion.id === 'eliminar') {
       await this.solicitarEliminarProyecto();
     }
+  }
+
+
+  private irAEditarProyecto(): void {
+    if (!this.proyectoId) {
+      return;
+    }
+
+    this.router.navigate([
+      '/proyecto',
+      this.proyectoId,
+      'configuracion',
+      'editar'
+    ]);
   }
 
 
@@ -237,7 +267,8 @@ export class MenuConfiguracionComponente
       return;
     }
 
-    const idProyecto = this.proyectoId;
+    const idProyecto =
+      this.proyectoId;
 
     this.eliminandoProyecto = true;
     this.errorMessage = '';

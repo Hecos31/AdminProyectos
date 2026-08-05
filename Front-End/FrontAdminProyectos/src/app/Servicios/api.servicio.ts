@@ -3,6 +3,30 @@ import { HttpClient } from '@angular/common/http';
 import { Observable, throwError, Subject, BehaviorSubject } from 'rxjs';
 import { environment } from '../../environments/environment';
 
+export type EstadoProyectoApi =
+  | 'Activo'
+  | 'Inactivo';
+
+
+export interface ProyectoApi {
+  id_proyecto: number;
+  nombre: string;
+  nombre_proyecto?: string;
+  descripcion: string | null;
+  estado: EstadoProyectoApi | string;
+  fecha_inicio?: string | null;
+  fecha_fin?: string | null;
+  fecha_creacion?: string | null;
+}
+
+
+export interface ProyectoUpdatePayload {
+  nombre: string;
+  descripcion: string | null;
+  estado: EstadoProyectoApi;
+}
+
+
 
 export type PrioridadTareaApi = 'Baja' | 'Media' | 'Alta';
 
@@ -171,37 +195,105 @@ export class ApiServicio {
   //         MÓDULO DE PROYECTOS
   // ==========================================
 
-  obtenerProyectos(): Observable<any> {
-    return this.http.get(
+  obtenerProyectos(): Observable<ProyectoApi[]> {
+    return this.http.get<ProyectoApi[]>(
       `${this.apiUrl}/proyectos`
     );
   }
 
 
-  obtenerProyecto(id: number): Observable<any> {
-    return this.http.get(
+  obtenerProyecto(
+    id: number
+  ): Observable<ProyectoApi> {
+    return this.http.get<ProyectoApi>(
       `${this.apiUrl}/proyectos/${id}`
     );
   }
 
 
-  crearProyecto(proyecto: any): Observable<any> {
-    return this.http.post(
+  crearProyecto(
+    proyecto: any
+  ): Observable<ProyectoApi> {
+    return this.http.post<ProyectoApi>(
       `${this.apiUrl}/proyectos`,
       proyecto
     );
   }
 
 
-  actualizarProyecto(proyecto: any): Observable<any> {
-    return this.http.put(
+  editarProyecto(
+    idProyecto: number,
+    datos: ProyectoUpdatePayload
+  ): Observable<ProyectoApi> {
+    return this.http.put<ProyectoApi>(
       `${this.apiUrl}/proyectos`,
-      proyecto
+      {
+        id_proyecto: idProyecto,
+        ...datos
+      }
     );
   }
 
 
-  eliminarProyecto(id: number): Observable<any> {
+  /**
+   * Se conserva para no romper componentes anteriores.
+   */
+  actualizarProyecto(
+    proyecto: any
+  ): Observable<ProyectoApi> {
+    const idProyecto = Number(
+      proyecto?.id_proyecto ??
+      proyecto?.id
+    );
+
+    if (
+      !Number.isInteger(idProyecto) ||
+      idProyecto <= 0
+    ) {
+      return throwError(
+        () =>
+          new Error(
+            'El proyecto no contiene un ID válido.'
+          )
+      );
+    }
+
+    const estadoRecibido =
+      String(
+        proyecto?.estado ?? 'Activo'
+      ).trim();
+
+    const datos: ProyectoUpdatePayload = {
+      nombre:
+        String(
+          proyecto?.nombre ??
+          proyecto?.nombre_proyecto ??
+          ''
+        ).trim(),
+
+      descripcion:
+        proyecto?.descripcion == null
+          ? null
+          : String(
+              proyecto.descripcion
+            ).trim() || null,
+
+      estado:
+        estadoRecibido === 'Inactivo'
+          ? 'Inactivo'
+          : 'Activo'
+    };
+
+    return this.editarProyecto(
+      idProyecto,
+      datos
+    );
+  }
+
+
+  eliminarProyecto(
+    id: number
+  ): Observable<any> {
     return this.http.delete(
       `${this.apiUrl}/proyectos`,
       {

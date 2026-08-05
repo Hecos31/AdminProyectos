@@ -1,20 +1,16 @@
 // === IMPORTACIONES ===
 import { Routes } from '@angular/router';
 
-// Página pública de presentación
 import {
   PaginaPresentacionComponente
 } from './pagina-presentacion/pagina-presentacion';
 
-// Componentes de Autenticación
 import { LoginComponente } from './login/login';
 import { CrearUsuarioComponente } from './Crearusuario/crearusuario';
 
-// Componentes Globales
 import { PantallaInicioComponente } from './Pantalla-Inicio/pantallainicio';
 import { CrearProyectoComponente } from './CrearProyecto/crearproyecto';
 
-// Componentes de Proyecto
 import {
   PantallaPrincipalProyectoComponente
 } from './Pantalla-PrincipalProyecto/pantallaprincipalproyecto';
@@ -28,6 +24,10 @@ import {
 } from './MenuConfiguracion/menuconfiguracion';
 
 import {
+  EditarProyectoComponente
+} from './EditarProyecto/editarproyecto';
+
+import {
   TablonActividades
 } from './tablon-actividades/tablon-actividades';
 
@@ -39,17 +39,12 @@ import {
   Crearactividades
 } from './crearactividades/crearactividades';
 
-// Guard de autenticación
 import {
   authGuard
 } from './Guards/auth.guard';
 
 
 export const routes: Routes = [
-  // =========================================================
-  // ZONA PÚBLICA
-  // =========================================================
-
   {
     path: '',
     component: PaginaPresentacionComponente,
@@ -68,10 +63,6 @@ export const routes: Routes = [
     component: CrearUsuarioComponente,
     title: 'Crear cuenta | Orbita'
   },
-
-  // =========================================================
-  // ZONA PRIVADA
-  // =========================================================
 
   {
     path: '',
@@ -117,6 +108,12 @@ export const routes: Routes = [
       },
 
       {
+        path: 'proyecto/:id/configuracion/editar',
+        component: EditarProyectoComponente,
+        title: 'Editar proyecto | Orbita'
+      },
+
+      {
         path: 'proyecto/:id/configuracion',
         component: MenuConfiguracionComponente,
         title: 'Configuración | Orbita'
@@ -129,10 +126,6 @@ export const routes: Routes = [
       }
     ]
   },
-
-  // =========================================================
-  // RUTA NO ENCONTRADA
-  // =========================================================
 
   {
     path: '**',
