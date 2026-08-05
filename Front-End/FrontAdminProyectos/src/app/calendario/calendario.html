@@ -1,0 +1,106 @@
+<div class="calendar-container">
+  <!-- ENCABEZADO CON CONTROLES DE FECHA -->
+  <div class="calendar-header">
+    <div class="title-section">
+      <h2>Calendario de Actividades</h2>
+      <p>Visualiza y organiza los vencimientos de tus proyectos</p>
+    </div>
+
+    <div class="controls-section">
+      <button class="btn-nav" (click)="mesAnterior()">‹</button>
+      <span class="current-date-label">{{ mesActualNombre | titlecase }} {{ anioActual }}</span>
+      <button class="btn-nav" (click)="mesSiguiente()">›</button>
+      <button class="btn-today" (click)="irAHoy()">Hoy</button>
+    </div>
+  </div>
+
+  <div class="calendar-body">
+    <!-- GRILLA DEL MES -->
+    <div class="grid-container">
+      <!-- NOMBRES DE LOS DÍAS -->
+      <div class="day-names-row">
+        <div class="day-name" *ngFor="let dia of nombresDias">{{ dia }}</div>
+      </div>
+
+      <!-- MATRIZ DE DÍAS -->
+      <div class="days-grid">
+        <div
+          *ngFor="let dia of diasMatriz"
+          class="day-cell"
+          [class.other-month]="!dia.esMesActual"
+          [class.today]="dia.esHoy"
+          [class.selected]="diaSeleccionado?.fecha === dia.fecha"
+          (click)="seleccionarDia(dia)"
+        >
+          <span class="day-number">{{ dia.numeroDia }}</span>
+
+          <div class="tasks-indicators">
+            <!-- Chips coloreados por PRIORIDAD -->
+            <div
+              *ngFor="let t of dia.tareas.slice(0, 3)"
+              class="task-chip"
+              [ngClass]="obtenerClasePrioridad(t.prioridad)"
+              [title]="t.titulo + ' (Prioridad: ' + t.prioridad + ')'"
+            >
+              {{ t.titulo }}
+            </div>
+
+            <span class="more-counter" *ngIf="dia.tareas.length > 3">
+              +{{ dia.tareas.length - 3 }} más
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PANEL LATERAL DE DETALLES DEL DÍA SELECCIONADO -->
+    <div class="side-panel" *ngIf="diaSeleccionado">
+      <div class="panel-header">
+        <!-- Se escapa 'de' entre apóstrofes simples '' de '' -->
+        <h3>{{ diaSeleccionado.fecha | date:'EEEE, d \'de\' MMMM \'de\' yyyy':'':'es-ES' | titlecase }}</h3>
+        <span class="badge-count">{{ diaSeleccionado.tareas.length }} actividades</span>
+      </div>
+
+      <div class="panel-content">
+        <div *ngFor="let tarea of diaSeleccionado.tareas" class="task-card">
+          <div class="task-card-header">
+            <div class="badges-group">
+              <span class="status-pill" [ngClass]="obtenerClaseEstado(tarea.estado)">
+                {{ tarea.estado }}
+              </span>
+              <span class="priority-pill" [ngClass]="obtenerClasePrioridad(tarea.prioridad)">
+                Prioridad {{ tarea.prioridad | titlecase }}
+              </span>
+            </div>
+            <span class="project-tag">{{ tarea.nombre_proyecto }}</span>
+          </div>
+
+          <h4>{{ tarea.titulo }}</h4>
+          <p class="desc" *ngIf="tarea.descripcion">{{ tarea.descripcion }}</p>
+
+          <!-- INFORMACIÓN DEL RESPONSABLE Y VENCIMIENTO -->
+          <div class="task-details-footer">
+            <div class="detail-row" *ngIf="tarea.usuario_asignado">
+              <span class="detail-label">Responsable:</span>
+              <span class="detail-value">
+                {{ tarea.usuario_asignado.nombre }} {{ tarea.usuario_asignado.apellido }}
+              </span>
+            </div>
+
+            <div class="detail-row" *ngIf="tarea.fecha_vencimiento">
+              <span class="detail-label">Vence:</span>
+              <!-- O usa la versión numérica limpia 'dd/MM/yyyy' -->
+              <span class="detail-value warning">
+              {{ tarea.fecha_vencimiento | date:'dd/MM/yyyy' }}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div *ngIf="diaSeleccionado.tareas.length === 0" class="empty-day">
+          <p>No tienes tareas o entregas programadas para esta fecha.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

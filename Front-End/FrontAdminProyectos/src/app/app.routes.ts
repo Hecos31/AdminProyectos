@@ -8,6 +8,7 @@ import { CrearUsuarioComponente } from './Crearusuario/crearusuario';
 // Componentes Globales
 import { PantallaInicioComponente } from './Pantalla-Inicio/pantallainicio';
 import { CrearProyectoComponente } from './CrearProyecto/crearproyecto';
+import { CalendarioComponent } from './calendario/calendario';
 // import { ChatComponente } from './Chats/chat';
 
 // Componentes de Proyecto
@@ -18,7 +19,7 @@ import { TablonActividades } from './tablon-actividades/tablon-actividades';
 import { Actividadesusuario } from './actividadesusuario/actividadesusuario';
 import { Crearactividades } from './crearactividades/crearactividades';
 
-// Guardianes de Seguridad (Te paso el código en el siguiente paso)
+// Guardianes de Seguridad
 import { authGuard } from './Guards/auth.guard';
 
 // === DEFINICIÓN DE RUTAS ===
@@ -34,6 +35,7 @@ export const routes: Routes = [
     canActivateChild: [authGuard],
     children: [
       { path: 'inicio', component: PantallaInicioComponente },
+      { path: 'calendario', component: CalendarioComponent },
       { path: 'crear-proyecto', component: CrearProyectoComponente },
       // { path: 'chats', component: ChatComponente },
 

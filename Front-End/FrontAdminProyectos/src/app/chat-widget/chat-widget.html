@@ -256,17 +256,22 @@
         <span class="chat-info">
 
           <span class="chat-name-line">
-            <span class="chat-name">
-              {{ chat.nombre || 'Conversación' }}
-            </span>
+  <span class="chat-name">
+    {{ chat.nombre || 'Conversación' }}
+  </span>
 
-            <span
-              class="chat-unread-badge"
-              *ngIf="(chat.noLeidos || 0) > 0"
-            >
-              {{ cantidadNoLeidos(chat) }}
-            </span>
-          </span>
+  <!-- FECHA / HORA INTELIGENTE DEL ÚLTIMO MENSAJE -->
+  <span class="chat-date-list" *ngIf="chat.ultimoMensaje?.fecha">
+    {{ formatearFechaLista(chat.ultimoMensaje?.fecha) }}
+  </span>
+
+  <span
+    class="chat-unread-badge"
+    *ngIf="(chat.noLeidos || 0) > 0"
+  >
+    {{ cantidadNoLeidos(chat) }}
+  </span>
+</span>
 
           <span
             class="chat-last-msg"
@@ -429,7 +434,7 @@
       *ngIf="vistaActual === 'conversacion'"
     >
 
-      <!-- MENSAJES -->
+      <!-- MENSAJES CON DIVISORES DE FECHA -->
       <div
         class="messages-area"
         id="chat-scroll-area"
@@ -437,9 +442,10 @@
         aria-label="Mensajes de la conversación"
       >
 
+        <!-- SIN MENSAJES EN LA CONVERSACIÓN -->
         <div
           class="conversation-empty"
-          *ngIf="mensajes.length === 0"
+          *ngIf="gruposMensajes.length === 0"
         >
           <span class="conversation-empty-icon" aria-hidden="true">
             <svg
@@ -462,37 +468,39 @@
           <small>Envía el primero para iniciar la conversación.</small>
         </div>
 
+        <!-- BUCLE DE GRUPOS DE FECHA (HOY, AYER, DD/MM/AAAA) -->
+        <div *ngFor="let grupo of gruposMensajes">
 
-        <div
-          class="msg-wrapper"
-          *ngFor="
-  let msg of mensajes;
-  trackBy: trackMensaje
-"
-          [class.sent]="esMiMensaje(msg)"
-          [class.received]="!esMiMensaje(msg)"
-        >
-          <div class="msg-bubble">
-
-            <span
-              class="msg-sender"
-              *ngIf="
-                !esMiMensaje(msg) &&
-                chatActivo?.tipo !== 'privado'
-              "
-            >
-              {{ msg.remitente?.nombre || 'Usuario' }}
-            </span>
-
-            <span class="msg-content">
-              {{ msg.contenido }}
-            </span>
-
-            <span class="msg-time">
-              {{ msg.fecha_envio | date:'shortTime' }}
-            </span>
-
+          <!-- ETIQUETA DIVISORA DE FECHA ESTILO WHATSAPP -->
+          <div class="chat-date-divider">
+            <span>{{ grupo.fechaEtiqueta }}</span>
           </div>
+
+          <!-- CONTENEDOR DE MENSAJES CON MARGEN DE SEPARACIÓN -->
+          <div class="date-group-messages">
+            <div
+  class="msg-wrapper"
+  *ngFor="let msg of grupo.mensajes; trackBy: trackMensaje"
+  [class.sent]="esMiMensaje(msg)"
+  [class.received]="!esMiMensaje(msg)"
+>
+  <div class="msg-bubble">
+
+    <!-- Nombre del remitente (si es mensaje recibido) -->
+    <span class="msg-sender" *ngIf="!esMiMensaje(msg)">
+      {{ msg.remitente?.nombre || chatActivo?.nombre || 'Usuario' }}
+    </span>
+
+    <!-- Texto del mensaje -->
+    <span class="msg-content">{{ msg.contenido }}</span>
+
+    <!-- Hora -->
+    <span class="msg-time">{{ msg.fecha_envio | date:'shortTime' }}</span>
+
+  </div>
+</div>
+          </div>
+
         </div>
 
       </div>

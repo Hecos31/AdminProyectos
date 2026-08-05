@@ -1,0 +1,446 @@
+/* ==========================================
+   VARIABLES CSS (SOPORTE TEMA CLARO / OSCURO)
+   ========================================== */
+:host {
+  /* Variables por defecto (Modo Oscuro) */
+  --cal-bg: #0f172a;
+  --cal-card-bg: #1e293b;
+  --cal-cell-bg: #0f172a;
+  --cal-cell-hover: #1a2332;
+  --cal-text-main: #f8fafc;
+  --cal-text-muted: #94a3b8;
+  --cal-border: rgba(255, 255, 255, 0.08);
+  --cal-border-light: rgba(255, 255, 255, 0.04);
+  --cal-primary: #6366f1;
+  --cal-primary-hover: #4f46e5;
+  --cal-primary-light: rgba(99, 102, 241, 0.15);
+  --cal-shadow: rgba(0, 0, 0, 0.25);
+}
+
+/* Adaptación cuando el cuerpo o contenedor cambia a tema claro */
+:host-context(body.light-theme),
+:host-context(.light-mode),
+:host-context([data-theme='light']) {
+  --cal-bg: #f8fafc;
+  --cal-card-bg: #ffffff;
+  --cal-cell-bg: #f1f5f9;
+  --cal-cell-hover: #e2e8f0;
+  --cal-text-main: #0f172a;
+  --cal-text-muted: #64748b;
+  --cal-border: rgba(0, 0, 0, 0.08);
+  --cal-border-light: rgba(0, 0, 0, 0.04);
+  --cal-primary: #4f46e5;
+  --cal-primary-hover: #4338ca;
+  --cal-primary-light: rgba(79, 70, 229, 0.12);
+  --cal-shadow: rgba(0, 0, 0, 0.08);
+}
+
+/* ==========================================
+   CONTENEDOR PRINCIPAL DE LA VISTA
+   ========================================== */
+.calendar-container {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 40px);
+  padding: 20px;
+  background-color: var(--cal-bg);
+  color: var(--cal-text-main);
+  box-sizing: border-box;
+  gap: 16px;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* HEADER Y CONTROLES DEL CALENDARIO */
+.calendar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: var(--cal-card-bg);
+  padding: 16px 24px;
+  border-radius: 12px;
+  border: 1px solid var(--cal-border);
+  box-shadow: 0 4px 12px var(--cal-shadow);
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.title-section h2 {
+  margin: 0;
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--cal-text-main);
+}
+
+.title-section p {
+  margin: 4px 0 0 0;
+  color: var(--cal-text-muted);
+  font-size: 0.85rem;
+}
+
+.controls-section {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.current-date-label {
+  font-size: 1.15rem;
+  font-weight: 600;
+  min-width: 170px;
+  text-align: center;
+  color: var(--cal-text-main);
+}
+
+.btn-nav, .btn-today {
+  background-color: var(--cal-cell-bg);
+  color: var(--cal-text-main);
+  border: 1px solid var(--cal-border);
+  padding: 6px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.9rem;
+  transition: all 0.2s ease;
+}
+
+.btn-nav:hover, .btn-today:hover {
+  background-color: var(--cal-cell-hover);
+  border-color: var(--cal-border);
+  transform: translateY(-1px);
+}
+
+.btn-today {
+  background-color: var(--cal-primary);
+  color: #ffffff;
+  border: none;
+}
+
+.btn-today:hover {
+  background-color: var(--cal-primary-hover);
+}
+
+/* ==========================================
+   CUERPO Y GRILLA MENSUAL
+   ========================================== */
+.calendar-body {
+  flex: 1;
+  display: flex;
+  gap: 16px;
+  overflow: hidden;
+}
+
+.grid-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--cal-card-bg);
+  border-radius: 12px;
+  padding: 16px;
+  border: 1px solid var(--cal-border);
+  box-shadow: 0 4px 12px var(--cal-shadow);
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.day-names-row {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  text-align: center;
+  font-weight: 700;
+  color: var(--cal-primary);
+  padding-bottom: 12px;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.days-grid {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  grid-template-rows: repeat(6, 1fr);
+  gap: 6px;
+}
+
+/* CÉLDAS DE LOS DÍAS */
+.day-cell {
+  background-color: var(--cal-cell-bg);
+  border-radius: 8px;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1px solid var(--cal-border-light);
+  position: relative;
+  overflow: hidden;
+}
+
+.day-cell:hover {
+  background-color: var(--cal-cell-hover);
+  border-color: var(--cal-primary);
+}
+
+.day-cell.other-month {
+  opacity: 0.35;
+}
+
+.day-cell.today {
+  border: 2px solid var(--cal-primary);
+  background-color: var(--cal-primary-light);
+}
+
+.day-cell.today .day-number {
+  color: var(--cal-primary);
+  font-weight: 800;
+}
+
+.day-cell.selected {
+  background-color: var(--cal-primary-light);
+  border-color: var(--cal-primary);
+}
+
+.day-number {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--cal-text-main);
+}
+
+/* ==========================================
+   CHIPS Y ETIQUETAS DENTRO DE LOS DÍAS
+   ========================================== */
+.tasks-indicators {
+  margin-top: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  overflow: hidden;
+}
+
+.task-chip {
+  font-size: 0.7rem;
+  padding: 2px 6px;
+  border-radius: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: #ffffff;
+  font-weight: 600;
+}
+
+/* Colores por Prioridad en la Grilla */
+.task-chip.prio-alta {
+  background-color: #ef4444;
+}
+
+.task-chip.prio-media {
+  background-color: #f59e0b;
+}
+
+.task-chip.prio-baja {
+  background-color: #10b981;
+}
+
+.more-counter {
+  font-size: 0.68rem;
+  color: var(--cal-text-muted);
+  margin-top: 2px;
+  font-weight: 600;
+}
+
+/* ==========================================
+   PANEL LATERAL DE DETALLE
+   ========================================== */
+.side-panel {
+  width: 320px;
+  background-color: var(--cal-card-bg);
+  border-radius: 12px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  border: 1px solid var(--cal-border);
+  box-shadow: 0 4px 12px var(--cal-shadow);
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--cal-border);
+  padding-bottom: 12px;
+}
+
+.panel-header h3 {
+  margin: 0;
+  font-size: 1.05rem;
+  color: var(--cal-text-main);
+  font-weight: 600;
+}
+
+.badge-count {
+  font-size: 0.75rem;
+  background-color: var(--cal-primary-light);
+  color: var(--cal-primary);
+  padding: 3px 8px;
+  border-radius: 12px;
+  font-weight: 700;
+}
+
+.panel-content {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-right: 4px;
+}
+
+/* TARJETAS DE ACTIVIDAD */
+.task-card {
+  background-color: var(--cal-cell-bg);
+  padding: 14px;
+  border-radius: 10px;
+  border: 1px solid var(--cal-border-light);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.task-card:hover {
+  transform: translateX(2px);
+  box-shadow: 0 2px 8px var(--cal-shadow);
+}
+
+.task-card-header {
+  display: flex;
+  flex-direction: column; /* Apila los badges y el nombre del proyecto si no caben */
+  align-items: flex-start;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+@media (min-width: 250px) {
+  .task-card-header {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+}
+
+.badges-group {
+  display: flex;
+  flex-wrap: wrap; /* Si el espacio es reducido, los badges bajan de línea sin encimarse */
+  gap: 6px;
+  align-items: center;
+}
+
+/* Badges de Estado */
+.status-pill {
+  font-size: 0.65rem;
+  padding: 3px 8px;
+  border-radius: 6px;
+  text-transform: uppercase;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+}
+
+.status-pill.completada {
+  background: rgba(16, 185, 129, 0.15);
+  color: #10b981;
+}
+
+.status-pill.progreso {
+  background: rgba(59, 130, 246, 0.15);
+  color: #3b82f6;
+}
+
+.status-pill.pendiente {
+  background: rgba(245, 158, 11, 0.15);
+  color: #f59e0b;
+}
+
+/* Badges de Prioridad */
+.priority-pill {
+  font-size: 0.65rem;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.priority-pill.prio-alta {
+  background: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.priority-pill.prio-media {
+  background: rgba(245, 158, 11, 0.15);
+  color: #f59e0b;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.priority-pill.prio-baja {
+  background: rgba(16, 185, 129, 0.15);
+  color: #10b981;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.project-tag {
+  font-size: 0.72rem;
+  color: var(--cal-text-muted);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.task-card h4 {
+  margin: 0 0 6px 0;
+  font-size: 0.92rem;
+  color: var(--cal-text-main);
+  font-weight: 600;
+}
+
+.desc {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--cal-text-muted);
+  line-height: 1.4;
+}
+
+/* FOOTER DETALLES (RESPONSABLE Y VENCIMIENTO) */
+.task-details-footer {
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px solid var(--cal-border-light);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.75rem;
+}
+
+.detail-label {
+  color: var(--cal-text-muted);
+  font-weight: 500;
+}
+
+.detail-value {
+  color: var(--cal-text-main);
+  font-weight: 600;
+}
+
+.detail-value.warning {
+  color: #ef4444;
+}
+
+.empty-day {
+  text-align: center;
+  color: var(--cal-text-muted);
+  padding: 40px 10px;
+  font-size: 0.85rem;
+}
