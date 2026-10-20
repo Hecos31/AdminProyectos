@@ -14,6 +14,7 @@ app.add_middleware(
     allow_origins=[
         "http://localhost:4200",
         "https://orbitapwa.netlify.app",
+        "https://orbitaprogresiva.netlify.app"
     ],
     allow_credentials=True,
     allow_methods=["*"],
