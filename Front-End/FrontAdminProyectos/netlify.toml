@@ -1,0 +1,23 @@
+[build]
+  command = "npm run build"
+  publish = "dist/FrontAdminProyectos/browser"
+
+# Para que cualquier ruta de Angular devuelva index.html
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+# El service worker nunca debe quedar en caché del navegador
+[[headers]]
+  for = "/ngsw-worker.js"
+  [headers.values]
+    Cache-Control = "no-cache"
+
+[[headers]]
+  for = "/ngsw.json"
+  [headers.values]
+    Cache-Control = "no-cache"
+
+[build.processing]
+  skip_processing = true
