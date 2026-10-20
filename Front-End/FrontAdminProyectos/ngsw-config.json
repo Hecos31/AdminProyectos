@@ -39,10 +39,11 @@
         "https://adminproyectos.onrender.com/**"
       ],
       "cacheConfig": {
-        "maxSize": 50,
-        "maxAge": "12h",
+        "maxSize": 100,
+        "maxAge": "7d",
         "timeout": "3s",
-        "strategy": "freshness"
+        "strategy": "freshness",
+        "cacheOpaqueResponses": false
       }
     }
   ]

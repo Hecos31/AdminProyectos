@@ -795,6 +795,9 @@ export class ChatService {
         Number.isFinite(expiracion) &&
         expiracion * 1000 <= Date.now() + 5000
       ) {
+        if (typeof navigator !== 'undefined' && !navigator.onLine) {
+          return token;
+        }
         return null;
       }
 

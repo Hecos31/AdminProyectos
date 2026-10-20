@@ -16,6 +16,7 @@ app.add_middleware(
         "https://orbitapwa.netlify.app",
         "https://orbitaprogresiva.netlify.app"
     ],
+    allow_origin_regex=r"https://.*\.netlify\.app",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
