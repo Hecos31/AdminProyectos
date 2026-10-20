@@ -13,7 +13,7 @@ app.add_middleware(
     # Agrega la IP de tu red local a la lista de permitidos
     allow_origins=[
         "http://localhost:4200",
-        "*",
+        "https://orbitapwa.netlify.app",
     ],
     allow_credentials=True,
     allow_methods=["*"],

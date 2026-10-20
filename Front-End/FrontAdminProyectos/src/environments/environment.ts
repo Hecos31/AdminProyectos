@@ -1,6 +1,6 @@
 // src/environments/environment.ts
 export const environment = {
   production: true,
-  apiUrl: 'http://localhost:8000',
-  wsUrl: 'ws://localhost:8000'
+  apiUrl: 'https://adminproyectos.onrender.com',
+  wsUrl: 'wss://adminproyectos.onrender.com/ws'
 };

@@ -6,7 +6,7 @@ import { Observable } from 'rxjs';
   providedIn: 'root'
 })
 export class NotificacionService {
-  private apiUrl = 'http://localhost:8000/notificaciones';
+  private apiUrl = 'https://adminproyectos.onrender.com';
 
   constructor(private http: HttpClient) {}
 
