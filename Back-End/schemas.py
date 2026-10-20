@@ -61,14 +61,14 @@ class UsuarioCreate(BaseModel):
 class UsuarioAsignado(ORMResponseModel):
     id_usuario: int
     nombre: str
-    apellido: str
+    apellido: Optional[str] = None 
     correo: str
 
 
 class UsuarioResponse(ORMResponseModel):
     id_usuario: int
     nombre: str
-    apellido: str
+    apellido: Optional[str] = None  
     correo: EmailStr
 
 
@@ -77,10 +77,9 @@ class UsuarioResumenResponse(ORMResponseModel):
     Representación reducida del usuario para comentarios,
     evidencias y responsables.
     """
-
     id_usuario: int
     nombre: str
-    apellido: str
+    apellido: Optional[str] = None 
     correo: EmailStr
 
 

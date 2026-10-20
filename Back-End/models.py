@@ -177,7 +177,7 @@ class ProyectoUsuarioDB(Base):
 # ============================================================
 
 class Notificacion(Base):
-    __tablename__ = "notificaciones"
+    __tablename__ = "notificaciones"  # <--- ¡Esta línea es la que faltaba!
 
     id_notificacion = Column(
         Integer,
@@ -217,7 +217,6 @@ class Notificacion(Base):
         server_default=func.now(),
         nullable=False
     )
-
 
 # ============================================================
 # TAREAS

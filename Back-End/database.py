@@ -3,12 +3,15 @@ from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from motor.motor_asyncio import AsyncIOMotorClient
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
 
 # --- POSTGRESQL ---
-password = urllib.parse.quote_plus("H3cos31!")
-DATABASE_URL = f"postgresql://postgres:{password}@localhost:5432/ProdAdmin"
+URL_BASE_DATOS = os.getenv("DATABASE_URL")
 
-engine = create_engine(DATABASE_URL)
+engine = create_engine(URL_BASE_DATOS)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
@@ -19,6 +22,6 @@ def get_db():
     finally:
         db.close()
 
-MONGO_URL = "mongodb://localhost:27017"
-client = AsyncIOMotorClient(MONGO_URL)
+MONGO = os.getenv("MONGO_URL")
+client = AsyncIOMotorClient(MONGO)
 db_mongo = client.chat_db

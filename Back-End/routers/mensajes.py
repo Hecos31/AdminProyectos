@@ -203,15 +203,19 @@ async def websocket_endpoint(
     try:
         while True:
             # El cliente envía "ping" periódicamente.
-            # Recibir cualquier texto mantiene viva la conexión.
             await websocket.receive_text()
 
     except WebSocketDisconnect:
-        manager.disconnect(user_id)
+        # El usuario cerró la pestaña o recargó (F5). Esto es normal.
+        pass
+    except Exception as e:
+        print(f"[WS] Error inesperado en la conexión: {e}")
+    finally:
+        try:
+            manager.disconnect(user_id)
 
-    except Exception:
-        manager.disconnect(user_id)
-
+        except Exception:
+            pass
 
 @router.get(
     "/mensajes/conversaciones",

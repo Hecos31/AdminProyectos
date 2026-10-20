@@ -34,25 +34,26 @@ class NotificacionResponse(BaseModel):
 # ==========================================
 async def disparar_notificacion(usuario_id: int, tipo: str, mensaje: str, db: Session):
     """
-    Esta función NO es un endpoint web. Se importa y se llama desde otros módulos
-    (ej. mensajes.py, tareas.py) justo después de guardar un cambio o evento.
-    
-    Acepta ejecución 'async' para integrarse sin problemas con endpoints asíncronos (como el de mensajes).
+    Crea una notificación para un receptor específico.
     """
+    # 1. Validación de seguridad: Evitar enviar a IDs nulos o inválidos
+    if not usuario_id:
+        print("[NOTIFICACIÓN OMITIDA] No se proporcionó un usuario_id de destino válido.")
+        return False
+
     try:
-        # 1. Guardar el registro real en la base de datos
+        # 2. Guardar el registro real en la base de datos
         nueva_noti = models.Notificacion(
-            id_usuario=usuario_id,
+            id_usuario=usuario_id,  # ¡Este debe ser el ID del RECEPTOR, no de quien hace la acción!
             tipo=tipo,
             mensaje=mensaje
-            # 'leida' y 'fecha_creacion' se asignan con sus valores por defecto en la BD
         )
         
         db.add(nueva_noti)
         db.commit()
         db.refresh(nueva_noti)
 
-        print(f"[NOTIFICACIÓN ENVIADA] Usuario {usuario_id} | Tipo: {tipo} | Mensaje: {mensaje}")
+        print(f"[NOTIFICACIÓN ENVIADA] Para Usuario Destino {usuario_id} | Tipo: {tipo}")
         return True
 
     except Exception as e:
