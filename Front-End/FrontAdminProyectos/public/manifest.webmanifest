@@ -19,18 +19,5 @@
       "type": "image/png",
       "purpose": "any"
     }
-  ],
-  "screenshots": [
-    {
-      "src": "captura-pc.png",
-      "sizes": "1280x720",
-      "type": "image/png",
-      "form_factor": "wide"
-    },
-    {
-      "src": "captura-movil.png",
-      "sizes": "720x1280",
-      "type": "image/png"
-    }
   ]
 }
