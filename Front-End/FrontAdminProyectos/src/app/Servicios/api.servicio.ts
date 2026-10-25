@@ -614,6 +614,52 @@ export class ApiServicio {
     );
   }
 
+  analizarVozLoteConIA(
+    idProyecto: number,
+    transcripcionVoz: string
+  ): Observable<{
+    resumen_reunion: string;
+    tareas: Array<{
+      titulo: string;
+      descripcion: string;
+      prioridad: string;
+      id_usuario_asignado: number | null;
+      fecha_limite: string | null;
+    }>;
+  }> {
+    return this.http.post<any>(
+      `${this.apiUrl}/ai/analizar-voz-lote`,
+      {
+        id_proyecto: idProyecto,
+        texto_libre: transcripcionVoz
+      }
+    );
+  }
+
+  crearTareasEnLote(payload: {
+    id_proyecto: number;
+    publicar_minuta_chat: boolean;
+    resumen_reunion?: string | null;
+    tareas: Array<{
+      titulo: string;
+      descripcion: string | null;
+      prioridad: PrioridadTareaApi;
+      fecha_inicio?: string | null;
+      fecha_limite?: string | null;
+      id_usuario_asignado: number | null;
+    }>;
+  }): Observable<{
+    mensaje: string;
+    total_creadas: number;
+    minuta_publicada: boolean;
+    tareas: TareaApi[];
+  }> {
+    return this.http.post<any>(
+      `${this.apiUrl}/tareas/lote`,
+      payload
+    );
+  }
+
   // ============ NOTIFICACIONES (Blindadas por Token en el Backend) ============
   obtenerNotificaciones(): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiUrl}/notificaciones/`);

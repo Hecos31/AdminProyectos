@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 import mimetypes
 from pathlib import Path
@@ -18,7 +18,7 @@ from fastapi.responses import FileResponse
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session, joinedload
 
-from database import get_db
+from database import get_db, db_mongo
 from models import (
     ComentarioTareaDB,
     EvidenciaTareaDB,
@@ -37,6 +37,8 @@ from schemas import (
     PermisosTareaResponse,
     TareaAsignarUpdate,
     TareaCreate,
+    TareaLoteCreateRequest,
+    TareaLoteCreateResponse,
     TareaDetalleResponse,
     TareaEstadoUpdate,
     TareaResponse,
@@ -47,6 +49,7 @@ from schemas import (
 # Autenticación y Notificaciones
 from auth import obtener_usuario_actual, obtener_rol_en_proyecto
 from routers.notificaciones import disparar_notificacion
+from websocket import manager
 
 router = APIRouter(prefix="/tareas", tags=["Tareas - Tablón Kanban"])
 
@@ -451,6 +454,180 @@ async def crear_tarea(
         )
 
     return resultado
+
+
+
+# ============================================================
+# 1-B. CREAR LOTE DE TAREAS (VOICE-TO-ACTION + MINUTA MONGODB)
+# ============================================================
+
+@router.post(
+    "/lote",
+    response_model=TareaLoteCreateResponse,
+    status_code=status.HTTP_201_CREATED,
+)
+async def crear_tareas_lote(
+    lote_in: TareaLoteCreateRequest,
+    db: Session = Depends(get_db),
+    id_usuario_actual: int = Depends(obtener_usuario_actual),
+):
+    id_rol = exigir_miembro_proyecto(
+        lote_in.id_proyecto,
+        id_usuario_actual,
+        db,
+    )
+
+    if id_rol != 1:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Solo los administradores pueden registrar lotes de tareas.",
+        )
+
+    nuevas_tareas_db: list[TareaDB] = []
+    asignaciones_notificar: list[tuple[int, str]] = []
+
+    try:
+        for item in lote_in.tareas:
+            estado_inicial = (
+                EstadoTarea.ASIGNADA.value
+                if item.id_usuario_asignado is not None
+                else EstadoTarea.PENDIENTE.value
+            )
+
+            nueva_tarea = TareaDB(
+                id_proyecto=lote_in.id_proyecto,
+                titulo=item.titulo.strip(),
+                descripcion=item.descripcion.strip() if item.descripcion else None,
+                prioridad=item.prioridad.value,
+                estado=estado_inicial,
+                fecha_inicio=item.fecha_inicio,
+                fecha_limite=item.fecha_limite,
+            )
+            db.add(nueva_tarea)
+            db.flush()
+
+            if item.id_usuario_asignado is not None:
+                exigir_miembro_proyecto(
+                    lote_in.id_proyecto,
+                    item.id_usuario_asignado,
+                    db,
+                )
+                asignacion = TareaAsignadaDB(
+                    id_tarea=nueva_tarea.id_tarea,
+                    id_usuario=item.id_usuario_asignado,
+                )
+                db.add(asignacion)
+                asignaciones_notificar.append((item.id_usuario_asignado, nueva_tarea.titulo))
+
+            nuevas_tareas_db.append(nueva_tarea)
+
+        db.commit()
+        for nt in nuevas_tareas_db:
+            db.refresh(nt)
+
+    except HTTPException:
+        db.rollback()
+        raise
+    except Exception as exc:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error al crear el lote de tareas: {str(exc)}",
+        ) from exc
+
+    tareas_respuesta = [tarea_a_dict(nt, db) for nt in nuevas_tareas_db]
+
+    # Disparar notificaciones a los responsables asignados
+    for id_usr_dest, titulo_t in asignaciones_notificar:
+        await disparar_notificacion(
+            usuario_id=id_usr_dest,
+            tipo="NUEVA_TAREA_VOZ",
+            mensaje=f"Se te ha asignado por nota de reunión la tarea '{titulo_t}'.",
+            db=db,
+        )
+
+    # Publicar minuta accionable en la conversación grupal del proyecto en MongoDB
+    minuta_publicada = False
+    if lote_in.publicar_minuta_chat:
+        try:
+            conversacion = await db_mongo.conversations.find_one(
+                {"id_proyecto": lote_in.id_proyecto, "tipo": "grupal"}
+            )
+            if conversacion:
+                conv_id = conversacion["_id"]
+                lineas_minuta = [
+                    "🎙️ [Minuta Voice-to-Action — Acuerdos de Reunión Registrados]"
+                ]
+                if lote_in.resumen_reunion and lote_in.resumen_reunion.strip():
+                    lineas_minuta.append(f"Resumen: {lote_in.resumen_reunion.strip()}")
+                lineas_minuta.append(f"Actividades creadas ({len(tareas_respuesta)}):")
+
+                for idx_t, tr in enumerate(tareas_respuesta, start=1):
+                    resp_obj = tr.get("usuario_asignado")
+                    resp_nombre = (
+                        f"{resp_obj.get('nombre', '')} {resp_obj.get('apellido', '')}".strip()
+                        if resp_obj
+                        else "Sin asignar"
+                    )
+                    fecha_str = ""
+                    if tr.get("fecha_limite"):
+                        f_val = tr["fecha_limite"]
+                        fecha_str = (
+                            f" • Entrega: {f_val.strftime('%Y-%m-%d')}"
+                            if hasattr(f_val, "strftime")
+                            else f" • Entrega: {str(f_val)[:10]}"
+                        )
+                    lineas_minuta.append(
+                        f"{idx_t}. {tr['titulo']} [{tr['prioridad']}] → {resp_nombre}{fecha_str}"
+                    )
+
+                contenido_minuta = "\n".join(lineas_minuta)
+                fecha_envio = datetime.now(timezone.utc)
+
+                res_msg = await db_mongo.messages.insert_one(
+                    {
+                        "id_conversacion": conv_id,
+                        "id_usuario_remitente": id_usuario_actual,
+                        "contenido": contenido_minuta,
+                        "fecha_envio": fecha_envio,
+                    }
+                )
+                minuta_publicada = True
+
+                # Emitir en tiempo real por WebSocket a los participantes del proyecto
+                usuario_autor = obtener_usuario(id_usuario_actual, db)
+                nombre_autor = (
+                    f"{usuario_autor.nombre or ''} {usuario_autor.apellido or ''}".strip()
+                    if usuario_autor
+                    else f"Usuario #{id_usuario_actual}"
+                )
+                mensaje_ws = {
+                    "id": str(res_msg.inserted_id),
+                    "id_conversacion": str(conv_id),
+                    "id_usuario_remitente": id_usuario_actual,
+                    "contenido": contenido_minuta,
+                    "fecha_envio": fecha_envio.isoformat().replace("+00:00", "Z"),
+                    "remitente": {
+                        "id_usuario": id_usuario_actual,
+                        "nombre": nombre_autor,
+                    },
+                }
+                for part in conversacion.get("participantes", []):
+                    pid = part.get("id_usuario")
+                    if pid and pid != id_usuario_actual:
+                        try:
+                            await manager.enviar_mensaje_en_vivo(mensaje_ws, pid)
+                        except Exception:
+                            pass
+        except Exception as e_mongo:
+            print(f"[VOICE-TO-ACTION] No se pudo publicar la minuta en MongoDB: {e_mongo}")
+
+    return {
+        "mensaje": f"Se registraron {len(tareas_respuesta)} actividades exitosamente.",
+        "total_creadas": len(tareas_respuesta),
+        "minuta_publicada": minuta_publicada,
+        "tareas": tareas_respuesta,
+    }
 
 
 # ============================================================

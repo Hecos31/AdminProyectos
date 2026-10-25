@@ -310,6 +310,42 @@ class AITareaResponse(BaseModel):
     fecha_limite: Optional[str] = None
 
 
+class AIVoiceBatchResponse(BaseModel):
+    resumen_reunion: str
+    tareas: List[AITareaResponse] = Field(default_factory=list)
+
+
+class TareaLoteItemCreate(BaseModel):
+    titulo: str = Field(min_length=1, max_length=200)
+    descripcion: Optional[str] = None
+    prioridad: PrioridadTarea = PrioridadTarea.MEDIA
+    fecha_inicio: Optional[datetime] = None
+    fecha_limite: Optional[datetime] = None
+    id_usuario_asignado: Optional[int] = None
+
+    @field_validator("titulo")
+    @classmethod
+    def limpiar_titulo_lote(cls, valor: str) -> str:
+        valor_limpio = valor.strip()
+        if not valor_limpio:
+            raise ValueError("El título de la tarea es obligatorio")
+        return valor_limpio
+
+
+class TareaLoteCreateRequest(BaseModel):
+    id_proyecto: int
+    publicar_minuta_chat: bool = True
+    resumen_reunion: Optional[str] = None
+    tareas: List[TareaLoteItemCreate] = Field(min_length=1)
+
+
+class TareaLoteCreateResponse(BaseModel):
+    mensaje: str
+    total_creadas: int
+    minuta_publicada: bool = False
+    tareas: List[TareaResponse] = Field(default_factory=list)
+
+
 # ============================================================
 # COMENTARIOS DE TAREAS
 # ============================================================

@@ -692,6 +692,22 @@ export class PantallaPrincipalProyectoComponente
   }
 
 
+  irAVoiceToAction(): void {
+    this.router.navigate(
+      [
+        '/proyecto',
+        this.proyectoId,
+        'crearactividades'
+      ],
+      {
+        queryParams: {
+          modo: 'voz'
+        }
+      }
+    );
+  }
+
+
   volverAInicio(): void {
     this.router.navigate([
       '/inicio'

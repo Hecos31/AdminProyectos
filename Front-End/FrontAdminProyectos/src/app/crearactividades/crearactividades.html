@@ -148,18 +148,330 @@
             <h2>Crear y asignar actividad</h2>
 
             <p>
-              Utiliza el asistente o completa el formulario manualmente.
+              Crea una actividad individual o dicta los acuerdos de una reunión con Voice-to-Action.
             </p>
           </div>
+        </div>
+
+        <!-- SELECTOR DE MODO: INDIVIDUAL VS VOICE-TO-ACTION -->
+        <div class="creation-mode-tabs" role="tablist" aria-label="Modo de creación de actividades">
+          <button
+            type="button"
+            role="tab"
+            class="mode-tab-btn"
+            [class.active]="modoCreacion === 'individual'"
+            [attr.aria-selected]="modoCreacion === 'individual'"
+            (click)="cambiarModoCreacion('individual')"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M12 20h9"></path>
+              <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+            </svg>
+            Actividad individual
+          </button>
+
+          <button
+            type="button"
+            role="tab"
+            class="mode-tab-btn mode-tab-voice"
+            [class.active]="modoCreacion === 'voz-lote'"
+            [attr.aria-selected]="modoCreacion === 'voz-lote'"
+            (click)="cambiarModoCreacion('voz-lote')"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"></path>
+              <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+              <line x1="12" y1="19" x2="12" y2="22"></line>
+            </svg>
+            Voice-to-Action (Lote por Voz)
+            <span class="mode-pill-new">IA + Voz</span>
+          </button>
         </div>
 
       </div>
 
 
       <!-- ===================================================
+           ÓRBITA VOICE-TO-ACTION (DICTADO Y ACUERDOS EN LOTE)
+      ==================================================== -->
+      <div
+        *ngIf="modoCreacion === 'voz-lote'"
+        class="vta-panel"
+      >
+        <div class="vta-top-bar">
+          <div class="vta-brand">
+            <span class="vta-mic-badge" [class.recording]="grabandoVoz" aria-hidden="true">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"></path>
+                <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                <line x1="12" y1="19" x2="12" y2="22"></line>
+              </svg>
+            </span>
+
+            <div>
+              <div class="vta-title-row">
+                <h3>Órbita Voice-to-Action: De Voz y Acuerdos a Tareas en Lote</h3>
+                <span class="vta-tech-tag">Web Speech API + Gemini IA</span>
+              </div>
+              <p>
+                Dicta con tu micrófono o pega los acuerdos de la reunión. La IA extraerá múltiples tareas, inferirá prioridades, fechas y responsables automáticamente.
+              </p>
+            </div>
+          </div>
+
+          <div class="vta-top-actions">
+            <button
+              type="button"
+              class="k-btn k-btn-outline vta-demo-btn"
+              (click)="cargarEjemploReunionVoz()"
+              title="Cargar ejemplo de acuerdos de sprint"
+            >
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+              </svg>
+              Cargar ejemplo de reunión
+            </button>
+
+            <button
+              *ngIf="transcripcionVoz || loteTareasVoz.length > 0"
+              type="button"
+              class="k-btn k-btn-outline"
+              (click)="limpiarTranscripcionVoz()"
+            >
+              Limpiar
+            </button>
+          </div>
+        </div>
+
+        <!-- CONTROLES DE CAPTURA DE VOZ + TRANSCRIPCIÓN -->
+        <div class="vta-capture-grid">
+          <div class="vta-recorder-card" [class.is-recording]="grabandoVoz">
+            <button
+              type="button"
+              class="vta-record-button"
+              [class.recording]="grabandoVoz"
+              (click)="alternarGrabacionVoz()"
+              [attr.aria-pressed]="grabandoVoz"
+            >
+              <span class="vta-pulse-ring" *ngIf="grabandoVoz" aria-hidden="true"></span>
+              <svg *ngIf="!grabandoVoz" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"></path>
+                <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                <line x1="12" y1="19" x2="12" y2="22"></line>
+              </svg>
+              <svg *ngIf="grabandoVoz" width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <rect x="6" y="6" width="12" height="12" rx="2"></rect>
+              </svg>
+            </button>
+
+            <div class="vta-recorder-status">
+              <strong>
+                {{ grabandoVoz ? 'Escuchando acuerdos en vivo...' : 'Captura por micrófono' }}
+              </strong>
+              <span class="vta-timer" *ngIf="grabandoVoz">
+                ● {{ tiempoGrabacionFormateado }} — Habla con naturalidad
+              </span>
+              <span class="vta-hint" *ngIf="!grabandoVoz">
+                {{ soportaReconocimientoVoz ? 'Haz clic para iniciar el dictado continuo (es-MX)' : 'Dictado directo no disponible en este navegador; usa el cuadro de texto o el botón de ejemplo' }}
+              </span>
+            </div>
+
+            <!-- ONDA ACÚSTICA ANIMADA -->
+            <div class="vta-waveform" [class.active]="grabandoVoz" aria-hidden="true">
+              <span></span><span></span><span></span><span></span><span></span>
+              <span></span><span></span><span></span><span></span><span></span>
+            </div>
+          </div>
+
+          <!-- ÁREA DE TRANSCRIPCIÓN EDITABLE -->
+          <div class="vta-transcript-box">
+            <label for="vta-transcripcion-input" class="vta-label">
+              Transcripción de acuerdos de la reunión
+              <small *ngIf="textoInterinoVoz" class="vta-interim">
+                Detectando: "{{ textoInterinoVoz }}"
+              </small>
+            </label>
+
+            <textarea
+              id="vta-transcripcion-input"
+              [(ngModel)]="transcripcionVoz"
+              class="k-input vta-textarea"
+              rows="3"
+              placeholder="Dicta con el micrófono o escribe aquí los acuerdos. Ejemplo: 'Para esta semana que Héctor configure los endpoints JWT para el viernes con prioridad alta, y que Ana diseñe las vistas móviles para el lunes...'"
+            ></textarea>
+
+            <div class="vta-transcript-footer">
+              <span class="vta-collab-count">
+                Colaboradores reconocidos en el proyecto: <strong>{{ colaboradores.length }}</strong>
+              </span>
+
+              <button
+                type="button"
+                class="k-btn k-btn-create vta-analyze-btn"
+                (click)="analizarAcuerdosVoz()"
+                [disabled]="analizandoVozIA || !transcripcionVoz.trim()"
+                [attr.aria-busy]="analizandoVozIA"
+              >
+                <span *ngIf="analizandoVozIA" class="button-spinner" aria-hidden="true"></span>
+                <svg *ngIf="!analizandoVozIA" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M12 3l1.2 3.8L17 8l-3.8 1.2L12 13l-1.2-3.8L7 8l3.8-1.2L12 3z"></path>
+                  <path d="M19 14l.8 2.2L22 17l-2.2.8L19 20l-.8-2.2L16 17l2.2-.8L19 14z"></path>
+                </svg>
+                {{ analizandoVozIA ? 'Extrayendo actividades con IA...' : 'Extraer lote de actividades con IA' }}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- PREVISUALIZACIÓN INTERACTIVA DE TARJETAS EN LOTE -->
+        <div
+          *ngIf="loteTareasVoz.length > 0"
+          class="vta-batch-preview"
+        >
+          <div class="vta-preview-header">
+            <div>
+              <span class="creation-eyebrow">Previsualización inteligente</span>
+              <h4>
+                Tarjetas extraídas listas para confirmación ({{ totalTareasVozSeleccionadas }} de {{ loteTareasVoz.length }} seleccionadas)
+              </h4>
+              <p *ngIf="resumenReunionVoz" class="vta-summary-text">
+                <strong>Resumen IA de la minuta:</strong> {{ resumenReunionVoz }}
+              </p>
+            </div>
+
+            <button
+              type="button"
+              class="k-btn k-btn-outline"
+              (click)="agregarTarjetaVozManual()"
+            >
+              + Añadir tarjeta extra al lote
+            </button>
+          </div>
+
+          <div class="vta-cards-grid">
+            <article
+              *ngFor="let item of loteTareasVoz; let i = index"
+              class="vta-draft-card"
+              [class.unselected]="!item.seleccionada"
+            >
+              <div class="vta-draft-top">
+                <label class="vta-checkbox-label">
+                  <input
+                    type="checkbox"
+                    [(ngModel)]="item.seleccionada"
+                  />
+                  <span>Incluir tarea #{{ i + 1 }}</span>
+                </label>
+
+                <div class="vta-draft-top-right">
+                  <select
+                    class="vta-prio-select"
+                    [(ngModel)]="item.prioridad"
+                    [attr.data-prio]="item.prioridad.toLowerCase()"
+                    aria-label="Prioridad de la tarea"
+                  >
+                    <option value="Alta">Prioridad Alta</option>
+                    <option value="Media">Prioridad Media</option>
+                    <option value="Baja">Prioridad Baja</option>
+                  </select>
+
+                  <button
+                    type="button"
+                    class="vta-remove-card"
+                    (click)="eliminarTarjetaVoz(i)"
+                    title="Descartar tarjeta"
+                    aria-label="Descartar tarjeta"
+                  >
+                    ✕
+                  </button>
+                </div>
+              </div>
+
+              <div class="vta-draft-body">
+                <input
+                  type="text"
+                  class="k-input vta-input-title"
+                  [(ngModel)]="item.titulo"
+                  placeholder="Título de la actividad"
+                />
+
+                <textarea
+                  rows="2"
+                  class="k-input vta-input-desc"
+                  [(ngModel)]="item.descripcion"
+                  placeholder="Descripción técnica o entregables..."
+                ></textarea>
+
+                <div class="vta-draft-meta">
+                  <div class="vta-meta-field">
+                    <label>Responsable asignado</label>
+                    <select
+                      class="k-input vta-select-sm"
+                      [(ngModel)]="item.id_usuario_asignado"
+                    >
+                      <option [ngValue]="null">Sin asignar (Pendiente)</option>
+                      <option
+                        *ngFor="let colab of colaboradores"
+                        [ngValue]="colab.id_usuario"
+                      >
+                        {{ colab.nombre }} {{ colab.apellido }}
+                      </option>
+                    </select>
+                  </div>
+
+                  <div class="vta-meta-field">
+                    <label>Fecha límite</label>
+                    <input
+                      type="date"
+                      class="k-input vta-select-sm"
+                      [(ngModel)]="item.fecha_limite"
+                      [min]="fechaMinima"
+                    />
+                  </div>
+                </div>
+              </div>
+            </article>
+          </div>
+
+          <!-- BARRA DE CONFIRMACIÓN MASIVA + MINUTA EN MONGODB -->
+          <div class="vta-confirm-bar">
+            <label class="vta-minuta-toggle">
+              <input
+                type="checkbox"
+                [(ngModel)]="publicarMinutaChat"
+              />
+              <span>
+                <strong>Publicar minuta de acuerdos automáticamente en el chat grupal del proyecto (MongoDB)</strong>
+                <small>Notifica en tiempo real por WebSockets a todo el equipo con el desglose de tareas asignadas.</small>
+              </span>
+            </label>
+
+            <button
+              type="button"
+              class="k-btn k-btn-create vta-confirm-btn"
+              (click)="confirmarLoteTareasVoz()"
+              [disabled]="guardandoLoteVoz || totalTareasVozSeleccionadas === 0"
+              [attr.aria-busy]="guardandoLoteVoz"
+            >
+              <span *ngIf="guardandoLoteVoz" class="button-spinner" aria-hidden="true"></span>
+              <svg *ngIf="!guardandoLoteVoz" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <polyline points="20 6 9 17 4 12"></polyline>
+              </svg>
+              {{
+                guardandoLoteVoz
+                  ? 'Registrando lote en el tablero...'
+                  : 'Confirmar y Registrar ' + totalTareasVozSeleccionadas + ' Tareas en Tablero'
+              }}
+            </button>
+          </div>
+        </div>
+      </div>
+
+
+      <!-- ===================================================
            ASISTENTE DE IA
       ==================================================== -->
-      <div class="k-ai-box">
+      <div class="k-ai-box" *ngIf="modoCreacion === 'individual'">
 
         <div class="k-ai-header">
 
@@ -249,6 +561,7 @@
            FORMULARIO MANUAL
       ==================================================== -->
       <form
+        *ngIf="modoCreacion === 'individual'"
         class="k-manual-form"
         (ngSubmit)="crearTarea()"
       >

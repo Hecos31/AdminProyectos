@@ -2,6 +2,7 @@
 import {
   Component,
   OnInit,
+  OnDestroy,
   ChangeDetectorRef,
   inject
 } from '@angular/core';
@@ -46,6 +47,16 @@ import {
 } from '../Servicios/confirmacion.service';
 
 
+interface TarjetaBorradorVoz {
+  id_temporal: number;
+  seleccionada: boolean;
+  titulo: string;
+  descripcion: string;
+  prioridad: PrioridadTareaApi;
+  fecha_limite: string;
+  id_usuario_asignado: number | null;
+}
+
 interface FormularioNuevaTarea {
   titulo: string;
   descripcion: string;
@@ -71,7 +82,7 @@ interface FormularioNuevaTarea {
   templateUrl: './crearactividades.html',
   styleUrl: './crearactividades.css'
 })
-export class Crearactividades implements OnInit {
+export class Crearactividades implements OnInit, OnDestroy {
   // =========================================================
   // INYECCIÓN DE DEPENDENCIAS
   // =========================================================
@@ -135,6 +146,29 @@ export class Crearactividades implements OnInit {
 
 
   // =========================================================
+  // ESTADO VOICE-TO-ACTION (VOZ Y MINUTAS A TAREAS EN LOTE)
+  // =========================================================
+
+  modoCreacion: 'individual' | 'voz-lote' = 'individual';
+
+  soportaReconocimientoVoz = false;
+  grabandoVoz = false;
+  analizandoVozIA = false;
+  guardandoLoteVoz = false;
+
+  transcripcionVoz = '';
+  textoInterinoVoz = '';
+  resumenReunionVoz = '';
+
+  tiempoGrabacionSeg = 0;
+  private intervaloTimerVoz: number | null = null;
+  private reconocimientoVoz: any = null;
+
+  loteTareasVoz: TarjetaBorradorVoz[] = [];
+  publicarMinutaChat = true;
+
+
+  // =========================================================
   // CICLO DE VIDA
   // =========================================================
 
@@ -157,6 +191,8 @@ export class Crearactividades implements OnInit {
     }
 
     this.establecerFechaMinima();
+    this.inicializarReconocimientoVoz();
+    this.verificarModoInicial();
     this.cargarDatosIniciales();
   }
 
@@ -755,6 +791,366 @@ export class Crearactividades implements OnInit {
       '/proyecto',
       this.proyectoId
     ]);
+  }
+
+
+  ngOnDestroy(): void {
+    this.detenerGrabacionVoz();
+  }
+
+
+  // =========================================================
+  // VOICE-TO-ACTION: RECONOCIMIENTO DE VOZ Y LOTES CON IA
+  // =========================================================
+
+  private verificarModoInicial(): void {
+    const modo = this.route.snapshot.queryParamMap.get('modo');
+
+    if (modo === 'voz' || modo === 'voz-lote') {
+      this.modoCreacion = 'voz-lote';
+    }
+  }
+
+
+  cambiarModoCreacion(modo: 'individual' | 'voz-lote'): void {
+    if (this.modoCreacion === modo) {
+      return;
+    }
+
+    if (this.grabandoVoz) {
+      this.detenerGrabacionVoz();
+    }
+
+    this.modoCreacion = modo;
+  }
+
+
+  private inicializarReconocimientoVoz(): void {
+    if (typeof window === 'undefined') {
+      this.soportaReconocimientoVoz = false;
+      return;
+    }
+
+    const SpeechRecognitionCtor =
+      (window as any).SpeechRecognition ||
+      (window as any).webkitSpeechRecognition;
+
+    if (!SpeechRecognitionCtor) {
+      this.soportaReconocimientoVoz = false;
+      return;
+    }
+
+    this.soportaReconocimientoVoz = true;
+    const recognition = new SpeechRecognitionCtor();
+    recognition.lang = 'es-MX';
+    recognition.continuous = true;
+    recognition.interimResults = true;
+
+    recognition.onresult = (event: any) => {
+      let interino = '';
+      let finalAcumulado = '';
+
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        const fragmento = event.results[i][0]?.transcript ?? '';
+        if (event.results[i].isFinal) {
+          finalAcumulado += fragmento + ' ';
+        } else {
+          interino += fragmento;
+        }
+      }
+
+      if (finalAcumulado.trim()) {
+        const base = this.transcripcionVoz.trim();
+        this.transcripcionVoz = base
+          ? `${base} ${finalAcumulado.trim()}`
+          : finalAcumulado.trim();
+      }
+
+      this.textoInterinoVoz = interino;
+      this.cdr.detectChanges();
+    };
+
+    recognition.onerror = (event: any) => {
+      console.warn('Aviso en reconocimiento de voz:', event?.error);
+      if (event?.error === 'not-allowed') {
+        this.mostrarToast(
+          'Permiso de micrófono denegado. Puedes escribir o cargar un ejemplo.',
+          'error'
+        );
+      }
+      this.detenerGrabacionVoz();
+      this.cdr.detectChanges();
+    };
+
+    recognition.onend = () => {
+      if (this.grabandoVoz) {
+        this.grabandoVoz = false;
+        this.detenerTimerVoz();
+        this.textoInterinoVoz = '';
+        this.cdr.detectChanges();
+      }
+    };
+
+    this.reconocimientoVoz = recognition;
+  }
+
+
+  alternarGrabacionVoz(): void {
+    if (this.grabandoVoz) {
+      this.detenerGrabacionVoz();
+    } else {
+      this.iniciarGrabacionVoz();
+    }
+  }
+
+
+  iniciarGrabacionVoz(): void {
+    if (!this.soportaReconocimientoVoz || !this.reconocimientoVoz) {
+      this.mostrarToast(
+        'Tu navegador no soporta dictado directo. Usa el botón de ejemplo o pega los acuerdos.',
+        'error'
+      );
+      return;
+    }
+
+    try {
+      this.textoInterinoVoz = '';
+      this.grabandoVoz = true;
+      this.tiempoGrabacionSeg = 0;
+      this.iniciarTimerVoz();
+      this.reconocimientoVoz.start();
+    } catch (error) {
+      console.warn('No se pudo iniciar la grabación:', error);
+      this.grabandoVoz = false;
+      this.detenerTimerVoz();
+    }
+  }
+
+
+  detenerGrabacionVoz(): void {
+    this.detenerTimerVoz();
+
+    if (this.textoInterinoVoz.trim()) {
+      const base = this.transcripcionVoz.trim();
+      this.transcripcionVoz = base
+        ? `${base} ${this.textoInterinoVoz.trim()}`
+        : this.textoInterinoVoz.trim();
+      this.textoInterinoVoz = '';
+    }
+
+    if (this.reconocimientoVoz && this.grabandoVoz) {
+      try {
+        this.reconocimientoVoz.stop();
+      } catch {
+        // Ignorar si ya estaba detenido
+      }
+    }
+
+    this.grabandoVoz = false;
+  }
+
+
+  private iniciarTimerVoz(): void {
+    this.detenerTimerVoz();
+    this.intervaloTimerVoz = window.setInterval(() => {
+      this.tiempoGrabacionSeg += 1;
+      this.cdr.detectChanges();
+    }, 1000);
+  }
+
+
+  private detenerTimerVoz(): void {
+    if (this.intervaloTimerVoz !== null) {
+      window.clearInterval(this.intervaloTimerVoz);
+      this.intervaloTimerVoz = null;
+    }
+  }
+
+
+  get tiempoGrabacionFormateado(): string {
+    const min = Math.floor(this.tiempoGrabacionSeg / 60);
+    const seg = this.tiempoGrabacionSeg % 60;
+    return `${String(min).padStart(2, '0')}:${String(seg).padStart(2, '0')}`;
+  }
+
+
+  cargarEjemploReunionVoz(): void {
+    const primerColab = this.colaboradores[0]?.nombre || 'Héctor';
+    const segundoColab = this.colaboradores[1]?.nombre || primerColab;
+    const tercerColab = this.colaboradores[2]?.nombre || primerColab;
+
+    this.transcripcionVoz =
+      `Para este sprint necesitamos tres entregas clave: primero, que ${primerColab} optimice los endpoints de seguridad JWT y validación de sesiones para este viernes con prioridad alta; ` +
+      `segundo, que ${segundoColab} diseñe los componentes responsivos del panel de métricas y tarjetas móviles para el próximo lunes con prioridad media; ` +
+      `y tercero, que ${tercerColab} ejecute las pruebas de integración con MongoDB y documente la colección de mensajes con prioridad alta.`;
+
+    this.mostrarToast(
+      'Transcripción de reunión de ejemplo cargada. Presiona "Extraer lote con IA".',
+      'exito'
+    );
+  }
+
+
+  limpiarTranscripcionVoz(): void {
+    if (this.grabandoVoz) {
+      this.detenerGrabacionVoz();
+    }
+    this.transcripcionVoz = '';
+    this.textoInterinoVoz = '';
+    this.loteTareasVoz = [];
+    this.resumenReunionVoz = '';
+  }
+
+
+  analizarAcuerdosVoz(): void {
+    if (this.grabandoVoz) {
+      this.detenerGrabacionVoz();
+    }
+
+    const texto = this.transcripcionVoz.trim();
+    if (!texto || this.analizandoVozIA) {
+      return;
+    }
+
+    this.analizandoVozIA = true;
+
+    this.apiService
+      .analizarVozLoteConIA(this.proyectoId, texto)
+      .subscribe({
+        next: (respuesta) => {
+          const tareasDetectadas = Array.isArray(respuesta?.tareas)
+            ? respuesta.tareas
+            : [];
+
+          this.resumenReunionVoz =
+            respuesta?.resumen_reunion?.trim() ||
+            `Se identificaron ${tareasDetectadas.length} actividades a partir de los acuerdos dictados.`;
+
+          this.loteTareasVoz = tareasDetectadas.map((item, idx) => ({
+            id_temporal: Date.now() + idx,
+            seleccionada: true,
+            titulo: item.titulo || `Actividad detectada #${idx + 1}`,
+            descripcion: item.descripcion || '',
+            prioridad: this.normalizarPrioridad(item.prioridad),
+            fecha_limite: item.fecha_limite || '',
+            id_usuario_asignado: item.id_usuario_asignado ?? null
+          }));
+
+          this.analizandoVozIA = false;
+
+          if (this.loteTareasVoz.length > 0) {
+            this.mostrarToast(
+              `¡IA detectó ${this.loteTareasVoz.length} actividades listas para revisión!`,
+              'exito'
+            );
+          } else {
+            this.mostrarToast(
+              'No se detectaron actividades claras en el dictado.',
+              'error'
+            );
+          }
+
+          this.cdr.detectChanges();
+        },
+        error: () => {
+          this.analizandoVozIA = false;
+          this.mostrarToast(
+            'No fue posible analizar los acuerdos con IA en este momento.',
+            'error'
+          );
+          this.cdr.detectChanges();
+        }
+      });
+  }
+
+
+  agregarTarjetaVozManual(): void {
+    this.loteTareasVoz.push({
+      id_temporal: Date.now() + this.loteTareasVoz.length,
+      seleccionada: true,
+      titulo: 'Nueva actividad de reunión',
+      descripcion: '',
+      prioridad: 'Media',
+      fecha_limite: '',
+      id_usuario_asignado: null
+    });
+  }
+
+
+  eliminarTarjetaVoz(index: number): void {
+    this.loteTareasVoz.splice(index, 1);
+  }
+
+
+  get totalTareasVozSeleccionadas(): number {
+    return this.loteTareasVoz.filter(
+      (item) => item.seleccionada && item.titulo.trim().length > 0
+    ).length;
+  }
+
+
+  confirmarLoteTareasVoz(): void {
+    const seleccionadas = this.loteTareasVoz.filter(
+      (item) => item.seleccionada && item.titulo.trim().length > 0
+    );
+
+    if (seleccionadas.length === 0 || this.guardandoLoteVoz) {
+      this.mostrarToast(
+        'Selecciona al menos una actividad válida para registrar.',
+        'error'
+      );
+      return;
+    }
+
+    this.guardandoLoteVoz = true;
+
+    this.apiService
+      .crearTareasEnLote({
+        id_proyecto: this.proyectoId,
+        tareas: seleccionadas.map((t) => ({
+          titulo: t.titulo.trim(),
+          descripcion: t.descripcion.trim() || null,
+          prioridad: t.prioridad,
+          fecha_inicio: this.fechaMinima || null,
+          fecha_limite: t.fecha_limite || null,
+          id_usuario_asignado: t.id_usuario_asignado
+        })),
+        publicar_minuta_chat: this.publicarMinutaChat,
+        resumen_reunion:
+          this.resumenReunionVoz ||
+          `Acuerdos registrados por voz (${seleccionadas.length} actividades).`
+      })
+      .subscribe({
+        next: (resp) => {
+          this.guardandoLoteVoz = false;
+          const creadas = resp?.total_creadas ?? seleccionadas.length;
+          const msgMinuta = resp?.minuta_publicada
+            ? ' y minuta publicada en el chat del proyecto'
+            : '';
+
+          this.mostrarToast(
+            `¡${creadas} actividades creadas en el tablero${msgMinuta}!`,
+            'exito'
+          );
+
+          this.loteTareasVoz = [];
+          this.transcripcionVoz = '';
+          this.resumenReunionVoz = '';
+
+          this.apiService.notificarCambio();
+          this.cargarTareas();
+          this.cdr.detectChanges();
+        },
+        error: (err) => {
+          this.guardandoLoteVoz = false;
+          this.mostrarToast(
+            err?.error?.detail ||
+              'Ocurrió un error al registrar el lote de actividades.',
+            'error'
+          );
+          this.cdr.detectChanges();
+        }
+      });
   }
 
 
