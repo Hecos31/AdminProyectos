@@ -1,0 +1,657 @@
+<div class="calendar-page page-shell">
+  <main class="calendar-content page-content">
+
+    <!-- =====================================================
+         CABECERA
+    ====================================================== -->
+    <header class="calendar-header">
+      <div class="header-copy">
+        <div class="title-line">
+          <button
+            *ngIf="esVistaProyecto"
+            type="button"
+            class="back-button"
+            (click)="volverAlProyecto()"
+            aria-label="Volver al proyecto"
+            title="Volver al proyecto"
+          >
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.3"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path d="m15 18-6-6 6-6"></path>
+            </svg>
+          </button>
+
+          <span
+            class="calendar-icon"
+            aria-hidden="true"
+          >
+            <svg
+              width="22"
+              height="22"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <rect
+                x="3"
+                y="4"
+                width="18"
+                height="17"
+                rx="3"
+              ></rect>
+
+              <path d="M16 2v4"></path>
+              <path d="M8 2v4"></path>
+              <path d="M3 10h18"></path>
+            </svg>
+          </span>
+
+          <div>
+            <span class="eyebrow">
+              Planeación de actividades
+            </span>
+
+            <div class="heading-title-row">
+              <h1>
+                {{ tituloVista }}
+              </h1>
+
+              <span class="context-badge">
+                {{ etiquetaContexto }}
+              </span>
+            </div>
+
+            <p>
+              {{ descripcionVista }}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <button
+        type="button"
+        class="refresh-button"
+        (click)="
+          esVistaProyecto
+            ? cargarCalendarioProyecto()
+            : cargarCalendarioGlobal()
+        "
+        [disabled]="cargando"
+      >
+        <svg
+          width="17"
+          height="17"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+        >
+          <path d="M20 11a8.1 8.1 0 0 0-15.5-2"></path>
+          <path d="M4 4v5h5"></path>
+          <path d="M4 13a8.1 8.1 0 0 0 15.5 2"></path>
+          <path d="M20 20v-5h-5"></path>
+        </svg>
+
+        Actualizar
+      </button>
+    </header>
+
+
+    <!-- =====================================================
+         MENSAJES
+    ====================================================== -->
+    <section
+      *ngIf="cargando"
+      class="status-message loading-message"
+      aria-live="polite"
+    >
+      <span
+        class="spinner"
+        aria-hidden="true"
+      ></span>
+
+      <div>
+        <strong>
+          Preparando el calendario
+        </strong>
+
+        <p>
+          Estamos obteniendo las actividades y sus fechas.
+        </p>
+      </div>
+    </section>
+
+
+    <section
+      *ngIf="!cargando && errorMessage"
+      class="status-message error-message"
+      role="alert"
+    >
+      <svg
+        width="20"
+        height="20"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        aria-hidden="true"
+      >
+        <circle cx="12" cy="12" r="10"></circle>
+        <path d="M12 8v4"></path>
+        <path d="M12 16h.01"></path>
+      </svg>
+
+      <div>
+        <strong>
+          No se pudo cargar el calendario
+        </strong>
+
+        <p>
+          {{ errorMessage }}
+        </p>
+      </div>
+    </section>
+
+
+    <section
+      *ngIf="!cargando && warningMessage"
+      class="status-message warning-message"
+    >
+      <svg
+        width="20"
+        height="20"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        aria-hidden="true"
+      >
+        <path d="M12 9v4"></path>
+        <path d="M12 17h.01"></path>
+        <path d="M10.3 3.7 2.2 18a2 2 0 0 0 1.7 3h16.2a2 2 0 0 0 1.7-3L13.7 3.7a2 2 0 0 0-3.4 0Z"></path>
+      </svg>
+
+      <span>
+        {{ warningMessage }}
+      </span>
+    </section>
+
+
+    <ng-container *ngIf="!cargando && !errorMessage">
+
+      <!-- ===================================================
+           RESUMEN DEL MES
+      ==================================================== -->
+      <section class="calendar-summary">
+        <article class="summary-card">
+          <span class="summary-icon icon-blue">
+            <svg
+              width="19"
+              height="19"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              aria-hidden="true"
+            >
+              <rect x="4" y="4" width="16" height="16" rx="3"></rect>
+              <path d="M8 9h8"></path>
+              <path d="M8 13h5"></path>
+            </svg>
+          </span>
+
+          <div>
+            <span>
+              Actividades del mes
+            </span>
+
+            <strong>
+              {{ totalMes }}
+            </strong>
+          </div>
+        </article>
+
+
+        <article class="summary-card">
+          <span class="summary-icon icon-green">
+            <svg
+              width="19"
+              height="19"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.3"
+              aria-hidden="true"
+            >
+              <path d="m20 6-11 11-5-5"></path>
+            </svg>
+          </span>
+
+          <div>
+            <span>
+              Concluidas
+            </span>
+
+            <strong>
+              {{ concluidasMes }}
+            </strong>
+          </div>
+        </article>
+
+
+        <article class="summary-card">
+          <span class="summary-icon icon-red">
+            <svg
+              width="19"
+              height="19"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              aria-hidden="true"
+            >
+              <circle cx="12" cy="12" r="9"></circle>
+              <path d="M12 7v5"></path>
+              <path d="M12 16h.01"></path>
+            </svg>
+          </span>
+
+          <div>
+            <span>
+              Vencidas
+            </span>
+
+            <strong>
+              {{ vencidasMes }}
+            </strong>
+          </div>
+        </article>
+
+
+        <article class="summary-card">
+          <span class="summary-icon icon-orange">
+            <svg
+              width="19"
+              height="19"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              aria-hidden="true"
+            >
+              <path d="m13 2-2 9h8l-8 11 2-9H5Z"></path>
+            </svg>
+          </span>
+
+          <div>
+            <span>
+              Prioridad alta
+            </span>
+
+            <strong>
+              {{ altaPrioridadMes }}
+            </strong>
+          </div>
+        </article>
+      </section>
+
+
+      <!-- ===================================================
+           CONTROLES DEL MES
+      ==================================================== -->
+      <section class="month-toolbar">
+        <div class="month-navigation">
+          <button
+            type="button"
+            class="month-button"
+            (click)="mesAnterior()"
+            aria-label="Mes anterior"
+            title="Mes anterior"
+          >
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.3"
+              aria-hidden="true"
+            >
+              <path d="m15 18-6-6 6-6"></path>
+            </svg>
+          </button>
+
+          <div class="month-copy">
+            <strong>
+              {{ mesActualNombre | titlecase }}
+            </strong>
+
+            <span>
+              {{ anioActual }}
+            </span>
+          </div>
+
+          <button
+            type="button"
+            class="month-button"
+            (click)="mesSiguiente()"
+            aria-label="Mes siguiente"
+            title="Mes siguiente"
+          >
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.3"
+              aria-hidden="true"
+            >
+              <path d="m9 18 6-6-6-6"></path>
+            </svg>
+          </button>
+        </div>
+
+        <button
+          type="button"
+          class="today-button"
+          (click)="irAHoy()"
+        >
+          Hoy
+        </button>
+      </section>
+
+
+      <!-- ===================================================
+           CALENDARIO Y PANEL LATERAL
+      ==================================================== -->
+      <section class="calendar-layout">
+
+        <div class="calendar-card">
+          <div class="calendar-scroll">
+            <div class="calendar-grid">
+
+              <div class="day-names-row">
+                <div
+                  *ngFor="let nombreDia of nombresDias"
+                  class="day-name"
+                >
+                  {{ nombreDia }}
+                </div>
+              </div>
+
+
+              <div class="days-grid">
+                <button
+                  *ngFor="
+                    let dia of diasMatriz;
+                    trackBy: trackDia
+                  "
+                  type="button"
+                  class="day-cell"
+                  [class.other-month]="!dia.esMesActual"
+                  [class.today]="dia.esHoy"
+                  [class.selected]="esDiaSeleccionado(dia)"
+                  [class.has-tasks]="dia.tareas.length > 0"
+                  (click)="seleccionarDia(dia)"
+                >
+                  <span class="day-cell-header">
+                    <span class="day-number">
+                      {{ dia.numeroDia }}
+                    </span>
+
+                    <span
+                      *ngIf="dia.tareas.length > 0"
+                      class="day-task-count"
+                    >
+                      {{ dia.tareas.length }}
+                    </span>
+                  </span>
+
+                  <span class="tasks-indicators">
+                    <span
+                      *ngFor="
+                        let tarea of dia.tareas | slice:0:3;
+                        trackBy: trackTarea
+                      "
+                      class="task-chip"
+                      [ngClass]="
+                        obtenerClasePrioridad(
+                          tarea.prioridad
+                        )
+                      "
+                      [title]="
+                        tarea.titulo +
+                        ' · ' +
+                        tarea.prioridad
+                      "
+                    >
+                      <i></i>
+
+                      <span>
+                        {{ tarea.titulo }}
+                      </span>
+                    </span>
+
+                    <span
+                      *ngIf="dia.tareas.length > 3"
+                      class="more-counter"
+                    >
+                      +{{ dia.tareas.length - 3 }} más
+                    </span>
+                  </span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+
+        <!-- PANEL DEL DÍA -->
+        <aside
+          *ngIf="diaSeleccionado"
+          class="side-panel"
+        >
+          <header class="panel-header">
+            <div>
+              <span class="panel-eyebrow">
+                Día seleccionado
+              </span>
+
+              <h2>
+                {{
+                  diaSeleccionado.fecha |
+                  date:'fullDate':'':'es-ES' |
+                  titlecase
+                }}
+              </h2>
+            </div>
+
+            <span class="badge-count">
+              {{ diaSeleccionado.tareas.length }}
+            </span>
+          </header>
+
+
+          <div
+            *ngIf="diaSeleccionado.tareas.length > 0"
+            class="panel-content"
+          >
+            <button
+              *ngFor="
+                let tarea of diaSeleccionado.tareas;
+                trackBy: trackTarea
+              "
+              type="button"
+              class="task-card"
+              (click)="abrirDetalleTarea(tarea, $event)"
+            >
+              <span class="task-card-top">
+                <span class="badges-group">
+                  <span
+                    class="status-pill"
+                    [ngClass]="
+                      obtenerClaseEstado(
+                        tarea.estado
+                      )
+                    "
+                  >
+                    {{ tarea.estado }}
+                  </span>
+
+                  <span
+                    class="priority-pill"
+                    [ngClass]="
+                      obtenerClasePrioridad(
+                        tarea.prioridad
+                      )
+                    "
+                  >
+                    {{ tarea.prioridad }}
+                  </span>
+                </span>
+
+                <span
+                  *ngIf="!esVistaProyecto"
+                  class="project-tag"
+                  [title]="tarea.nombre_proyecto"
+                >
+                  {{ tarea.nombre_proyecto }}
+                </span>
+              </span>
+
+              <strong class="task-title">
+                {{ tarea.titulo }}
+              </strong>
+
+              <span
+                *ngIf="tarea.descripcion"
+                class="task-description"
+              >
+                {{ tarea.descripcion }}
+              </span>
+
+              <span class="task-footer">
+                <span class="responsible-info">
+                  <span class="responsible-avatar">
+                    {{
+                      obtenerInicialesResponsable(
+                        tarea
+                      )
+                    }}
+                  </span>
+
+                  <span>
+                    {{
+                      tarea.usuario_asignado
+                        ? tarea.usuario_asignado.nombre +
+                          ' ' +
+                          tarea.usuario_asignado.apellido
+                        : 'Sin responsable'
+                    }}
+                  </span>
+                </span>
+
+                <span
+                  class="date-type"
+                  [class.start-date]="
+                    tarea.tipo_fecha === 'inicio'
+                  "
+                >
+                  {{
+                    tarea.tipo_fecha === 'limite'
+                      ? 'Vence'
+                      : 'Inicia'
+                  }}
+                </span>
+              </span>
+
+              <span class="open-detail">
+                Ver detalles completos
+
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  aria-hidden="true"
+                >
+                  <path d="m9 18 6-6-6-6"></path>
+                </svg>
+              </span>
+            </button>
+          </div>
+
+
+          <div
+            *ngIf="diaSeleccionado.tareas.length === 0"
+            class="empty-day"
+          >
+            <span class="empty-icon">
+              <svg
+                width="30"
+                height="30"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.7"
+                aria-hidden="true"
+              >
+                <rect
+                  x="3"
+                  y="4"
+                  width="18"
+                  height="17"
+                  rx="3"
+                ></rect>
+
+                <path d="M16 2v4"></path>
+                <path d="M8 2v4"></path>
+                <path d="M3 10h18"></path>
+                <path d="m9 16 2 2 4-4"></path>
+              </svg>
+            </span>
+
+            <strong>
+              Día sin actividades
+            </strong>
+
+            <p>
+              No hay actividades programadas para esta fecha.
+            </p>
+          </div>
+        </aside>
+      </section>
+    </ng-container>
+  </main>
+</div>
+
+
+<app-detalles-actividades
+  *ngIf="tareaSeleccionada"
+  [tarea]="tareaSeleccionada"
+  (cerrar)="cerrarDetalleTarea()"
+  (tareaActualizada)="
+    procesarTareaActualizada($event)
+  "
+  (tareaEliminada)="
+    procesarTareaEliminada($event)
+  "
+></app-detalles-actividades>

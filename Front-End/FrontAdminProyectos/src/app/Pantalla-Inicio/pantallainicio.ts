@@ -30,8 +30,8 @@ export class PantallaInicioComponente implements OnInit {
   }
 
   get nombreUsuario(): string {
-    if (this.usuario && this.usuario.nombre) {
-      return this.usuario.nombre;
+    if (this.usuario) {
+      return this.usuario.nombre || this.usuario.nombres || this.usuario.correo || 'Usuario';
     }
     return 'Usuario';
   }
@@ -71,7 +71,7 @@ export class PantallaInicioComponente implements OnInit {
     });
   }
 
-  // === NAVEGACIÓN Y SESIÓN ===
+  // === NAVEGACIÓN ===
   crearProyecto() {
     this.router.navigate(['/crear-proyecto']);
   }
@@ -83,6 +83,6 @@ export class PantallaInicioComponente implements OnInit {
   cerrarSesion() {
     localStorage.clear();
     sessionStorage.clear();
-    window.location.href = '/login';
+    this.router.navigate(['/login']); 
   }
 }

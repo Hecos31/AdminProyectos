@@ -2,8 +2,11 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { ApiServicio } from '../Servicios/api.servicio';
-import { Tarea } from '../crearactividades/crearactividades';
+import {
+  ApiServicio,
+  EstadoTareaApi,
+  TareaApi
+} from '../Servicios/api.servicio';
 import { DetallesActividades } from '../detalles-actividades/detalles-actividades';
 
 @Component({
@@ -21,15 +24,22 @@ export class TablonActividades implements OnInit {
   // === ESTADO DEL COMPONENTE ===
   proyectoId!: number;
   cargando = true;
-  tareaSeleccionada: Tarea | null = null;
+  
+tareaSeleccionada: TareaApi | null = null;
 
-  columnas: Record<string, Tarea[]> = {
-    'Pendiente por asignar': [],
-    'Asignada': [],
-    'En progreso': [],
-    'Concluida': []
-  };
-  estados = Object.keys(this.columnas);
+  columnas: Record<EstadoTareaApi, TareaApi[]> = {
+  'Pendiente por asignar': [],
+  'Asignada': [],
+  'En progreso': [],
+  'Concluida': []
+};
+
+estados: EstadoTareaApi[] = [
+  'Pendiente por asignar',
+  'Asignada',
+  'En progreso',
+  'Concluida'
+];
 
   // === CICLO DE VIDA ===
   ngOnInit() {
@@ -38,25 +48,35 @@ export class TablonActividades implements OnInit {
   }
 
   // === PETICIONES HTTP ===
-  cargarTareas() {
-    this.apiService.obtenerTareas(this.proyectoId).subscribe({
-      next: (data: Tarea[]) => {
-        this.estados.forEach(est => this.columnas[est] = []);
-        (data || []).forEach(tarea => {
-          if (this.columnas[tarea.estado]) {
-            this.columnas[tarea.estado].push(tarea);
-          }
-        });
-        this.cargando = false;
-      },
-      error: () => {
-        this.cargando = false;
-      }
-    });
-  }
+  cargarTareas(): void {
+  this.cargando = true;
+
+  this.apiService.obtenerTareas(this.proyectoId).subscribe({
+    next: (data: TareaApi[]) => {
+      this.estados.forEach((estado) => {
+        this.columnas[estado] = [];
+      });
+
+      (data ?? []).forEach((tarea) => {
+        const estado = tarea.estado as EstadoTareaApi;
+
+        if (this.columnas[estado]) {
+          this.columnas[estado].push(tarea);
+        }
+      });
+
+      this.cargando = false;
+    },
+
+    error: (error) => {
+      console.error('Error al cargar las tareas:', error);
+      this.cargando = false;
+    }
+  });
+}
 
   // === GESTIÓN DE MODAL DE DETALLES ===
-  abrirDetalle(tarea: Tarea) {
+  abrirDetalle(tarea: TareaApi) {
     this.tareaSeleccionada = tarea;
   }
 

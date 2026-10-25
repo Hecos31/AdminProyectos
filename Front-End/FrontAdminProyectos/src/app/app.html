@@ -1,11 +1,21 @@
-<div class="app-container" [class.with-sidebar]="showSidebar">
-  <app-sidebar *ngIf="showSidebar"></app-sidebar>
+<div
+  class="app-container"
+  [class.with-sidebar]="showSidebar"
+>
+  <app-sidebar
+    *ngIf="showSidebar"
+  ></app-sidebar>
 
   <main class="app-main">
     <app-navbar-proyecto></app-navbar-proyecto>
+
     <div class="app-page">
       <router-outlet></router-outlet>
     </div>
   </main>
-  <app-chat-widget></app-chat-widget>
 </div>
+
+<app-chat-widget></app-chat-widget>
+
+<app-confirmacion-modal>
+</app-confirmacion-modal>

@@ -1,40 +1,166 @@
-/* app.css */
+/* =========================================================
+   HOST PRINCIPAL
+========================================================= */
+
+:host {
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+
+  overflow: hidden;
+}
+
+
+/* =========================================================
+   LAYOUT GENERAL
+========================================================= */
 
 .app-container {
   display: grid;
-  grid-template-columns: 1fr;
+  width: 100%;
+  min-width: 0;
+
   height: 100vh;
+  height: 100dvh;
+
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr);
+
   overflow: hidden;
+
+  color: var(--app-text);
+  background: var(--app-background);
+
+  transition:
+    grid-template-columns var(--app-transition),
+    background-color var(--app-transition);
 }
+
+
+/* =========================================================
+   LAYOUT CON SIDEBAR
+========================================================= */
 
 .app-container.with-sidebar {
-  grid-template-columns: var(--sidebar-width) 1fr;
-  transition: grid-template-columns 0.3s ease;
+  grid-template-columns:
+    var(--app-sidebar-width, 260px)
+    minmax(0, 1fr);
 }
 
-@media (max-width: 768px) {
-  .app-container.with-sidebar {
-    grid-template-columns: var(--sidebar-width-collapsed) 1fr;
-  }
+
+/* =========================================================
+   SIDEBAR
+========================================================= */
+
+app-sidebar {
+  position: relative;
+  z-index: 1000;
+
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  height: 100%;
+  min-height: 0;
+
+  grid-column: 1;
+  grid-row: 1;
+
+  overflow: visible;
 }
+
+
+/* =========================================================
+   CONTENIDO PRINCIPAL
+========================================================= */
 
 .app-main {
   display: flex;
-  flex-direction: column;
+  width: 100%;
   min-width: 0;
+  min-height: 0;
   height: 100%;
+
+  grid-column: 1;
+  grid-row: 1;
+
+  flex-direction: column;
+
   overflow: hidden;
+
+  background: var(--app-background);
 }
+
+.app-container.with-sidebar .app-main {
+  grid-column: 2;
+}
+
+
+/* =========================================================
+   NAVBAR
+========================================================= */
+
+app-navbar-proyecto {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+
+  flex: 0 0 auto;
+}
+
+
+/* =========================================================
+   CONTENEDOR DE PÁGINAS
+========================================================= */
 
 .app-page {
-  flex: 1;
+  width: 100%;
+  min-width: 0;
   min-height: 0;
-  overflow-y: auto;
+
+  flex: 1 1 auto;
+
   overflow-x: hidden;
+  overflow-y: auto;
+
+  overscroll-behavior-y: contain;
+  -webkit-overflow-scrolling: touch;
+
+  color: var(--app-text);
+  background: var(--app-background);
+
+  transition:
+    color var(--app-transition),
+    background-color var(--app-transition);
 }
 
-app-sidebar,
-app-navbar-proyecto,
+@supports (overflow: clip) {
+  .app-page {
+    overflow-x: clip;
+  }
+}
+
+
+/* =========================================================
+   CHAT
+========================================================= */
+
 app-chat-widget {
-  display: contents;
+  display: block;
+}
+
+
+/* =========================================================
+   ACCESIBILIDAD
+========================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+  .app-container,
+  .app-main,
+  .app-page {
+    transition: none;
+  }
 }

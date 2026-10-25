@@ -1,7 +1,62 @@
-<div class="configuracion-container">
-  <main class="main-content">
-    <header class="header-actions">
-      <button (click)="volverAlProyecto()" class="btn-volver">
+<div class="collaborators-page page-shell">
+  <main class="main-content page-content">
+
+    <!-- =====================================================
+         CABECERA
+    ====================================================== -->
+    <header class="page-header">
+
+      <div class="header-main">
+
+        <span class="header-icon" aria-hidden="true">
+          <svg
+            width="23"
+            height="23"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path
+              d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"
+            ></path>
+
+            <circle cx="9" cy="7" r="4"></circle>
+
+            <path
+              d="M23 21v-2a4 4 0 0 0-3-3.87"
+            ></path>
+
+            <path
+              d="M16 3.13a4 4 0 0 1 0 7.75"
+            ></path>
+          </svg>
+        </span>
+
+
+        <div class="header-copy">
+          <span class="header-eyebrow">
+            Administración del proyecto
+          </span>
+
+          <h1>Colaboradores</h1>
+
+          <p>
+            Agrega integrantes, modifica sus permisos y administra
+            el acceso al proyecto.
+          </p>
+        </div>
+
+      </div>
+
+
+      <button
+        type="button"
+        class="btn-volver"
+        (click)="volverAlProyecto()"
+      >
         <svg
           width="16"
           height="16"
@@ -9,128 +64,96 @@
           fill="none"
           stroke="currentColor"
           stroke-width="2.5"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
         >
           <line x1="19" y1="12" x2="5" y2="12"></line>
           <polyline points="12 19 5 12 12 5"></polyline>
         </svg>
-        Volver al Proyecto
+
+        Volver al proyecto
       </button>
+
     </header>
 
-    <div class="gestion-integrantes">
+
+    <!-- =====================================================
+         PANEL DE GESTIÓN
+    ====================================================== -->
+    <section class="gestion-integrantes">
+
+      <!-- ENCABEZADO DE LA TARJETA -->
       <div class="card-header">
-        <svg
-          width="24"
-          height="24"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-        >
-          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-          <circle cx="9" cy="7" r="4"></circle>
-          <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-          <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-        </svg>
-        <h3>Colaboradores del Proyecto</h3>
-      </div>
 
-      <!-- Formulario Agregar Colaborador -->
-      <div class="agregar-integrante">
-        <div class="input-group">
-          <input
-            type="email"
-            [(ngModel)]="nuevoColaborador.correo"
-            placeholder="Correo electrónico del colaborador"
-            class="k-input flex-1"
-          />
-          <select [(ngModel)]="nuevoColaborador.rol" class="k-input select-rol">
-            <option value="admin">Administrador</option>
-            <option value="colaborador">Colaborador</option>
-          </select>
-        </div>
-        <button (click)="agregarColaborador()" class="btn btn-primary">
-          <svg
-            width="18"
-            height="18"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-          >
-            <line x1="12" y1="5" x2="12" y2="19"></line>
-            <line x1="5" y1="12" x2="19" y2="12"></line>
-          </svg>
-          Agregar
-        </button>
-      </div>
+        <div class="card-title">
 
-      <!-- Alertas -->
-      <div *ngIf="successMessage" class="alert success-message">
-        <svg
-          width="18"
-          height="18"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-        >
-          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-          <polyline points="22 4 12 14.01 9 11.01"></polyline>
-        </svg>
-        {{ successMessage }}
-      </div>
+          <span class="card-icon" aria-hidden="true">
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path
+                d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"
+              ></path>
 
-      <div *ngIf="errorMessage" class="alert error-message">
-        <svg
-          width="18"
-          height="18"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-        >
-          <circle cx="12" cy="12" r="10"></circle>
-          <line x1="12" y1="8" x2="12" y2="12"></line>
-          <line x1="12" y1="16" x2="12.01" y2="16"></line>
-        </svg>
-        {{ errorMessage }}
-      </div>
+              <circle cx="9" cy="7" r="4"></circle>
 
-      <!-- Estado de Carga -->
-      <div *ngIf="cargando" class="loading-state">
-        <div class="spinner"></div>
-        <span>Cargando colaboradores...</span>
-      </div>
+              <line x1="19" y1="8" x2="19" y2="14"></line>
+              <line x1="22" y1="11" x2="16" y2="11"></line>
+            </svg>
+          </span>
 
-      <!-- Lista de Integrantes -->
-      <div *ngIf="!cargando" class="lista-integrantes">
-        <div *ngFor="let colaborador of colaboradores" class="integrante-item">
-          <div class="integrante-info">
-            <div class="avatar-circle">
-              {{ (colaborador.nombre || colaborador.correo).charAt(0) | uppercase }}
-            </div>
-            <div class="detalles">
-              <div class="nombre">{{ colaborador.nombre || 'Usuario sin nombre' }}</div>
-              <div class="email">{{ colaborador.correo }}</div>
-            </div>
+
+          <div>
+            <span class="card-eyebrow">
+              Equipo del proyecto
+            </span>
+
+            <h2>Gestionar colaboradores</h2>
+
+            <p>
+              Invita usuarios mediante su correo electrónico.
+            </p>
           </div>
 
-          <div class="integrante-controls">
-            <select
-              [value]="colaborador.rol_nombre || 'colaborador'"
-              (change)="cambiarRol(colaborador.id_usuario, $any($event.target).value)"
-              class="k-input select-rol-mini"
-            >
-              <option value="admin">Administrador</option>
-              <option value="colaborador">Colaborador</option>
-            </select>
+        </div>
 
-            <button
-              (click)="eliminarColaborador(colaborador.id_usuario)"
-              class="btn-icon btn-eliminar"
-              title="Eliminar colaborador"
-            >
+
+        <span
+          class="members-count"
+          *ngIf="!cargando"
+        >
+          {{ colaboradores.length }}
+
+          {{
+            colaboradores.length === 1
+              ? 'integrante'
+              : 'integrantes'
+          }}
+        </span>
+
+      </div>
+
+
+      <!-- ===================================================
+           AGREGAR COLABORADOR
+      ==================================================== -->
+      <form
+        class="agregar-integrante"
+        (ngSubmit)="agregarColaborador()"
+      >
+
+        <div class="invite-content">
+
+          <div class="invite-heading">
+            <span class="invite-icon" aria-hidden="true">
               <svg
                 width="18"
                 height="18"
@@ -138,35 +161,402 @@
                 fill="none"
                 stroke="currentColor"
                 stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
               >
-                <polyline points="3 6 5 6 21 6"></polyline>
-                <path
-                  d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"
-                ></path>
+                <rect
+                  x="3"
+                  y="5"
+                  width="18"
+                  height="14"
+                  rx="2"
+                ></rect>
+
+                <polyline points="3 7 12 13 21 7"></polyline>
               </svg>
+            </span>
+
+            <div>
+              <h3>Agregar colaborador</h3>
+
+              <p>
+                El usuario debe tener una cuenta registrada en Orbita.
+              </p>
+            </div>
+          </div>
+
+
+          <div class="invite-form-grid">
+
+            <!-- CORREO -->
+            <div class="form-group email-field">
+              <label for="correo-colaborador">
+                Correo electrónico
+              </label>
+
+              <input
+                id="correo-colaborador"
+                name="correoColaborador"
+                type="email"
+                [(ngModel)]="nuevoColaborador.correo"
+                placeholder="correo@ejemplo.com"
+                class="k-input"
+                autocomplete="email"
+                required
+              />
+            </div>
+
+
+            <!-- ROL -->
+            <div class="form-group role-field">
+              <label for="rol-colaborador">
+                Rol inicial
+              </label>
+
+              <select
+                id="rol-colaborador"
+                name="rolColaborador"
+                [(ngModel)]="nuevoColaborador.rol"
+                class="k-input select-rol"
+              >
+                <option value="admin">
+                  Administrador
+                </option>
+
+                <option value="colaborador">
+                  Colaborador
+                </option>
+              </select>
+            </div>
+
+
+            <!-- BOTÓN -->
+            <button
+              type="submit"
+              class="btn btn-primary"
+              [disabled]="
+                !(nuevoColaborador.correo || '').trim()
+              "
+            >
+              <svg
+                width="17"
+                height="17"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+              </svg>
+
+              Agregar
             </button>
+
+          </div>
+
+        </div>
+
+      </form>
+
+
+      <!-- ===================================================
+           ALERTAS
+      ==================================================== -->
+      <div
+        *ngIf="successMessage"
+        class="alert success-message"
+        role="status"
+        aria-live="polite"
+      >
+        <span class="alert-icon" aria-hidden="true">
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path
+              d="M22 11.08V12a10 10 0 1 1-5.93-9.14"
+            ></path>
+
+            <polyline points="22 4 12 14.01 9 11.01"></polyline>
+          </svg>
+        </span>
+
+        <span>{{ successMessage }}</span>
+      </div>
+
+
+      <div
+        *ngIf="errorMessage"
+        class="alert error-message"
+        role="alert"
+      >
+        <span class="alert-icon" aria-hidden="true">
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="12"></line>
+            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+          </svg>
+        </span>
+
+        <span>{{ errorMessage }}</span>
+      </div>
+
+
+      <!-- ===================================================
+           CARGA
+      ==================================================== -->
+      <div
+        *ngIf="cargando"
+        class="loading-state"
+        aria-live="polite"
+      >
+        <div class="spinner" aria-hidden="true"></div>
+
+        <div>
+          <strong>Cargando colaboradores</strong>
+
+          <p>
+            Estamos obteniendo los integrantes del proyecto.
+          </p>
+        </div>
+      </div>
+
+
+      <!-- ===================================================
+           LISTA DE COLABORADORES
+      ==================================================== -->
+      <div
+        *ngIf="!cargando"
+        class="members-section"
+      >
+
+        <div
+          class="members-section-header"
+          *ngIf="colaboradores.length > 0"
+        >
+          <div>
+            <h3>Integrantes actuales</h3>
+
+            <p>
+              Modifica el rol o elimina el acceso de un colaborador.
+            </p>
           </div>
         </div>
 
-        <div *ngIf="colaboradores.length === 0" class="sin-integrantes">
-          <div class="empty-icon">
+
+        <div class="lista-integrantes">
+
+          <article
+            *ngFor="let colaborador of colaboradores"
+            class="integrante-item"
+          >
+
+            <!-- INFORMACIÓN -->
+            <div class="integrante-info">
+
+              <div
+                class="avatar-circle"
+                aria-hidden="true"
+              >
+                {{
+                  (
+                    colaborador.nombre ||
+                    colaborador.correo ||
+                    '?'
+                  ).charAt(0) | uppercase
+                }}
+              </div>
+
+
+              <div class="detalles">
+
+                <strong
+                  class="nombre"
+                  [title]="
+                    colaborador.nombre ||
+                    'Usuario sin nombre'
+                  "
+                >
+                  {{
+                    colaborador.nombre ||
+                    'Usuario sin nombre'
+                  }}
+                </strong>
+
+                <span
+                  class="email"
+                  [title]="colaborador.correo"
+                >
+                  {{ colaborador.correo }}
+                </span>
+
+              </div>
+
+            </div>
+
+
+            <!-- CONTROLES -->
+            <div class="integrante-controls">
+
+              <div class="role-control">
+
+                <label
+                  class="sr-only"
+                  [for]="
+                    'rol-integrante-' +
+                    colaborador.id_usuario
+                  "
+                >
+                  Rol de
+                  {{
+                    colaborador.nombre ||
+                    colaborador.correo
+                  }}
+                </label>
+
+                <select
+                  [id]="
+                    'rol-integrante-' +
+                    colaborador.id_usuario
+                  "
+                  [value]="
+                    colaborador.rol_nombre ||
+                    'colaborador'
+                  "
+                  (change)="
+                    cambiarRol(
+                      colaborador.id_usuario,
+                      $any($event.target).value
+                    )
+                  "
+                  class="k-input select-rol-mini"
+                >
+                  <option value="admin">
+                    Administrador
+                  </option>
+
+                  <option value="colaborador">
+                    Colaborador
+                  </option>
+                </select>
+
+              </div>
+
+
+              <button
+                type="button"
+                class="btn-icon btn-eliminar"
+                (click)="
+                  eliminarColaborador(
+                    colaborador.id_usuario
+                  )
+                "
+                [attr.aria-label]="
+                  'Eliminar a ' +
+                  (
+                    colaborador.nombre ||
+                    colaborador.correo
+                  )
+                "
+                title="Eliminar colaborador"
+              >
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                >
+                  <polyline points="3 6 5 6 21 6"></polyline>
+
+                  <path
+                    d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"
+                  ></path>
+
+                  <path d="M8 6V4h8v2"></path>
+
+                  <line x1="10" y1="10" x2="10" y2="16"></line>
+                  <line x1="14" y1="10" x2="14" y2="16"></line>
+                </svg>
+              </button>
+
+            </div>
+
+          </article>
+
+        </div>
+
+
+        <!-- SIN COLABORADORES -->
+        <div
+          *ngIf="colaboradores.length === 0"
+          class="sin-integrantes"
+        >
+          <span class="empty-icon" aria-hidden="true">
             <svg
-              width="48"
-              height="48"
+              width="38"
+              height="38"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
-              stroke-width="1.5"
+              stroke-width="1.7"
+              stroke-linecap="round"
+              stroke-linejoin="round"
             >
-              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+              <path
+                d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"
+              ></path>
+
               <circle cx="9" cy="7" r="4"></circle>
-              <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-              <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+
+              <path
+                d="M23 21v-2a4 4 0 0 0-3-3.87"
+              ></path>
+
+              <path
+                d="M16 3.13a4 4 0 0 1 0 7.75"
+              ></path>
             </svg>
-          </div>
-          <p>No hay colaboradores adicionales en este proyecto.</p>
+          </span>
+
+          <span class="empty-eyebrow">
+            Equipo vacío
+          </span>
+
+          <h3>No hay colaboradores adicionales</h3>
+
+          <p>
+            Agrega un usuario mediante su correo electrónico para comenzar
+            a trabajar en equipo.
+          </p>
         </div>
+
       </div>
-    </div>
+
+    </section>
+
   </main>
 </div>

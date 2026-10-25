@@ -1,0 +1,50 @@
+[build]
+  command = "npm run build"
+  publish = "dist/FrontAdminProyectos/browser"
+
+# Archivos críticos de PWA que deben servirse directamente sin caer en el fallback SPA
+[[redirects]]
+  from = "/ngsw-worker.js"
+  to = "/ngsw-worker.js"
+  status = 200
+
+[[redirects]]
+  from = "/ngsw.json"
+  to = "/ngsw.json"
+  status = 200
+
+[[redirects]]
+  from = "/manifest.webmanifest"
+  to = "/manifest.webmanifest"
+  status = 200
+
+# Para que cualquier ruta de Angular devuelva index.html
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+# El service worker y el index.html nunca deben quedar en caché antigua del navegador
+[[headers]]
+  for = "/index.html"
+  [headers.values]
+    Cache-Control = "no-cache, no-store, must-revalidate"
+
+[[headers]]
+  for = "/ngsw-worker.js"
+  [headers.values]
+    Cache-Control = "no-cache, no-store, must-revalidate"
+
+[[headers]]
+  for = "/ngsw.json"
+  [headers.values]
+    Cache-Control = "no-cache, no-store, must-revalidate"
+
+[[headers]]
+  for = "/manifest.webmanifest"
+  [headers.values]
+    Content-Type = "application/manifest+json"
+    Cache-Control = "no-cache"
+
+[build.processing]
+  skip_processing = true

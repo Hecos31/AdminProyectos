@@ -1,54 +1,223 @@
 // === IMPORTACIONES ===
 import { Routes } from '@angular/router';
 
-// Componentes de Autenticación
-import { LoginComponente } from './login/login';
-import { CrearUsuarioComponente } from './Crearusuario/crearusuario';
+// =========================================================
+// PÁGINA PÚBLICA
+// =========================================================
 
-// Componentes Globales
-import { PantallaInicioComponente } from './Pantalla-Inicio/pantallainicio';
-import { CrearProyectoComponente } from './CrearProyecto/crearproyecto';
-// import { ChatComponente } from './Chats/chat';
+import {
+  PaginaPresentacionComponente
+} from './pagina-presentacion/pagina-presentacion';
 
-// Componentes de Proyecto
-import { PantallaPrincipalProyectoComponente } from './Pantalla-PrincipalProyecto/pantallaprincipalproyecto';
-import { PantallaConfiguracionComponente } from './Pantalla-ConfiguracionProyecto/pantallaconfiguracion';
-import { MenuConfiguracionComponente } from './MenuConfiguracion/menuconfiguracion';
-import { TablonActividades } from './tablon-actividades/tablon-actividades';
-import { Actividadesusuario } from './actividadesusuario/actividadesusuario';
-import { Crearactividades } from './crearactividades/crearactividades';
 
-// Guardianes de Seguridad (Te paso el código en el siguiente paso)
-import { authGuard } from './Guards/auth.guard';
+// =========================================================
+// AUTENTICACIÓN
+// =========================================================
 
-// === DEFINICIÓN DE RUTAS ===
+import {
+  LoginComponente
+} from './login/login';
+
+import {
+  CrearUsuarioComponente
+} from './Crearusuario/crearusuario';
+
+
+// =========================================================
+// COMPONENTES GLOBALES
+// =========================================================
+
+import {
+  PantallaInicioComponente
+} from './Pantalla-Inicio/pantallainicio';
+
+import {
+  CrearProyectoComponente
+} from './CrearProyecto/crearproyecto';
+
+import {
+  CalendarioComponent
+} from './calendario/calendario';
+
+
+// =========================================================
+// COMPONENTES DEL PROYECTO
+// =========================================================
+
+import {
+  PantallaPrincipalProyectoComponente
+} from './Pantalla-PrincipalProyecto/pantallaprincipalproyecto';
+
+import {
+  PantallaConfiguracionComponente
+} from './Pantalla-ConfiguracionProyecto/pantallaconfiguracion';
+
+import {
+  MenuConfiguracionComponente
+} from './MenuConfiguracion/menuconfiguracion';
+
+import {
+  EditarProyectoComponente
+} from './EditarProyecto/editarproyecto';
+
+import {
+  TablonActividades
+} from './tablon-actividades/tablon-actividades';
+
+import {
+  Actividadesusuario
+} from './actividadesusuario/actividadesusuario';
+
+import {
+  Crearactividades
+} from './crearactividades/crearactividades';
+
+
+// =========================================================
+// GUARD DE AUTENTICACIÓN
+// =========================================================
+
+import {
+  authGuard
+} from './Guards/auth.guard';
+
+
+// =========================================================
+// DEFINICIÓN DE RUTAS
+// =========================================================
+
 export const routes: Routes = [
-  // 1. ZONA PÚBLICA (Sin sesión iniciada)
-  { path: '', redirectTo: '/login', pathMatch: 'full' },
-  { path: 'login', component: LoginComponente },
-  { path: 'registro', component: CrearUsuarioComponente },
 
-  // 2. ZONA GLOBAL PRIVADA
+  // =======================================================
+  // ZONA PÚBLICA
+  // =======================================================
+
   {
     path: '',
-    canActivateChild: [authGuard],
-    children: [
-      { path: 'inicio', component: PantallaInicioComponente },
-      { path: 'crear-proyecto', component: CrearProyectoComponente },
-      // { path: 'chats', component: ChatComponente },
-
-      // 3. CONTEXTO DE PROYECTO (Requieren sesión y pertenecer al proyecto)
-      { path: 'proyecto/:id', component: PantallaPrincipalProyectoComponente },
-      { path: 'proyecto/:id/tablon', component: TablonActividades },
-      { path: 'proyecto/:id/mis-actividades', component: Actividadesusuario },
-
-      // 4. CONTEXTO DE ADMINISTRACIÓN (Requieren rol de Admin/Manager)
-      { path: 'proyecto/:id/crearactividades', component: Crearactividades },
-      { path: 'proyecto/:id/configuracion', component: MenuConfiguracionComponente },
-      { path: 'proyecto/:id/integrantes', component: PantallaConfiguracionComponente },
-    ],
+    component: PaginaPresentacionComponente,
+    pathMatch: 'full',
+    title: 'Orbita | Gestión de proyectos'
   },
 
-  // 5. RUTA DE ERROR
-  { path: '**', redirectTo: '/inicio' },
+  {
+    path: 'login',
+    component: LoginComponente,
+    title: 'Iniciar sesión | Orbita'
+  },
+
+  {
+    path: 'registro',
+    component: CrearUsuarioComponente,
+    title: 'Crear cuenta | Orbita'
+  },
+
+
+  // =======================================================
+  // ZONA PRIVADA
+  // =======================================================
+
+  {
+    path: '',
+
+    canActivateChild: [
+      authGuard
+    ],
+
+    children: [
+
+      // ===================================================
+      // RUTAS GLOBALES
+      // ===================================================
+
+      {
+        path: 'inicio',
+        component: PantallaInicioComponente,
+        title: 'Mis proyectos | Orbita'
+      },
+
+      {
+        path: 'crear-proyecto',
+        component: CrearProyectoComponente,
+        title: 'Crear proyecto | Orbita'
+      },
+
+      {
+        path: 'calendario',
+        component: CalendarioComponent,
+        title: 'Calendario | Orbita'
+      },
+
+
+      // ===================================================
+      // RUTAS DEL PROYECTO
+      // ===================================================
+
+      {
+        path: 'proyecto/:id',
+        component: PantallaPrincipalProyectoComponente,
+        title: 'Proyecto | Orbita'
+      },
+
+      {
+        path: 'proyecto/:id/tablon',
+        component: TablonActividades,
+        title: 'Tablón | Orbita'
+      },
+
+      {
+        path: 'proyecto/:id/mis-actividades',
+        component: Actividadesusuario,
+        title: 'Mis actividades | Orbita'
+      },
+
+      /*
+       * Esta ruta permite abrir el calendario desde un proyecto
+       * conservando el ID en la URL.
+       */
+      {
+        path: 'proyecto/:id/calendario',
+        component: CalendarioComponent,
+        title: 'Calendario del proyecto | Orbita'
+      },
+
+
+      // ===================================================
+      // ADMINISTRACIÓN DEL PROYECTO
+      // ===================================================
+
+      {
+        path: 'proyecto/:id/crearactividades',
+        component: Crearactividades,
+        title: 'Administrar actividades | Orbita'
+      },
+
+      {
+        path: 'proyecto/:id/configuracion',
+        component: MenuConfiguracionComponente,
+        title: 'Configuración | Orbita'
+      },
+
+      {
+        path: 'proyecto/:id/configuracion/editar',
+        component: EditarProyectoComponente,
+        title: 'Editar proyecto | Orbita'
+      },
+
+      {
+        path: 'proyecto/:id/integrantes',
+        component: PantallaConfiguracionComponente,
+        title: 'Integrantes | Orbita'
+      }
+    ]
+  },
+
+
+  // =======================================================
+  // RUTA NO ENCONTRADA
+  // =======================================================
+
+  {
+    path: '**',
+    redirectTo: ''
+  }
 ];
