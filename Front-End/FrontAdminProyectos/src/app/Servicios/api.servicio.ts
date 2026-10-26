@@ -145,6 +145,59 @@ export interface EvidenciaEnlacePayload {
 }
 
 
+export interface MedallaPulse {
+  codigo: string;
+  nombre: string;
+  descripcion: string;
+  color: string;
+}
+
+export interface IntegrantePulse {
+  posicion: number;
+  id_usuario: number;
+  nombre: string;
+  apellido: string;
+  correo: string;
+  rol: string;
+  xp_total: number;
+  nivel: number;
+  titulo_nivel: string;
+  progreso_nivel_pct: number;
+  racha_entregas_tiempo: number;
+  tareas_concluidas: number;
+  tareas_alta_prioridad: number;
+  tareas_en_progreso: number;
+  evidencias_subidas: number;
+  comentarios_realizados: number;
+  meritos_recibidos: number;
+  medallas: MedallaPulse[];
+}
+
+export interface ReconocimientoItem {
+  id_reconocimiento: string;
+  id_proyecto: number;
+  id_remitente: number;
+  nombre_remitente: string;
+  id_destinatario: number;
+  nombre_destinatario: string;
+  insignia: string;
+  mensaje: string;
+  xp_otorgado: number;
+  fecha_envio: string;
+}
+
+export interface TeamPulseData {
+  id_proyecto: number;
+  nombre_proyecto: string;
+  xp_total_equipo: number;
+  porcentaje_entregas_tiempo: number;
+  total_meritos_proyecto: number;
+  total_medallas_desbloqueadas: number;
+  cronica_ia: string;
+  ranking: IntegrantePulse[];
+  meritos_recientes: ReconocimientoItem[];
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -611,6 +664,97 @@ export class ApiServicio {
         id_proyecto: idProyecto,
         texto_libre: textoLibre
       }
+    );
+  }
+
+  // ==========================================
+  //   ÓRBITA TEAM PULSE & PUNTOS DE MÉRITO (GAMIFICACIÓN)
+  // ==========================================
+
+  obtenerTeamPulse(
+    idProyecto: number
+  ): Observable<TeamPulseData> {
+    return this.http.get<TeamPulseData>(
+      `${this.apiUrl}/proyectos/${idProyecto}/pulse`
+    );
+  }
+
+  enviarReconocimientoProyecto(
+    idProyecto: number,
+    payload: {
+      id_destinatario: number;
+      insignia: string;
+      mensaje: string;
+      publicar_en_chat: boolean;
+    }
+  ): Observable<ReconocimientoItem> {
+    return this.http.post<ReconocimientoItem>(
+      `${this.apiUrl}/proyectos/${idProyecto}/meritos`,
+      payload
+    );
+  }
+
+  generarCronicaPulseIA(
+    idProyecto: number,
+    publicarEnChat = true
+  ): Observable<{
+    cronica_ia: string;
+    publicada_en_chat: boolean;
+  }> {
+    return this.http.post<{
+      cronica_ia: string;
+      publicada_en_chat: boolean;
+    }>(
+      `${this.apiUrl}/proyectos/${idProyecto}/pulse/cronica-ia`,
+      {
+        publicar_en_chat: publicarEnChat
+      }
+    );
+  }
+
+  analizarVozLoteConIA(
+    idProyecto: number,
+    transcripcionVoz: string
+  ): Observable<{
+    resumen_reunion: string;
+    tareas: Array<{
+      titulo: string;
+      descripcion: string;
+      prioridad: string;
+      id_usuario_asignado: number | null;
+      fecha_limite: string | null;
+    }>;
+  }> {
+    return this.http.post<any>(
+      `${this.apiUrl}/ai/analizar-voz-lote`,
+      {
+        id_proyecto: idProyecto,
+        texto_libre: transcripcionVoz
+      }
+    );
+  }
+
+  crearTareasEnLote(payload: {
+    id_proyecto: number;
+    publicar_minuta_chat: boolean;
+    resumen_reunion?: string | null;
+    tareas: Array<{
+      titulo: string;
+      descripcion: string | null;
+      prioridad: PrioridadTareaApi;
+      fecha_inicio?: string | null;
+      fecha_limite?: string | null;
+      id_usuario_asignado: number | null;
+    }>;
+  }): Observable<{
+    mensaje: string;
+    total_creadas: number;
+    minuta_publicada: boolean;
+    tareas: TareaApi[];
+  }> {
+    return this.http.post<any>(
+      `${this.apiUrl}/tareas/lote`,
+      payload
     );
   }
 
