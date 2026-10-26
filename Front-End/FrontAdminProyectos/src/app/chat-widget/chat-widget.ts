@@ -9,7 +9,8 @@ import {
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Subscription } from 'rxjs';
-
+import { Router } from '@angular/router';
+import { HttpClient } from '@angular/common/http';
 import {
   ChatConversacion,
   ChatMensaje,
@@ -33,6 +34,8 @@ export class ChatWidget implements OnInit, OnDestroy {
   private chatService = inject(ChatService);
   private cdr = inject(ChangeDetectorRef);
   private ngZone = inject(NgZone);
+  private router = inject(Router);
+  private http = inject(HttpClient);
   private subscriptions = new Subscription();
 
   isOpen = false;
@@ -45,6 +48,14 @@ export class ChatWidget implements OnInit, OnDestroy {
   chatActivo: ChatConversacion | null = null;
   mensajes: ChatMensaje[] = [];
   gruposMensajes: GrupoMensajes[] = [];
+
+  cargandoResumenIA: boolean = false;
+  mostrarModalResumen: boolean = false;
+  resumenChatIA: {
+    resumen_general: string;
+    puntos_clave: string[];
+    acuerdos_o_tareas: string[];
+  } | null = null;
 
   nuevoMensaje = '';
   correoDestino = '';
@@ -123,11 +134,6 @@ export class ChatWidget implements OnInit, OnDestroy {
         conexionAnterior = conectado;
         this.conexionActiva = conectado;
 
-        /*
-         * ChatService ya sincroniza la lista al abrir el socket.
-         * Aquí solo se recupera el historial activo cuando hubo
-         * una reconexión real.
-         */
         if (seReconecto && this.chatActivo) {
           this.recargarHistorialActivo();
         }
@@ -179,6 +185,7 @@ export class ChatWidget implements OnInit, OnDestroy {
     this.chatActivo = null;
     this.mensajes = [];
     this.gruposMensajes = [];
+    this.cerrarResumenChat();
   }
 
   volverALista(): void {
@@ -186,6 +193,7 @@ export class ChatWidget implements OnInit, OnDestroy {
     this.chatActivo = null;
     this.mensajes = [];
     this.gruposMensajes = [];
+    this.cerrarResumenChat();
   }
 
   irANuevoChat(): void {
@@ -195,7 +203,7 @@ export class ChatWidget implements OnInit, OnDestroy {
 
   cargarConversaciones(): void {
     this.chatService.sincronizarConversaciones().subscribe({
-      error: (error) => {
+      error: (error: any) => {
         if (error?.status !== 401) {
           console.error(
             '[CHAT] Error cargando conversaciones:',
@@ -206,7 +214,6 @@ export class ChatWidget implements OnInit, OnDestroy {
     });
   }
 
-
   formatearFechaLista(
     fechaStr: string | null | undefined
   ): string {
@@ -214,58 +221,32 @@ export class ChatWidget implements OnInit, OnDestroy {
       return '';
     }
 
-    const fechaMensaje =
-      new Date(fechaStr);
+    const fechaMensaje = new Date(fechaStr);
 
-    if (
-      !Number.isFinite(
-        fechaMensaje.getTime()
-      )
-    ) {
+    if (!Number.isFinite(fechaMensaje.getTime())) {
       return '';
     }
 
     const hoy = new Date();
     const ayer = new Date();
+    ayer.setDate(hoy.getDate() - 1);
 
-    ayer.setDate(
-      hoy.getDate() - 1
-    );
-
-    if (
-      this.esMismoDia(
-        fechaMensaje,
-        hoy
-      )
-    ) {
-      return fechaMensaje
-        .toLocaleTimeString(
-          'es-MX',
-          {
-            hour: '2-digit',
-            minute: '2-digit'
-          }
-        );
+    if (this.esMismoDia(fechaMensaje, hoy)) {
+      return fechaMensaje.toLocaleTimeString('es-MX', {
+        hour: '2-digit',
+        minute: '2-digit'
+      });
     }
 
-    if (
-      this.esMismoDia(
-        fechaMensaje,
-        ayer
-      )
-    ) {
+    if (this.esMismoDia(fechaMensaje, ayer)) {
       return 'Ayer';
     }
 
-    return fechaMensaje
-      .toLocaleDateString(
-        'es-MX',
-        {
-          day: '2-digit',
-          month: '2-digit',
-          year: 'numeric'
-        }
-      );
+    return fechaMensaje.toLocaleDateString('es-MX', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric'
+    });
   }
 
   abrirConversacion(chat: ChatConversacion): void {
@@ -275,11 +256,12 @@ export class ChatWidget implements OnInit, OnDestroy {
     this.vistaActual = 'conversacion';
     this.mensajes = [];
     this.gruposMensajes = [];
+    this.cerrarResumenChat();
 
     this.chatService.marcarConversacionLeidaLocal(chat.id);
 
     this.chatService.marcarConversacionLeida(chat.id).subscribe({
-      error: (error) => {
+      error: (error: any) => {
         if (error?.status !== 401) {
           console.warn(
             '[CHAT] No se pudo marcar como leída:',
@@ -290,7 +272,7 @@ export class ChatWidget implements OnInit, OnDestroy {
     });
 
     this.chatService.obtenerHistorial(chat.id).subscribe({
-      next: (mensajes) => {
+      next: (mensajes: any[]) => {
         if (
           !this.chatActivo ||
           String(this.chatActivo.id) !== idSolicitado
@@ -298,15 +280,10 @@ export class ChatWidget implements OnInit, OnDestroy {
           return;
         }
 
-        const historial = (mensajes ?? []).map((mensaje) =>
+        const historial = (mensajes ?? []).map((mensaje: any) =>
           this.chatService.normalizarMensaje(mensaje)
         );
 
-        /*
-         * Un mensaje WebSocket puede llegar mientras esta petición
-         * sigue en curso. Se combina el historial con los mensajes
-         * locales para no perderlo ni cambiarlo de conversación.
-         */
         this.mensajes = this.combinarMensajes(
           historial,
           this.mensajes
@@ -316,7 +293,7 @@ export class ChatWidget implements OnInit, OnDestroy {
         this.scrollAlFinal();
         this.cdr.detectChanges();
       },
-      error: (error) => {
+      error: (error: any) => {
         if (error?.status !== 401) {
           console.error(
             '[CHAT] Error cargando historial:',
@@ -340,10 +317,10 @@ export class ChatWidget implements OnInit, OnDestroy {
     this.chatService
       .enviarMensajeHTTP(idConversacion, contenido)
       .subscribe({
-        next: (mensaje) => {
+        next: (mensaje: any) => {
           this.procesarMensajeEnVivo(mensaje);
         },
-        error: (error) => {
+        error: (error: any) => {
           this.nuevoMensaje = contenido;
 
           if (error?.status !== 401) {
@@ -351,11 +328,78 @@ export class ChatWidget implements OnInit, OnDestroy {
               '[CHAT] Error enviando mensaje:',
               error
             );
-
             alert('No fue posible enviar el mensaje');
           }
         }
       });
+  }
+
+  convertirMensajeATarea(mensaje: ChatMensaje): void {
+    if (!mensaje?.contenido) {
+      return;
+    }
+
+    this.isMinimized = true;
+
+    const chat = this.chatActivo as any;
+    const idProyecto =
+      chat?.id_proyecto ??
+      chat?.proyecto_id ??
+      chat?.proyecto?.id_proyecto ??
+      localStorage.getItem('ultimo_proyecto_id') ??
+      localStorage.getItem('id_proyecto') ??
+      1;
+
+    this.router.navigate(['/proyecto', idProyecto, 'crearactividades'], {
+      queryParams: {
+        tareaTexto: mensaje.contenido
+      }
+    });
+  }
+
+  // =========================================================
+  // MÉTODOS PARA EL RESUMEN INTELIGENTE CON IA
+  // =========================================================
+  generarResumenChat(): void {
+    const todosLosMensajes = (this.gruposMensajes || []).flatMap(
+      (g: GrupoMensajes) => g.mensajes || []
+    );
+
+    if (todosLosMensajes.length === 0) {
+      return;
+    }
+
+    this.cargandoResumenIA = true;
+    this.mostrarModalResumen = true;
+    this.resumenChatIA = null;
+
+    const payload = {
+      mensajes: todosLosMensajes.map((m: ChatMensaje) => ({
+        autor: m.remitente?.nombre || (this.esMiMensaje(m) ? 'Yo' : 'Usuario'),
+        contenido: m.contenido || '',
+        fecha: m.fecha_envio || ''
+      }))
+    };
+
+    this.http.post<any>('http://127.0.0.1:8000/ai/resumir-chat', payload).subscribe({
+      next: (res: any) => {
+        this.resumenChatIA = res;
+        this.cargandoResumenIA = false;
+      },
+      error: (err: any) => {
+        console.error('Error al resumir chat con IA:', err);
+        this.resumenChatIA = {
+          resumen_general: 'No se pudo generar el resumen en este momento.',
+          puntos_clave: [],
+          acuerdos_o_tareas: []
+        };
+        this.cargandoResumenIA = false;
+      }
+    });
+  }
+
+  cerrarResumenChat(): void {
+    this.mostrarModalResumen = false;
   }
 
   procesarMensajeEnVivo(mensajeOriginal: any): void {
@@ -388,11 +432,6 @@ export class ChatWidget implements OnInit, OnDestroy {
     );
 
     if (indiceExistente === -1) {
-      /*
-       * En tiempo real se agrega al final. No se ordena todo el
-       * arreglo aquí, porque la respuesta HTTP y el WebSocket pueden
-       * llegar en distinto orden.
-       */
       this.mensajes = [
         ...this.mensajes,
         mensaje
@@ -440,11 +479,11 @@ export class ChatWidget implements OnInit, OnDestroy {
     }
 
     this.chatService.iniciarChatPorCorreo(correo).subscribe({
-      next: (respuesta) => {
+      next: (respuesta: any) => {
         this.chatService
           .sincronizarConversaciones()
           .subscribe({
-            next: (conversaciones) => {
+            next: (conversaciones: ChatConversacion[]) => {
               const conversacion = conversaciones.find(
                 (chat) =>
                   String(chat.id) ===
@@ -462,7 +501,7 @@ export class ChatWidget implements OnInit, OnDestroy {
             }
           });
       },
-      error: (error) => {
+      error: (error: any) => {
         if (error?.status !== 401) {
           alert(
             error?.error?.detail ||
@@ -558,8 +597,7 @@ export class ChatWidget implements OnInit, OnDestroy {
       return 'HOY';
     }
 
-    const fechaMensaje =
-      new Date(fechaStr);
+    const fechaMensaje = new Date(fechaStr);
 
     if (
       !Number.isFinite(
@@ -571,7 +609,6 @@ export class ChatWidget implements OnInit, OnDestroy {
 
     const hoy = new Date();
     const ayer = new Date();
-
     ayer.setDate(
       hoy.getDate() - 1
     );
@@ -660,7 +697,7 @@ export class ChatWidget implements OnInit, OnDestroy {
     const idActivo = String(this.chatActivo.id);
 
     this.chatService.obtenerHistorial(idActivo).subscribe({
-      next: (mensajes) => {
+      next: (mensajes: any[]) => {
         if (
           !this.chatActivo ||
           String(this.chatActivo.id) !== idActivo
@@ -668,7 +705,7 @@ export class ChatWidget implements OnInit, OnDestroy {
           return;
         }
 
-        const historial = (mensajes ?? []).map((mensaje) =>
+        const historial = (mensajes ?? []).map((mensaje: any) =>
           this.chatService.normalizarMensaje(mensaje)
         );
 
@@ -686,7 +723,7 @@ export class ChatWidget implements OnInit, OnDestroy {
         this.scrollAlFinal();
         this.cdr.detectChanges();
       },
-      error: (error) => {
+      error: (error: any) => {
         if (error?.status !== 401) {
           console.warn(
             '[CHAT] No fue posible recuperar el historial después de reconectar:',
@@ -712,9 +749,7 @@ export class ChatWidget implements OnInit, OnDestroy {
     this.chatService
       .marcarConversacionLeida(this.chatActivo.id)
       .subscribe({
-        error: () => {
-          // El siguiente polling recuperará el valor real.
-        }
+        error: () => {}
       });
   }
 
@@ -802,12 +837,10 @@ export class ChatWidget implements OnInit, OnDestroy {
     return {
       ...existente,
       ...entrante,
-
       id_usuario_remitente:
         entrante.id_usuario_remitente ??
         existente.id_usuario_remitente ??
         idRemitente,
-
       remitente
     };
   }

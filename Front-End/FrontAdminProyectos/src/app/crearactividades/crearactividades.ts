@@ -158,6 +158,17 @@ export class Crearactividades implements OnInit {
 
     this.establecerFechaMinima();
     this.cargarDatosIniciales();
+
+    // =========================================================
+    // ESCUCHAR PARÁMETROS DINÁMICAMENTE (REACTIVO)
+    // =========================================================
+    this.route.queryParamMap.subscribe((params) => {
+      const textoMensaje = params.get('tareaTexto');
+      if (textoMensaje && textoMensaje.trim()) {
+        this.textoIA = textoMensaje;
+        this.cdr.detectChanges(); // Refleja el texto inmediatamente en el textarea
+      }
+    });
   }
 
 

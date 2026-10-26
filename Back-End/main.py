@@ -8,18 +8,23 @@ from routers import usuarios, proyectos, tareas, mensajes, ai, notificaciones
 app = FastAPI(title="API AdminProyectos - Órbita")
 
 # 3. Configuración de CORS
+origins = [
+    "http://localhost:4200",
+    "http://127.0.0.1:4200",
+    "http://localhost:8000",
+    "http://127.0.0.1:8000",
+    "https://orbitapwa.netlify.app",
+    "https://orbitaprogresiva.netlify.app",
+]
+
 app.add_middleware(
     CORSMiddleware,
-    # Agrega la IP de tu red local a la lista de permitidos
-    allow_origins=[
-        "http://localhost:4200",
-        "https://orbitapwa.netlify.app",
-        "https://orbitaprogresiva.netlify.app"
-    ],
+    allow_origins=origins,
     allow_origin_regex=r"https://.*\.netlify\.app",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=["*"],
 )
 
 # 4. Registrar las rutas (Endpoints)

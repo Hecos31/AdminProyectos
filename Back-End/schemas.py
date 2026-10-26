@@ -1,7 +1,8 @@
 from datetime import datetime
 from enum import Enum
 from typing import List, Optional
-
+from typing import Optional
+from pydantic import BaseModel
 from pydantic import (
     BaseModel,
     ConfigDict,
@@ -10,8 +11,12 @@ from pydantic import (
     HttpUrl,
     field_validator,
 )
+from pydantic import BaseModel, Field, field_validator
+from typing import List, Optional
+from pydantic import BaseModel
 
-
+from typing import List, Optional
+from pydantic import BaseModel, Field, field_validator
 # ============================================================
 # CONFIGURACIÓN BASE
 # ============================================================
@@ -285,30 +290,59 @@ class IniciarChatCorreoRequest(BaseModel):
 # INTELIGENCIA ARTIFICIAL
 # ============================================================
 
+# 1. Clase para RECIBIR la petición de autocompletar tarea
 class AITareaRequest(BaseModel):
     id_proyecto: int
-    texto_libre: str = Field(min_length=1)
+    texto_libre: str = Field(..., min_length=1, alias="texto")
+
+    model_config = {
+        "populate_by_name": True
+    }
 
     @field_validator("texto_libre")
     @classmethod
     def limpiar_texto_ia(cls, valor: str) -> str:
         valor_limpio = valor.strip()
-
         if not valor_limpio:
-            raise ValueError(
-                "La instrucción para la IA no puede estar vacía"
-            )
-
+            raise ValueError("La instrucción para la IA no puede estar vacía")
         return valor_limpio
 
+    @property
+    def texto(self) -> str:
+        return self.texto_libre
 
+
+# 2. Clase para RESPONDER con los datos estructurados por Gemini
 class AITareaResponse(BaseModel):
     titulo: str
-    descripcion: str
-    prioridad: str
-    id_usuario_asignado: Optional[int] = None
+    descripcion: Optional[str] = ""
+    nivel_prioridad: Optional[str] = "Media"
+    prioridad: Optional[str] = "Media"
+    fecha_inicio: Optional[str] = None
     fecha_limite: Optional[str] = None
+    fecha_fin: Optional[str] = None
+    id_responsable: Optional[int] = None
+    id_asignado: Optional[int] = None
 
+    model_config = {
+        "extra": "allow"
+    }
+
+
+# 3. Clases para el resumen del chat (añadidas recientemente)
+class MensajeSimple(BaseModel):
+    autor: str
+    contenido: str
+    fecha: Optional[str] = None
+
+class AIResumenChatRequest(BaseModel):
+    id_proyecto: Optional[int] = None
+    mensajes: List[MensajeSimple]
+
+class AIResumenChatResponse(BaseModel):
+    resumen_general: str
+    puntos_clave: List[str]
+    acuerdos_o_tareas: List[str]
 
 # ============================================================
 # COMENTARIOS DE TAREAS
@@ -462,3 +496,17 @@ class TomarTareaResponse(BaseModel):
     mensaje: str
     tarea: TareaResponse
     permisos: Optional[PermisosTareaResponse] = None
+
+class MensajeSimple(BaseModel):
+    autor: str
+    contenido: str
+    fecha: Optional[str] = None
+
+class AIResumenChatRequest(BaseModel):
+    id_proyecto: Optional[int] = None
+    mensajes: List[MensajeSimple]
+
+class AIResumenChatResponse(BaseModel):
+    resumen_general: str
+    puntos_clave: List[str]
+    acuerdos_o_tareas: List[str]

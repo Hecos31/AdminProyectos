@@ -24,7 +24,7 @@
         type="button"
         *ngIf="vistaActual !== 'lista' && !isMinimized"
         class="btn-icon"
-        (click)="volverALista()"
+        (click)="volverALista(); cerrarResumenChat()"
         aria-label="Volver a la lista de chats"
         title="Volver"
       >
@@ -117,6 +117,34 @@
 
     <!-- ACCIONES -->
     <div class="header-actions">
+
+      <!-- BOTÓN: PONERSE AL DÍA CON IA (SOLO EN CONVERSACIÓN) -->
+      <button
+        type="button"
+        *ngIf="vistaActual === 'conversacion' && !isMinimized && gruposMensajes.length > 0"
+        class="btn-ai-summary"
+        (click)="generarResumenChat()"
+        [disabled]="cargandoResumenIA"
+        title="Resumir lo que se habló en el chat con IA"
+        aria-label="Resumir conversación con IA"
+        style="
+          display: inline-flex;
+          align-items: center;
+          gap: 4px;
+          background: rgba(59, 130, 246, 0.18);
+          border: 1px solid rgba(96, 165, 250, 0.45);
+          color: #93c5fd;
+          border-radius: 6px;
+          padding: 4px 8px;
+          font-size: 11px;
+          font-weight: 600;
+          cursor: pointer;
+          margin-right: 4px;
+        "
+      >
+        <span>✨</span>
+        <span>{{ cargandoResumenIA ? '...' : 'Resumen IA' }}</span>
+      </button>
 
       <!-- NUEVA CONVERSACIÓN -->
       <button
@@ -443,6 +471,85 @@
       *ngIf="vistaActual === 'conversacion'"
     >
 
+      <!-- TARJETA FLOTANTE: RESUMEN CON IA -->
+      <div
+        class="ai-summary-box"
+        *ngIf="mostrarModalResumen"
+        style="
+          background: #1e293b;
+          border: 1px solid #3b82f6;
+          border-radius: 10px;
+          padding: 12px;
+          margin: 8px 10px;
+          color: #f8fafc;
+          font-size: 12.5px;
+          max-height: 210px;
+          overflow-y: auto;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+        "
+      >
+        <div
+          style="
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 6px;
+            border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+            padding-bottom: 4px;
+          "
+        >
+          <strong style="color: #60a5fa; font-size: 13px;">
+            ✨ Resumen de lo que se habló
+          </strong>
+          <button
+            type="button"
+            (click)="cerrarResumenChat()"
+            title="Cerrar resumen"
+            style="
+              background: transparent;
+              border: none;
+              color: #94a3b8;
+              cursor: pointer;
+              font-size: 14px;
+              line-height: 1;
+            "
+          >
+            ✕
+          </button>
+        </div>
+
+        <div *ngIf="cargandoResumenIA" style="color: #cbd5e1; padding: 6px 0;">
+          Analizando mensajes recientes con Gemini...
+        </div>
+
+        <div *ngIf="!cargandoResumenIA && resumenChatIA">
+          <p style="margin: 0 0 8px 0; line-height: 1.4; color: #e2e8f0;">
+            {{ resumenChatIA.resumen_general }}
+          </p>
+
+          <div
+            *ngIf="resumenChatIA.puntos_clave?.length"
+            style="margin-bottom: 6px;"
+          >
+            <strong style="color: #93c5fd;">📌 Puntos clave:</strong>
+            <ul style="margin: 3px 0 0 16px; padding: 0; color: #cbd5e1;">
+              <li *ngFor="let punto of resumenChatIA.puntos_clave">
+                {{ punto }}
+              </li>
+            </ul>
+          </div>
+
+          <div *ngIf="resumenChatIA.acuerdos_o_tareas?.length">
+            <strong style="color: #86efac;">✅ Acuerdos / Pendientes:</strong>
+            <ul style="margin: 3px 0 0 16px; padding: 0; color: #cbd5e1;">
+              <li *ngFor="let acuerdo of resumenChatIA.acuerdos_o_tareas">
+                {{ acuerdo }}
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
       <!-- MENSAJES -->
       <div
         class="messages-area"
@@ -497,7 +604,7 @@
               [class.sent]="esMiMensaje(msg)"
               [class.received]="!esMiMensaje(msg)"
             >
-              <div class="msg-bubble">
+              <div class="msg-bubble group-bubble">
 
                 <span
                   class="msg-sender"
@@ -513,9 +620,35 @@
                   {{ msg.contenido }}
                 </span>
 
-                <span class="msg-time">
-                  {{ msg.fecha_envio | date:'shortTime' }}
-                </span>
+                <div class="msg-footer-line">
+                  <span class="msg-time">
+                    {{ msg.fecha_envio | date:'shortTime' }}
+                  </span>
+
+                  <!-- BOTÓN: CONVERTIR MENSAJE A TAREA -->
+                  <button
+                    type="button"
+                    class="btn-msg-to-task"
+                    (click)="convertirMensajeATarea(msg); $event.stopPropagation()"
+                    title="Crear tarea a partir de este mensaje"
+                    aria-label="Convertir mensaje a tarea"
+                  >
+                    <svg
+                      width="13"
+                      height="13"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2.2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <polyline points="9 11 12 14 22 4"></polyline>
+                      <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+                    </svg>
+                    <span>Tarea</span>
+                  </button>
+                </div>
 
               </div>
             </div>
