@@ -321,6 +321,38 @@
         </button>
 
         <button
+          type="button"
+          class="quick-action quick-action-pulse"
+          (click)="irASeccionPulse()"
+        >
+          <span class="quick-action-icon pulse-icon-gold">
+            <svg
+              width="19"
+              height="19"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path>
+              <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path>
+              <path d="M4 22h16"></path>
+              <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"></path>
+              <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"></path>
+              <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"></path>
+            </svg>
+          </span>
+
+          <span>
+            <strong>Team Pulse &amp; Puntos de Mérito</strong>
+            <small>Ranking XP, medallas y reconocimientos</small>
+          </span>
+        </button>
+
+        <button
           *ngIf="esAdmin"
           type="button"
           class="quick-action quick-action-voice"
@@ -1246,6 +1278,209 @@
 
 
       <!-- ===================================================
+           ÓRBITA GAMIFIED TEAM PULSE & PUNTOS DE MÉRITO (IMPACTO XP)
+      ==================================================== -->
+      <section
+        *ngIf="teamPulse"
+        id="orbita-team-pulse-section"
+        class="dashboard-card pulse-section-card"
+      >
+        <div
+          *ngIf="mensajeExitoPulse"
+          class="pulse-toast-banner"
+          role="status"
+          aria-live="polite"
+        >
+          <span>{{ mensajeExitoPulse }}</span>
+        </div>
+
+        <!-- CABECERA DEL MÓDULO Y KPIS DE GAMIFICACIÓN -->
+        <header class="pulse-top-banner">
+          <div class="pulse-brand-left">
+            <span class="pulse-trophy-badge" aria-hidden="true">
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path>
+                <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path>
+                <path d="M4 22h16"></path>
+                <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"></path>
+                <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"></path>
+                <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"></path>
+              </svg>
+            </span>
+
+            <div>
+              <div class="pulse-eyebrow-row">
+                <span class="pulse-eyebrow">PULSO MOTIVACIONAL DEL EQUIPO • SPRINT ACTIVO</span>
+                <span class="pulse-tech-pill">Score XP + Medallas + Puntos de Mérito en MongoDB</span>
+              </div>
+
+              <h2>Órbita Team Pulse &amp; Puntos de Mérito: Índice de Sinergia e Impacto</h2>
+
+              <p>
+                Cuantificación ponderada del esfuerzo real según complejidad de actividades concluidas, puntualidad de entrega, evidencias documentales y reconocimientos entre compañeros.
+              </p>
+            </div>
+          </div>
+
+          <div class="pulse-kpi-row">
+            <div class="pulse-kpi-box kpi-xp">
+              <span>XP TOTAL EQUIPO</span>
+              <strong>{{ teamPulse.xp_total_equipo }} XP</strong>
+            </div>
+
+            <div class="pulse-kpi-box kpi-streak">
+              <span>ENTREGAS A TIEMPO</span>
+              <strong>{{ teamPulse.porcentaje_entregas_tiempo }}% Racha</strong>
+            </div>
+
+            <div class="pulse-kpi-box kpi-meritos">
+              <span>PUNTOS OTORGADOS</span>
+              <strong>{{ teamPulse.total_meritos_proyecto }} Reconoc.</strong>
+            </div>
+          </div>
+        </header>
+
+        <!-- TARJETAS DEL RANKING DE IMPACTO, NIVELES XP Y MEDALLAS -->
+        <div class="pulse-subheader">
+          <span>RANKING DE IMPACTO, NIVELES DE MAESTRÍA Y MEDALLAS DESBLOQUEADAS</span>
+          <small>{{ teamPulse.total_medallas_desbloqueadas }} medallas obtenidas en el proyecto</small>
+        </div>
+
+        <div class="pulse-ranking-grid">
+          <article
+            *ngFor="let miembro of teamPulse.ranking"
+            class="pulse-member-card"
+            [attr.data-rank]="miembro.posicion"
+          >
+            <div class="pulse-card-top">
+              <span class="pulse-rank-pill" [attr.data-rank]="miembro.posicion">
+                #{{ miembro.posicion }} •
+                {{
+                  miembro.posicion === 1
+                    ? 'LÍDER DE SPRINT'
+                    : miembro.posicion === 2
+                    ? 'ALTO IMPACTO'
+                    : 'CONSTANCIA ACTIVA'
+                }}
+              </span>
+
+              <span class="pulse-xp-pill" [attr.data-rank]="miembro.posicion">
+                {{ miembro.xp_total }} XP
+              </span>
+            </div>
+
+            <div class="pulse-member-profile">
+              <span class="pulse-avatar" [attr.data-rank]="miembro.posicion">
+                {{ obtenerIniciales(miembro) }}
+              </span>
+
+              <div class="pulse-member-info">
+                <strong>{{ miembro.nombre }} {{ miembro.apellido }}</strong>
+                <small>{{ miembro.rol }} • Nivel {{ miembro.nivel }} ({{ miembro.titulo_nivel }})</small>
+              </div>
+            </div>
+
+            <div class="pulse-streak-bar-block">
+              <div class="pulse-streak-label">
+                <span>🔥 Racha activa: {{ miembro.racha_entregas_tiempo }} entregas a tiempo</span>
+                <small>{{ miembro.progreso_nivel_pct }}% nv. {{ miembro.nivel }}</small>
+              </div>
+
+              <div class="pulse-xp-track">
+                <div
+                  class="pulse-xp-fill"
+                  [attr.data-rank]="miembro.posicion"
+                  [style.width.%]="miembro.progreso_nivel_pct"
+                ></div>
+              </div>
+            </div>
+
+            <div class="pulse-stats-strip">
+              <span><strong>{{ miembro.tareas_concluidas }}</strong> Concluidas ({{ miembro.tareas_alta_prioridad }} Alta)</span>
+              <span>•</span>
+              <span><strong>{{ miembro.evidencias_subidas }}</strong> Evidencias</span>
+              <span>•</span>
+              <span><strong>{{ miembro.meritos_recibidos }}</strong> Méritos</span>
+            </div>
+
+            <div class="pulse-badges-block">
+              <span class="pulse-badges-title">Medallas desbloqueadas:</span>
+              <div class="pulse-badges-list">
+                <span
+                  *ngFor="let med of miembro.medallas"
+                  class="pulse-medal-chip"
+                  [attr.data-color]="med.color"
+                  [title]="med.descripcion"
+                >
+                  ✓ {{ med.nombre }}
+                </span>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              class="pulse-merito-btn"
+              (click)="abrirModalEnviarMerito(miembro)"
+            >
+              👏 Otorgar Puntos a {{ miembro.nombre }} (+25 XP)
+            </button>
+          </article>
+        </div>
+
+        <!-- MURO DE RECONOCIMIENTOS EN VIVO + CRÓNICA MOTIVACIONAL CON GEMINI IA -->
+        <footer class="pulse-ai-meritos-footer">
+          <div class="pulse-ai-chronicle">
+            <div class="pulse-ai-header">
+              <span class="pulse-ai-sparkle" aria-hidden="true">✨</span>
+              <div>
+                <strong>MURO DE RECONOCIMIENTOS EN VIVO + CRÓNICA MOTIVACIONAL CON GEMINI IA (MONGODB)</strong>
+                <p>“{{ teamPulse.cronica_ia }}”</p>
+              </div>
+            </div>
+
+            <div
+              *ngIf="teamPulse.meritos_recientes.length > 0"
+              class="pulse-recent-meritos-list"
+            >
+              <div
+                *ngFor="let merito of teamPulse.meritos_recientes | slice:0:3"
+                class="pulse-merito-feed-item"
+              >
+                <span class="merito-feed-badge">🏆 {{ merito.insignia }} (+{{ merito.xp_otorgado }} XP)</span>
+                <span class="merito-feed-text">
+                  <strong>{{ merito.nombre_remitente }}</strong> → <strong>{{ merito.nombre_destinatario }}</strong>:
+                  “{{ merito.mensaje }}”
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            class="pulse-ai-generate-btn"
+            (click)="solicitarCronicaMotivacionalIA()"
+            [disabled]="generandoCronicaIA"
+          >
+            {{
+              generandoCronicaIA
+                ? 'Generando crónica con Gemini IA...'
+                : '✨ Generar Crónica de Reconocimiento IA en Chat'
+            }}
+          </button>
+        </footer>
+      </section>
+
+
+            <!-- ===================================================
            INFORMACIÓN GENERAL DEL PROYECTO
       ==================================================== -->
       <section class="dashboard-card project-info-card">
@@ -1333,3 +1568,96 @@
     procesarTareaEliminada($event)
   "
 ></app-detalles-actividades>
+
+
+<!-- MODAL PARA OTORGAR PUNTOS DE MÉRITO (+25 XP Y DIFUSIÓN EN CHAT DE MONGODB) -->
+<div
+  *ngIf="destinatarioMeritoModal"
+  class="pulse-modal-backdrop"
+  (click)="cerrarModalMerito()"
+>
+  <div
+    class="pulse-modal-card"
+    (click)="$event.stopPropagation()"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="pulse-merito-modal-title"
+  >
+    <header class="pulse-modal-header">
+      <div>
+        <span class="pulse-eyebrow">RECONOCIMIENTO ENTRE COMPAÑEROS (+25 XP)</span>
+        <h3 id="pulse-merito-modal-title">
+          Otorgar Puntos a {{ destinatarioMeritoModal.nombre }} {{ destinatarioMeritoModal.apellido }}
+        </h3>
+      </div>
+
+      <button
+        type="button"
+        class="pulse-modal-close"
+        (click)="cerrarModalMerito()"
+        aria-label="Cerrar ventana"
+      >
+        ✕
+      </button>
+    </header>
+
+    <div class="pulse-modal-body">
+      <label class="pulse-modal-label">
+        Selecciona la insignia de mérito
+      </label>
+
+      <div class="pulse-insignia-selector">
+        <button
+          *ngFor="let ins of catalogoInsigniasMerito"
+          type="button"
+          class="pulse-insignia-option"
+          [class.selected]="insigniaMeritoSeleccionada === ins"
+          (click)="insigniaMeritoSeleccionada = ins"
+        >
+          🏆 {{ ins }}
+        </button>
+      </div>
+
+      <label class="pulse-modal-label" for="merito-mensaje-textarea">
+        Mensaje de reconocimiento para el equipo
+      </label>
+
+      <textarea
+        id="merito-mensaje-textarea"
+        rows="3"
+        class="pulse-modal-textarea"
+        [(ngModel)]="mensajeMeritoTexto"
+        placeholder="Escribe por qué destacas el apoyo o entrega de tu compañero..."
+      ></textarea>
+
+      <label class="pulse-modal-checkbox">
+        <input
+          type="checkbox"
+          [(ngModel)]="publicarMeritoEnChat"
+        />
+        <span>
+          Publicar tarjeta de reconocimiento en el canal grupal del proyecto en MongoDB
+        </span>
+      </label>
+    </div>
+
+    <footer class="pulse-modal-footer">
+      <button
+        type="button"
+        class="button button-secondary"
+        (click)="cerrarModalMerito()"
+      >
+        Cancelar
+      </button>
+
+      <button
+        type="button"
+        class="button button-primary pulse-confirm-merito-btn"
+        (click)="confirmarEnvioMerito()"
+        [disabled]="enviandoMerito || !mensajeMeritoTexto.trim()"
+      >
+        {{ enviandoMerito ? 'Otorgando Puntos...' : '🏆 Confirmar y Otorgar +25 XP' }}
+      </button>
+    </footer>
+  </div>
+</div>

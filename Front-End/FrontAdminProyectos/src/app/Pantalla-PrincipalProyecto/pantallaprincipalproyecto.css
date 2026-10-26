@@ -2555,3 +2555,644 @@
       );
   }
 }
+
+
+/* =========================================================
+   ÓRBITA GAMIFIED TEAM PULSE & PUNTOS DE MÉRITO (IMPACTO XP)
+   ========================================================= */
+
+.quick-action-pulse {
+  border-color: rgba(245, 158, 11, 0.38);
+}
+
+.quick-action-pulse:hover {
+  border-color: #f59e0b;
+}
+
+.pulse-icon-gold {
+  color: #f59e0b;
+  background: rgba(245, 158, 11, 0.14);
+}
+
+.pulse-section-card {
+  margin-bottom: 18px;
+  padding: 20px;
+  border: 1px solid rgba(245, 158, 11, 0.35);
+}
+
+.pulse-toast-banner {
+  margin-bottom: 14px;
+  padding: 11px 15px;
+  color: #10b981;
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(16, 185, 129, 0.35);
+  border-radius: 10px;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.pulse-top-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  padding: 16px 18px;
+  margin-bottom: 18px;
+  background: var(--dash-surface-soft);
+  border: 1px solid rgba(245, 158, 11, 0.32);
+  border-radius: 14px;
+}
+
+.pulse-brand-left {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  flex: 1 1 420px;
+  min-width: 0;
+}
+
+.pulse-trophy-badge {
+  display: inline-flex;
+  width: 48px;
+  height: 48px;
+  flex: 0 0 48px;
+  align-items: center;
+  justify-content: center;
+  color: #fbbf24;
+  background: rgba(245, 158, 11, 0.15);
+  border: 1px solid rgba(245, 158, 11, 0.45);
+  border-radius: 50%;
+}
+
+.pulse-eyebrow-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.pulse-eyebrow {
+  color: #f59e0b;
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+}
+
+.pulse-tech-pill {
+  padding: 2px 9px;
+  color: #c4b5fd;
+  background: rgba(124, 58, 237, 0.18);
+  border: 1px solid rgba(139, 92, 246, 0.4);
+  border-radius: 999px;
+  font-size: 0.62rem;
+  font-weight: 700;
+}
+
+.pulse-brand-left h2 {
+  margin: 0;
+  color: var(--dash-text);
+  font-size: 1.05rem;
+  font-weight: 760;
+}
+
+.pulse-brand-left p {
+  margin: 4px 0 0;
+  color: var(--dash-muted);
+  font-size: 0.74rem;
+  line-height: 1.45;
+}
+
+.pulse-kpi-row {
+  display: flex;
+  align-items: stretch;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.pulse-kpi-box {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 132px;
+  padding: 10px 14px;
+  background: var(--dash-surface);
+  border: 1px solid var(--dash-border);
+  border-radius: 12px;
+}
+
+.pulse-kpi-box span {
+  color: var(--dash-muted);
+  font-size: 0.61rem;
+  font-weight: 750;
+  letter-spacing: 0.04em;
+}
+
+.pulse-kpi-box strong {
+  margin-top: 4px;
+  font-size: 1.02rem;
+  font-weight: 800;
+}
+
+.pulse-kpi-box.kpi-xp {
+  border-color: rgba(59, 130, 246, 0.45);
+}
+
+.pulse-kpi-box.kpi-xp strong {
+  color: #3b82f6;
+}
+
+.pulse-kpi-box.kpi-streak {
+  border-color: rgba(16, 185, 129, 0.45);
+}
+
+.pulse-kpi-box.kpi-streak strong {
+  color: #10b981;
+}
+
+.pulse-kpi-box.kpi-meritos {
+  border-color: rgba(168, 85, 247, 0.45);
+}
+
+.pulse-kpi-box.kpi-meritos strong {
+  color: #a855f7;
+}
+
+.pulse-subheader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.pulse-subheader span {
+  color: var(--dash-primary);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+}
+
+.pulse-subheader small {
+  color: var(--dash-muted);
+  font-size: 0.7rem;
+}
+
+.pulse-ranking-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(295px, 1fr));
+  gap: 14px;
+  margin-bottom: 18px;
+}
+
+.pulse-member-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px;
+  background: var(--dash-surface-soft);
+  border: 1px solid var(--dash-border);
+  border-top: 3px solid #3b82f6;
+  border-radius: 14px;
+}
+
+.pulse-member-card[data-rank="1"] {
+  border-color: rgba(245, 158, 11, 0.45);
+  border-top: 3px solid #f59e0b;
+}
+
+.pulse-member-card[data-rank="2"] {
+  border-top: 3px solid #3b82f6;
+}
+
+.pulse-member-card[data-rank="3"] {
+  border-top: 3px solid #10b981;
+}
+
+.pulse-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.pulse-rank-pill {
+  padding: 3px 10px;
+  color: #60a5fa;
+  background: rgba(59, 130, 246, 0.12);
+  border: 1px solid rgba(59, 130, 246, 0.35);
+  border-radius: 999px;
+  font-size: 0.62rem;
+  font-weight: 800;
+}
+
+.pulse-rank-pill[data-rank="1"] {
+  color: #fbbf24;
+  background: rgba(245, 158, 11, 0.14);
+  border-color: rgba(245, 158, 11, 0.45);
+}
+
+.pulse-rank-pill[data-rank="3"] {
+  color: #34d399;
+  background: rgba(16, 185, 129, 0.14);
+  border-color: rgba(16, 185, 129, 0.45);
+}
+
+.pulse-xp-pill {
+  padding: 4px 10px;
+  color: #ffffff;
+  background: #2563eb;
+  border-radius: 999px;
+  font-size: 0.66rem;
+  font-weight: 800;
+}
+
+.pulse-xp-pill[data-rank="1"] {
+  color: #0f172a;
+  background: #f59e0b;
+}
+
+.pulse-xp-pill[data-rank="3"] {
+  background: #10b981;
+}
+
+.pulse-member-profile {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+}
+
+.pulse-avatar {
+  display: inline-flex;
+  width: 42px;
+  height: 42px;
+  flex: 0 0 42px;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  background: #2563eb;
+  border-radius: 50%;
+  font-size: 0.85rem;
+  font-weight: 800;
+}
+
+.pulse-avatar[data-rank="1"] {
+  color: #0f172a;
+  background: #f59e0b;
+}
+
+.pulse-avatar[data-rank="3"] {
+  background: #10b981;
+}
+
+.pulse-member-info {
+  min-width: 0;
+}
+
+.pulse-member-info strong {
+  display: block;
+  color: var(--dash-text);
+  font-size: 0.86rem;
+  font-weight: 740;
+}
+
+.pulse-member-info small {
+  display: block;
+  margin-top: 2px;
+  color: var(--dash-muted);
+  font-size: 0.69rem;
+}
+
+.pulse-streak-bar-block {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.pulse-streak-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  color: #f59e0b;
+  font-size: 0.68rem;
+  font-weight: 700;
+}
+
+.pulse-streak-label small {
+  color: var(--dash-muted);
+  font-size: 0.64rem;
+}
+
+.pulse-xp-track {
+  width: 100%;
+  height: 8px;
+  background: var(--dash-surface);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.pulse-xp-fill {
+  height: 100%;
+  background: #3b82f6;
+  border-radius: 999px;
+  transition: width 300ms ease;
+}
+
+.pulse-xp-fill[data-rank="1"] {
+  background: #f59e0b;
+}
+
+.pulse-xp-fill[data-rank="3"] {
+  background: #10b981;
+}
+
+.pulse-stats-strip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 8px 11px;
+  background: var(--dash-surface);
+  border: 1px solid var(--dash-border);
+  border-radius: 9px;
+  color: var(--dash-text-secondary);
+  font-size: 0.68rem;
+}
+
+.pulse-badges-block {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.pulse-badges-title {
+  color: var(--dash-muted);
+  font-size: 0.66rem;
+  font-weight: 700;
+}
+
+.pulse-badges-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.pulse-medal-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 9px;
+  color: var(--dash-text);
+  background: var(--dash-surface);
+  border: 1px solid rgba(96, 165, 250, 0.35);
+  border-radius: 999px;
+  font-size: 0.64rem;
+  font-weight: 680;
+}
+
+.pulse-medal-chip[data-color="amber"] {
+  border-color: rgba(245, 158, 11, 0.45);
+}
+
+.pulse-medal-chip[data-color="emerald"] {
+  border-color: rgba(16, 185, 129, 0.45);
+}
+
+.pulse-medal-chip[data-color="rose"] {
+  border-color: rgba(244, 63, 94, 0.45);
+}
+
+.pulse-merito-btn {
+  width: 100%;
+  padding: 9px 12px;
+  color: #ffffff;
+  background: var(--dash-primary);
+  border: none;
+  border-radius: 9px;
+  font: inherit;
+  font-size: 0.73rem;
+  font-weight: 720;
+  cursor: pointer;
+}
+
+.pulse-merito-btn:hover {
+  background: var(--dash-primary-dark);
+}
+
+.pulse-ai-meritos-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  padding: 16px 18px;
+  background: var(--dash-surface-soft);
+  border: 1px solid rgba(139, 92, 246, 0.38);
+  border-radius: 14px;
+}
+
+.pulse-ai-chronicle {
+  flex: 1 1 480px;
+  min-width: 0;
+}
+
+.pulse-ai-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.pulse-ai-sparkle {
+  display: inline-flex;
+  width: 34px;
+  height: 34px;
+  flex: 0 0 34px;
+  align-items: center;
+  justify-content: center;
+  background: rgba(124, 58, 237, 0.2);
+  border: 1px solid rgba(167, 139, 250, 0.45);
+  border-radius: 50%;
+  font-size: 0.95rem;
+}
+
+.pulse-ai-header strong {
+  display: block;
+  color: #a78bfa;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+
+.pulse-ai-header p {
+  margin: 4px 0 0;
+  color: var(--dash-text);
+  font-size: 0.78rem;
+  line-height: 1.45;
+}
+
+.pulse-recent-meritos-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.pulse-merito-feed-item {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 6px 10px;
+  background: var(--dash-surface);
+  border: 1px solid var(--dash-border);
+  border-radius: 8px;
+  font-size: 0.7rem;
+}
+
+.merito-feed-badge {
+  color: #10b981;
+  font-weight: 750;
+}
+
+.merito-feed-text {
+  color: var(--dash-text-secondary);
+}
+
+.pulse-ai-generate-btn {
+  padding: 10px 16px;
+  color: #ffffff;
+  background: #7c3aed;
+  border: none;
+  border-radius: 10px;
+  font: inherit;
+  font-size: 0.74rem;
+  font-weight: 730;
+  cursor: pointer;
+}
+
+.pulse-ai-generate-btn:hover:not(:disabled) {
+  background: #6d28d9;
+}
+
+.pulse-ai-generate-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* MODAL DE PUNTOS DE RECONOCIMIENTO */
+
+.pulse-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 18px;
+  background: rgba(15, 23, 42, 0.72);
+  backdrop-filter: blur(4px);
+}
+
+.pulse-modal-card {
+  width: 100%;
+  max-width: 520px;
+  padding: 22px;
+  color: var(--dash-text);
+  background: var(--dash-surface);
+  border: 1px solid var(--dash-border);
+  border-radius: 16px;
+  box-shadow: 0 22px 48px rgba(0, 0, 0, 0.35);
+}
+
+.pulse-modal-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.pulse-modal-header h3 {
+  margin: 4px 0 0;
+  font-size: 1.02rem;
+  font-weight: 760;
+}
+
+.pulse-modal-close {
+  width: 30px;
+  height: 30px;
+  color: var(--dash-muted);
+  background: transparent;
+  border: 1px solid var(--dash-border);
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.pulse-modal-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.pulse-modal-label {
+  color: var(--dash-text-secondary);
+  font-size: 0.74rem;
+  font-weight: 700;
+}
+
+.pulse-insignia-selector {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.pulse-insignia-option {
+  padding: 6px 11px;
+  color: var(--dash-text-secondary);
+  background: var(--dash-surface-soft);
+  border: 1px solid var(--dash-border);
+  border-radius: 999px;
+  font: inherit;
+  font-size: 0.7rem;
+  font-weight: 680;
+  cursor: pointer;
+}
+
+.pulse-insignia-option.selected {
+  color: #fbbf24;
+  background: rgba(245, 158, 11, 0.16);
+  border-color: #f59e0b;
+}
+
+.pulse-modal-textarea {
+  width: 100%;
+  padding: 10px 12px;
+  color: var(--dash-text);
+  background: var(--dash-surface-soft);
+  border: 1px solid var(--dash-border);
+  border-radius: 10px;
+  font: inherit;
+  font-size: 0.8rem;
+  resize: vertical;
+}
+
+.pulse-modal-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--dash-text-secondary);
+  font-size: 0.74rem;
+  cursor: pointer;
+}
+
+.pulse-modal-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 18px;
+}

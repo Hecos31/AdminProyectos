@@ -3,7 +3,7 @@ from typing import List
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from database import get_db, db_mongo
-from models import ProyectoDB, ProyectoUsuarioDB, TareaDB, UsuarioDB, TareaAsignadaDB
+from models import ProyectoDB, ProyectoUsuarioDB, TareaDB, UsuarioDB, TareaAsignadaDB, ComentarioTareaDB, EvidenciaTareaDB, RolDB
 from schemas import (
     ProyectoCreate,
     ProyectoResponse,
@@ -15,6 +15,13 @@ from schemas import (
     TareaResponse,
     TareaCalendarioResponse,
     CalendarioProyectoResponse,
+    MedallaPulseResponse,
+    IntegrantePulseResponse,
+    ReconocimientoItemResponse,
+    TeamPulseResponse,
+    EnviarReconocimientoRequest,
+    CronicaPulseRequest,
+    CronicaPulseResponse,
 )
 from auth import obtener_usuario_actual, obtener_rol_en_proyecto
 
@@ -756,3 +763,491 @@ def obtener_mis_tareas_proyecto(
         resultado.append(tarea_dict)
 
     return resultado
+
+
+
+# =================================================================
+# ÓRBITA GAMIFIED TEAM PULSE & PUNTOS DE MÉRITO (IMPACTO XP, MEDALLAS Y PUNTOS DE MÉRITO)
+# =================================================================
+
+def _obtener_titulo_nivel(nivel: int) -> str:
+    titulos = {
+        1: "Explorador Orbital",
+        2: "Constructor Ágil",
+        3: "Especialista de Sprint",
+        4: "Arquitecto de Impacto",
+        5: "Comandante de Misión",
+        6: "Leyenda de Órbita",
+    }
+    return titulos.get(min(max(nivel, 1), 6), "Leyenda de Órbita")
+
+
+async def _construir_team_pulse(id_proyecto: int, db: Session) -> dict:
+    proyecto = (
+        db.query(ProyectoDB)
+        .filter(ProyectoDB.id_proyecto == id_proyecto)
+        .first()
+    )
+    if not proyecto:
+        raise HTTPException(status_code=404, detail="El proyecto no existe.")
+
+    relaciones = (
+        db.query(ProyectoUsuarioDB, UsuarioDB)
+        .join(UsuarioDB, UsuarioDB.id_usuario == ProyectoUsuarioDB.id_usuario)
+        .filter(ProyectoUsuarioDB.id_proyecto == id_proyecto)
+        .all()
+    )
+
+    tareas_proyecto = (
+        db.query(TareaDB)
+        .filter(TareaDB.id_proyecto == id_proyecto)
+        .all()
+    )
+    ids_tareas = [t.id_tarea for t in tareas_proyecto]
+    mapa_tareas = {t.id_tarea: t for t in tareas_proyecto}
+
+    asignaciones = (
+        db.query(TareaAsignadaDB)
+        .filter(TareaAsignadaDB.id_tarea.in_(ids_tareas))
+        .all()
+        if ids_tareas
+        else []
+    )
+    mapa_responsable_tarea = {a.id_tarea: a.id_usuario for a in asignaciones}
+
+    evidencias = (
+        db.query(EvidenciaTareaDB)
+        .filter(EvidenciaTareaDB.id_tarea.in_(ids_tareas))
+        .all()
+        if ids_tareas
+        else []
+    )
+    comentarios = (
+        db.query(ComentarioTareaDB)
+        .filter(ComentarioTareaDB.id_tarea.in_(ids_tareas))
+        .all()
+        if ids_tareas
+        else []
+    )
+
+    # Consultar Méritos en MongoDB (con manejo seguro si Mongo no responde)
+    meritos_docs = []
+    try:
+        cursor_meritos = db_mongo.team_meritos.find({"id_proyecto": id_proyecto}).sort("fecha_envio", -1)
+        meritos_docs = await cursor_meritos.to_list(length=100)
+    except Exception:
+        meritos_docs = []
+
+    mapa_usuarios_nombre = {
+        u.id_usuario: f"{u.nombre or ''} {u.apellido or ''}".strip() or u.correo
+        for _, u in relaciones
+    }
+
+    conteo_meritos_recibidos = {}
+    meritos_recientes = []
+    for k in meritos_docs:
+        dest_id = int(k.get("id_destinatario", 0))
+        rem_id = int(k.get("id_remitente", 0))
+        conteo_meritos_recibidos[dest_id] = conteo_meritos_recibidos.get(dest_id, 0) + 1
+        if len(meritos_recientes) < 12:
+            fecha_val = k.get("fecha_envio")
+            fecha_str = (
+                fecha_val.isoformat()
+                if isinstance(fecha_val, datetime)
+                else str(fecha_val or datetime.now(timezone.utc).isoformat())
+            )
+            meritos_recientes.append(
+                ReconocimientoItemResponse(
+                    id_reconocimiento=str(k.get("_id", "")),
+                    id_proyecto=id_proyecto,
+                    id_remitente=rem_id,
+                    nombre_remitente=k.get("nombre_remitente") or mapa_usuarios_nombre.get(rem_id, "Integrante"),
+                    id_destinatario=dest_id,
+                    nombre_destinatario=k.get("nombre_destinatario") or mapa_usuarios_nombre.get(dest_id, "Integrante"),
+                    insignia=k.get("insignia", "Compañerismo Excepcional"),
+                    mensaje=k.get("mensaje", ""),
+                    xp_otorgado=int(k.get("xp_otorgado", 25)),
+                    fecha_envio=fecha_str,
+                )
+            )
+
+    ahora_naive = datetime.utcnow()
+    total_concluidas_equipo = 0
+    total_concluidas_a_tiempo_equipo = 0
+    total_medallas = 0
+    ranking_items = []
+
+    for rel, usuario in relaciones:
+        uid = usuario.id_usuario
+        rol_str = "Administrador" if rel.id_rol == 1 else "Colaborador"
+
+        tareas_usuario = [
+            mapa_tareas[tid]
+            for tid, resp_uid in mapa_responsable_tarea.items()
+            if resp_uid == uid and tid in mapa_tareas
+        ]
+
+        concluidas = [t for t in tareas_usuario if (t.estado or "").lower() == "concluida"]
+        en_progreso = [t for t in tareas_usuario if (t.estado or "").lower() == "en progreso"]
+        alta_prio = [t for t in concluidas if (t.prioridad or "").lower() == "alta"]
+
+        entregas_a_tiempo = 0
+        tiene_vencidas = False
+        xp_tareas = 0
+
+        for t in tareas_usuario:
+            est = (t.estado or "").lower()
+            prio = (t.prioridad or "media").lower()
+            if est == "concluida":
+                total_concluidas_equipo += 1
+                base_xp = 100 if prio == "alta" else (70 if prio == "media" else 45)
+                xp_tareas += base_xp
+
+                # Verificar si se entregó a tiempo
+                if t.fecha_limite:
+                    ref_fin = t.fecha_actualizacion or ahora_naive
+                    if ref_fin.date() <= t.fecha_limite.date():
+                        entregas_a_tiempo += 1
+                        total_concluidas_a_tiempo_equipo += 1
+                        xp_tareas += 30
+                else:
+                    entregas_a_tiempo += 1
+                    total_concluidas_a_tiempo_equipo += 1
+                    xp_tareas += 20
+            elif est == "en progreso":
+                xp_tareas += 25
+                if t.fecha_limite and t.fecha_limite.date() < ahora_naive.date():
+                    tiene_vencidas = True
+            else:
+                if t.fecha_limite and t.fecha_limite.date() < ahora_naive.date():
+                    tiene_vencidas = True
+
+        evidencias_u = sum(1 for ev in evidencias if ev.id_usuario == uid)
+        comentarios_u = sum(1 for cm in comentarios if cm.id_usuario == uid)
+        meritos_u = conteo_meritos_recibidos.get(uid, 0)
+
+        xp_total = (
+            xp_tareas
+            + (evidencias_u * 20)
+            + (comentarios_u * 10)
+            + (meritos_u * 25)
+        )
+
+        # Base de bienvenida para integrantes activos del proyecto
+        if xp_total == 0:
+            xp_total = 30
+
+        nivel = min(6, (xp_total // 200) + 1)
+        progreso_nivel_pct = min(100, int(((xp_total % 200) / 200.0) * 100)) if nivel < 6 else 100
+
+        medallas = []
+        if entregas_a_tiempo >= 1 and not tiene_vencidas:
+            medallas.append(
+                MedallaPulseResponse(
+                    codigo="entrega_impecable",
+                    nombre="Entrega Impecable",
+                    descripcion="Cumple sus actividades en tiempo y sin retrasos vencidos.",
+                    color="amber",
+                )
+            )
+        if len(alta_prio) >= 1:
+            medallas.append(
+                MedallaPulseResponse(
+                    codigo="alto_impacto",
+                    nombre="Alto Impacto",
+                    descripcion="Resuelve actividades críticas de prioridad Alta.",
+                    color="rose",
+                )
+            )
+        if evidencias_u >= 1:
+            medallas.append(
+                MedallaPulseResponse(
+                    codigo="documentador_qa",
+                    nombre="Documentador QA",
+                    descripcion="Respalda sus entregas con archivos o enlaces verificables.",
+                    color="blue",
+                )
+            )
+        if comentarios_u >= 1:
+            medallas.append(
+                MedallaPulseResponse(
+                    codigo="mentor_activo",
+                    nombre="Comunicación Activa",
+                    descripcion="Aporta seguimiento y retroalimentación en las actividades.",
+                    color="purple",
+                )
+            )
+        if meritos_u >= 1:
+            medallas.append(
+                MedallaPulseResponse(
+                    codigo="favorito_equipo",
+                    nombre="Reconocido por el Equipo",
+                    descripcion="Ha recibido Puntos de Mérito de sus compañeros de proyecto.",
+                    color="emerald",
+                )
+            )
+        if not medallas:
+            medallas.append(
+                MedallaPulseResponse(
+                    codigo="impulso_inicial",
+                    nombre="En Órbita",
+                    descripcion="Integrante activo listo para sumar impacto en el sprint.",
+                    color="blue",
+                )
+            )
+
+        total_medallas += len(medallas)
+
+        ranking_items.append(
+            IntegrantePulseResponse(
+                posicion=0,
+                id_usuario=uid,
+                nombre=usuario.nombre or "",
+                apellido=usuario.apellido or "",
+                correo=usuario.correo or "",
+                rol=rol_str,
+                xp_total=xp_total,
+                nivel=nivel,
+                titulo_nivel=_obtener_titulo_nivel(nivel),
+                progreso_nivel_pct=progreso_nivel_pct,
+                racha_entregas_tiempo=entregas_a_tiempo,
+                tareas_concluidas=len(concluidas),
+                tareas_alta_prioridad=len(alta_prio),
+                tareas_en_progreso=len(en_progreso),
+                evidencias_subidas=evidencias_u,
+                comentarios_realizados=comentarios_u,
+                meritos_recibidos=meritos_u,
+                medallas=medallas,
+            )
+        )
+
+    ranking_items.sort(
+        key=lambda x: (x.xp_total, x.tareas_concluidas, x.meritos_recibidos),
+        reverse=True,
+    )
+    for idx, item in enumerate(ranking_items, start=1):
+        item.posicion = idx
+
+    xp_total_equipo = sum(i.xp_total for i in ranking_items)
+    pct_tiempo = (
+        int(round((total_concluidas_a_tiempo_equipo / total_concluidas_equipo) * 100))
+        if total_concluidas_equipo > 0
+        else 100
+    )
+
+    if ranking_items:
+        lider = ranking_items[0]
+        nombre_lider = f"{lider.nombre} {lider.apellido}".strip()
+        cronica_default = (
+            f"¡Pulso del equipo activo en '{proyecto.nombre}'! El equipo acumula {xp_total_equipo} XP "
+            f"con un {pct_tiempo}% de puntualidad en entregas. {nombre_lider} lidera actualmente el "
+            f"ranking de impacto con {lider.xp_total} XP ({lider.titulo_nivel}) y { len(lider.medallas) } medallas desbloqueadas."
+        )
+    else:
+        cronica_default = f"El proyecto '{proyecto.nombre}' está listo para registrar sus primeras actividades y Puntos de Mérito."
+
+    return {
+        "id_proyecto": id_proyecto,
+        "nombre_proyecto": proyecto.nombre,
+        "xp_total_equipo": xp_total_equipo,
+        "porcentaje_entregas_tiempo": pct_tiempo,
+        "total_meritos_proyecto": len(meritos_docs),
+        "total_medallas_desbloqueadas": total_medallas,
+        "cronica_ia": cronica_default,
+        "ranking": ranking_items,
+        "meritos_recientes": meritos_recientes,
+    }
+
+
+@router.get(
+    "/{id_proyecto}/pulse",
+    response_model=TeamPulseResponse,
+    status_code=status.HTTP_200_OK,
+)
+async def obtener_team_pulse_proyecto(
+    id_proyecto: int,
+    db: Session = Depends(get_db),
+    id_usuario_actual: int = Depends(obtener_usuario_actual),
+):
+    rol = obtener_rol_en_proyecto(id_proyecto, id_usuario_actual, db)
+    if rol is None:
+        raise HTTPException(status_code=403, detail="No tienes acceso a este proyecto.")
+
+    datos_pulse = await _construir_team_pulse(id_proyecto, db)
+    return datos_pulse
+
+
+@router.post(
+    "/{id_proyecto}/meritos",
+    response_model=ReconocimientoItemResponse,
+    status_code=status.HTTP_201_CREATED,
+)
+async def enviar_reconocimiento_integrante(
+    id_proyecto: int,
+    req: EnviarReconocimientoRequest,
+    db: Session = Depends(get_db),
+    id_usuario_actual: int = Depends(obtener_usuario_actual),
+):
+    rol = obtener_rol_en_proyecto(id_proyecto, id_usuario_actual, db)
+    if rol is None:
+        raise HTTPException(status_code=403, detail="No tienes acceso a este proyecto.")
+
+    rol_dest = obtener_rol_en_proyecto(id_proyecto, req.id_destinatario, db)
+    if rol_dest is None:
+        raise HTTPException(
+            status_code=400,
+            detail="El colaborador destinatario no pertenece a este proyecto.",
+        )
+
+    remitente = db.query(UsuarioDB).filter(UsuarioDB.id_usuario == id_usuario_actual).first()
+    destinatario = db.query(UsuarioDB).filter(UsuarioDB.id_usuario == req.id_destinatario).first()
+    proyecto = db.query(ProyectoDB).filter(ProyectoDB.id_proyecto == id_proyecto).first()
+
+    nombre_rem = f"{remitente.nombre or ''} {remitente.apellido or ''}".strip() if remitente else "Compañero"
+    nombre_dest = f"{destinatario.nombre or ''} {destinatario.apellido or ''}".strip() if destinatario else "Integrante"
+
+    ahora = datetime.now(timezone.utc)
+    nuevo_reconocimiento = {
+        "id_proyecto": id_proyecto,
+        "id_remitente": id_usuario_actual,
+        "nombre_remitente": nombre_rem,
+        "id_destinatario": req.id_destinatario,
+        "nombre_destinatario": nombre_dest,
+        "insignia": req.insignia.strip(),
+        "mensaje": req.mensaje.strip(),
+        "xp_otorgado": 25,
+        "fecha_envio": ahora,
+    }
+
+    inserted_id = "local-merito"
+    try:
+        res = await db_mongo.team_meritos.insert_one(nuevo_reconocimiento)
+        inserted_id = str(res.inserted_id)
+
+        # Publicar el reconocimiento en el canal grupal de MongoDB si está activo
+        if req.publicar_en_chat:
+            conversacion = await db_mongo.conversations.find_one(
+                {"id_proyecto": id_proyecto, "tipo": "grupal"}
+            )
+            if conversacion:
+                texto_chat = (
+                    f"🏆 [Puntos de Mérito +25 XP] {nombre_rem} otorgó la insignia "
+                    f"«{req.insignia.strip()}» a {nombre_dest}: “{req.mensaje.strip()}”"
+                )
+                await db_mongo.messages.insert_one(
+                    {
+                        "id_conversacion": conversacion["_id"],
+                        "id_usuario_remitente": id_usuario_actual,
+                        "contenido": texto_chat,
+                        "fecha_envio": ahora,
+                    }
+                )
+    except Exception:
+        pass
+
+    if req.id_destinatario != id_usuario_actual:
+        try:
+            await disparar_notificacion(
+                usuario_id=req.id_destinatario,
+                tipo="RECONOCIMIENTO_RECIBIDO",
+                mensaje=(
+                    f"¡{nombre_rem} te otorgó Puntos de Mérito (+25 XP) en "
+                    f"'{proyecto.nombre if proyecto else 'el proyecto'}' por {req.insignia.strip()}!"
+                ),
+                db=db,
+            )
+        except Exception:
+            pass
+
+    return ReconocimientoItemResponse(
+        id_reconocimiento=inserted_id,
+        id_proyecto=id_proyecto,
+        id_remitente=id_usuario_actual,
+        nombre_remitente=nombre_rem,
+        id_destinatario=req.id_destinatario,
+        nombre_destinatario=nombre_dest,
+        insignia=req.insignia.strip(),
+        mensaje=req.mensaje.strip(),
+        xp_otorgado=25,
+        fecha_envio=ahora.isoformat(),
+    )
+
+
+@router.post(
+    "/{id_proyecto}/pulse/cronica-ia",
+    response_model=CronicaPulseResponse,
+    status_code=status.HTTP_200_OK,
+)
+async def generar_cronica_motivacional_ia(
+    id_proyecto: int,
+    req: CronicaPulseRequest,
+    db: Session = Depends(get_db),
+    id_usuario_actual: int = Depends(obtener_usuario_actual),
+):
+    rol = obtener_rol_en_proyecto(id_proyecto, id_usuario_actual, db)
+    if rol is None:
+        raise HTTPException(status_code=403, detail="No tienes acceso a este proyecto.")
+
+    pulse = await _construir_team_pulse(id_proyecto, db)
+    ranking = pulse["ranking"]
+
+    # Intentar enriquecer con Gemini si el cliente está disponible
+    cronica_generada = pulse["cronica_ia"]
+    try:
+        from routers.ai import client as gemini_client, MODELOS_IA
+
+        if gemini_client and ranking:
+            resumen_miembros = [
+                {
+                    "posicion": m.posicion,
+                    "nombre": f"{m.nombre} {m.apellido}".strip(),
+                    "xp": m.xp_total,
+                    "nivel": m.titulo_nivel,
+                    "concluidas": m.tareas_concluidas,
+                    "alta_prio": m.tareas_alta_prioridad,
+                    "evidencias": m.evidencias_subidas,
+                    "meritos": m.meritos_recibidos,
+                    "medallas": [med.nombre for med in m.medallas],
+                }
+                for m in ranking[:5]
+            ]
+            prompt = (
+                f"Eres el Coach Ágil de la plataforma Órbita. Redacta una crónica de reconocimiento "
+                f"motivacional breve (máximo 350 caracteres, en español profesional y entusiasta) para el proyecto "
+                f"'{pulse['nombre_proyecto']}'. Destaca al líder #1 del ranking, el XP total del equipo "
+                f"({pulse['xp_total_equipo']} XP) y las medallas logradas. Datos reales: {resumen_miembros}"
+            )
+            for mod in MODELOS_IA:
+                try:
+                    resp = gemini_client.models.generate_content(model=mod, contents=prompt)
+                    if resp and resp.text and resp.text.strip():
+                        cronica_generada = resp.text.strip().replace('"', '')
+                        break
+                except Exception:
+                    continue
+    except Exception:
+        pass
+
+    publicada = False
+    if req.publicar_en_chat:
+        try:
+            conversacion = await db_mongo.conversations.find_one(
+                {"id_proyecto": id_proyecto, "tipo": "grupal"}
+            )
+            if conversacion:
+                await db_mongo.messages.insert_one(
+                    {
+                        "id_conversacion": conversacion["_id"],
+                        "id_usuario_remitente": id_usuario_actual,
+                        "contenido": f"✨ [Crónica Team Pulse IA] {cronica_generada}",
+                        "fecha_envio": datetime.now(timezone.utc),
+                    }
+                )
+                publicada = True
+        except Exception:
+            publicada = False
+
+    return CronicaPulseResponse(
+        cronica_ia=cronica_generada,
+        publicada_en_chat=publicada,
+    )

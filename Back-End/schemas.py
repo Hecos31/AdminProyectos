@@ -498,3 +498,76 @@ class TomarTareaResponse(BaseModel):
     mensaje: str
     tarea: TareaResponse
     permisos: Optional[PermisosTareaResponse] = None
+
+
+# ============================================================
+# ÓRBITA GAMIFIED TEAM PULSE & PUNTOS DE MÉRITO
+# ============================================================
+
+class MedallaPulseResponse(BaseModel):
+    codigo: str
+    nombre: str
+    descripcion: str
+    color: str
+
+
+class IntegrantePulseResponse(BaseModel):
+    posicion: int
+    id_usuario: int
+    nombre: str
+    apellido: str
+    correo: str
+    rol: str
+    xp_total: int
+    nivel: int
+    titulo_nivel: str
+    progreso_nivel_pct: int
+    racha_entregas_tiempo: int
+    tareas_concluidas: int
+    tareas_alta_prioridad: int
+    tareas_en_progreso: int
+    evidencias_subidas: int
+    comentarios_realizados: int
+    meritos_recibidos: int
+    medallas: List[MedallaPulseResponse] = Field(default_factory=list)
+
+
+class ReconocimientoItemResponse(BaseModel):
+    id_reconocimiento: str
+    id_proyecto: int
+    id_remitente: int
+    nombre_remitente: str
+    id_destinatario: int
+    nombre_destinatario: str
+    insignia: str
+    mensaje: str
+    xp_otorgado: int = 25
+    fecha_envio: str
+
+
+class TeamPulseResponse(BaseModel):
+    id_proyecto: int
+    nombre_proyecto: str
+    xp_total_equipo: int
+    porcentaje_entregas_tiempo: int
+    total_meritos_proyecto: int
+    total_medallas_desbloqueadas: int
+    cronica_ia: str
+    ranking: List[IntegrantePulseResponse] = Field(default_factory=list)
+    meritos_recientes: List[ReconocimientoItemResponse] = Field(default_factory=list)
+
+
+class EnviarReconocimientoRequest(BaseModel):
+    id_destinatario: int
+    insignia: str = Field(default="Compañerismo Excepcional", min_length=2, max_length=80)
+    mensaje: str = Field(min_length=2, max_length=280)
+    publicar_en_chat: bool = True
+
+
+class CronicaPulseRequest(BaseModel):
+    publicar_en_chat: bool = True
+
+
+class CronicaPulseResponse(BaseModel):
+    cronica_ia: str
+    publicada_en_chat: bool = False
