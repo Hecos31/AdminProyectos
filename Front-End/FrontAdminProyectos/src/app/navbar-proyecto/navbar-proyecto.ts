@@ -91,6 +91,7 @@ export class NavbarProyecto implements OnInit, OnDestroy {
     }
 
     this.modoProyecto = true;
+    localStorage.setItem("ultimo_proyecto_id", String(nuevoProyectoId));
 
     if (nuevoProyectoId === this.proyectoActivoId) {
       return;

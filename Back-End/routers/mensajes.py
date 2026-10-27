@@ -357,6 +357,7 @@ async def obtener_lista_conversaciones(
 
             chat_preview = {
                 "id": str(id_conversacion),
+                "id_proyecto": conversacion.get("id_proyecto"),
 
                 "nombre":
                     nombre_chat or

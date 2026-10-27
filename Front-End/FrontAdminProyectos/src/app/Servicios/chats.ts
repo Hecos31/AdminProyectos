@@ -23,6 +23,7 @@ export interface ChatUltimoMensaje {
 
 export interface ChatConversacion {
   id: string;
+  id_proyecto?: number | null;
   nombre?: string | null;
   enLinea?: boolean;
   tipo?: string | null;
