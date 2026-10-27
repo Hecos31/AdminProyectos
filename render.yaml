@@ -1,0 +1,37 @@
+services:
+  # ----------------------------------------------------
+  # 1. Back-End Web Service (FastAPI + Python)
+  # ----------------------------------------------------
+  - type: web
+    name: orbita-backend
+    runtime: python
+    rootDir: Back-End
+    plan: free
+    buildCommand: "pip install --upgrade pip && pip install -r requirements.txt"
+    startCommand: "uvicorn main:app --host 0.0.0.0 --port $PORT"
+    healthCheckPath: /health
+    envVars:
+      - key: DATABASE_URL
+        value: "postgresql://postgres.tqhnvyelbsuprzwjbgnt:H3cos31!3131@aws-0-us-east-1.pooler.supabase.com:5432/postgres"
+      - key: MONGO_URL
+        value: "mongodb+srv://hectordz515_db_user:xRGQZTbCJjZDEAGp@adminproyects.gchwlbi.mongodb.net/?retryWrites=true&w=majority&tls=true&tlsAllowInvalidCertificates=true"
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: SECRET_KEY
+        generateValue: true
+      - key: APP_TIMEZONE
+        value: "America/Mexico_City"
+
+  # ----------------------------------------------------
+  # 2. Front-End Static Site (Angular PWA)
+  # ----------------------------------------------------
+  - type: static_site
+    name: orbita-frontend
+    rootDir: Front-End/FrontAdminProyectos
+    plan: free
+    buildCommand: "npm install && npm run build"
+    publishDir: dist/FrontAdminProyectos/browser
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html

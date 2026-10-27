@@ -1,8 +1,7 @@
 from datetime import datetime
 from enum import Enum
 from typing import List, Optional
-from typing import Optional
-from pydantic import BaseModel
+
 from pydantic import (
     BaseModel,
     ConfigDict,
@@ -11,19 +10,15 @@ from pydantic import (
     HttpUrl,
     field_validator,
 )
-from pydantic import BaseModel, Field, field_validator
-from typing import List, Optional
-from pydantic import BaseModel
 
-from typing import List, Optional
-from pydantic import BaseModel, Field, field_validator
+
 # ============================================================
-# CONFIGURACIÓN BASE
+# CONFIGURACI├ôN BASE
 # ============================================================
 
 class ORMResponseModel(BaseModel):
     """
-    Clase base para los esquemas que reciben información
+    Clase base para los esquemas que reciben informaci├│n
     desde modelos de SQLAlchemy.
     """
 
@@ -79,7 +74,7 @@ class UsuarioResponse(ORMResponseModel):
 
 class UsuarioResumenResponse(ORMResponseModel):
     """
-    Representación reducida del usuario para comentarios,
+    Representaci├│n reducida del usuario para comentarios,
     evidencias y responsables.
     """
     id_usuario: int
@@ -89,7 +84,7 @@ class UsuarioResumenResponse(ORMResponseModel):
 
 
 # ============================================================
-# AUTENTICACIÓN
+# AUTENTICACI├ôN
 # ============================================================
 
 class LoginRequest(BaseModel):
@@ -129,7 +124,7 @@ class TareaCreate(BaseModel):
         valor_limpio = valor.strip()
 
         if not valor_limpio:
-            raise ValueError("El título de la tarea es obligatorio")
+            raise ValueError("El t├¡tulo de la tarea es obligatorio")
 
         return valor_limpio
 
@@ -175,7 +170,7 @@ class TareaUpdate(BaseModel):
         valor_limpio = valor.strip()
 
         if not valor_limpio:
-            raise ValueError("El título de la tarea no puede estar vacío")
+            raise ValueError("El t├¡tulo de la tarea no puede estar vac├¡o")
 
         return valor_limpio
 
@@ -277,7 +272,7 @@ class MensajeConversacionRequest(BaseModel):
         valor_limpio = valor.strip()
 
         if not valor_limpio:
-            raise ValueError("El mensaje no puede estar vacío")
+            raise ValueError("El mensaje no puede estar vac├¡o")
 
         return valor_limpio
 
@@ -290,59 +285,66 @@ class IniciarChatCorreoRequest(BaseModel):
 # INTELIGENCIA ARTIFICIAL
 # ============================================================
 
-# 1. Clase para RECIBIR la petición de autocompletar tarea
 class AITareaRequest(BaseModel):
     id_proyecto: int
-    texto_libre: str = Field(..., min_length=1, alias="texto")
-
-    model_config = {
-        "populate_by_name": True
-    }
+    texto_libre: str = Field(min_length=1)
 
     @field_validator("texto_libre")
     @classmethod
     def limpiar_texto_ia(cls, valor: str) -> str:
         valor_limpio = valor.strip()
+
         if not valor_limpio:
-            raise ValueError("La instrucción para la IA no puede estar vacía")
+            raise ValueError(
+                "La instrucci├│n para la IA no puede estar vac├¡a"
+            )
+
         return valor_limpio
 
-    @property
-    def texto(self) -> str:
-        return self.texto_libre
 
-
-# 2. Clase para RESPONDER con los datos estructurados por Gemini
 class AITareaResponse(BaseModel):
     titulo: str
-    descripcion: Optional[str] = ""
-    nivel_prioridad: Optional[str] = "Media"
-    prioridad: Optional[str] = "Media"
-    fecha_inicio: Optional[str] = None
+    descripcion: str
+    prioridad: str
+    id_usuario_asignado: Optional[int] = None
     fecha_limite: Optional[str] = None
-    fecha_fin: Optional[str] = None
-    id_responsable: Optional[int] = None
-    id_asignado: Optional[int] = None
-
-    model_config = {
-        "extra": "allow"
-    }
 
 
-# 3. Clases para el resumen del chat (añadidas recientemente)
-class MensajeSimple(BaseModel):
-    autor: str
-    contenido: str
-    fecha: Optional[str] = None
+class AIVoiceBatchResponse(BaseModel):
+    resumen_reunion: str
+    tareas: List[AITareaResponse] = Field(default_factory=list)
 
-class AIResumenChatRequest(BaseModel):
-    id_proyecto: Optional[int] = None
-    mensajes: List[MensajeSimple]
 
-class AIResumenChatResponse(BaseModel):
-    resumen_general: str
-    puntos_clave: List[str]
-    acuerdos_o_tareas: List[str]
+class TareaLoteItemCreate(BaseModel):
+    titulo: str = Field(min_length=1, max_length=200)
+    descripcion: Optional[str] = None
+    prioridad: PrioridadTarea = PrioridadTarea.MEDIA
+    fecha_inicio: Optional[datetime] = None
+    fecha_limite: Optional[datetime] = None
+    id_usuario_asignado: Optional[int] = None
+
+    @field_validator("titulo")
+    @classmethod
+    def limpiar_titulo_lote(cls, valor: str) -> str:
+        valor_limpio = valor.strip()
+        if not valor_limpio:
+            raise ValueError("El t├¡tulo de la tarea es obligatorio")
+        return valor_limpio
+
+
+class TareaLoteCreateRequest(BaseModel):
+    id_proyecto: int
+    publicar_minuta_chat: bool = True
+    resumen_reunion: Optional[str] = None
+    tareas: List[TareaLoteItemCreate] = Field(min_length=1)
+
+
+class TareaLoteCreateResponse(BaseModel):
+    mensaje: str
+    total_creadas: int
+    minuta_publicada: bool = False
+    tareas: List[TareaResponse] = Field(default_factory=list)
+
 
 # ============================================================
 # COMENTARIOS DE TAREAS
@@ -360,7 +362,7 @@ class ComentarioTareaCreate(BaseModel):
         contenido_limpio = valor.strip()
 
         if not contenido_limpio:
-            raise ValueError("El comentario no puede estar vacío")
+            raise ValueError("El comentario no puede estar vac├¡o")
 
         return contenido_limpio
 
@@ -377,7 +379,7 @@ class ComentarioTareaUpdate(BaseModel):
         contenido_limpio = valor.strip()
 
         if not contenido_limpio:
-            raise ValueError("El comentario no puede estar vacío")
+            raise ValueError("El comentario no puede estar vac├¡o")
 
         return contenido_limpio
 
@@ -497,14 +499,94 @@ class TomarTareaResponse(BaseModel):
     tarea: TareaResponse
     permisos: Optional[PermisosTareaResponse] = None
 
+
+# ============================================================
+# ├ôRBITA GAMIFIED TEAM PULSE & PUNTOS DE M├ëRITO
+# ============================================================
+
+class MedallaPulseResponse(BaseModel):
+    codigo: str
+    nombre: str
+    descripcion: str
+    color: str
+
+
+class IntegrantePulseResponse(BaseModel):
+    posicion: int
+    id_usuario: int
+    nombre: str
+    apellido: str
+    correo: str
+    rol: str
+    xp_total: int
+    nivel: int
+    titulo_nivel: str
+    progreso_nivel_pct: int
+    racha_entregas_tiempo: int
+    tareas_concluidas: int
+    tareas_alta_prioridad: int
+    tareas_en_progreso: int
+    evidencias_subidas: int
+    comentarios_realizados: int
+    meritos_recibidos: int
+    medallas: List[MedallaPulseResponse] = Field(default_factory=list)
+
+
+class ReconocimientoItemResponse(BaseModel):
+    id_reconocimiento: str
+    id_proyecto: int
+    id_remitente: int
+    nombre_remitente: str
+    id_destinatario: int
+    nombre_destinatario: str
+    insignia: str
+    mensaje: str
+    xp_otorgado: int = 25
+    fecha_envio: str
+
+
+class TeamPulseResponse(BaseModel):
+    id_proyecto: int
+    nombre_proyecto: str
+    xp_total_equipo: int
+    porcentaje_entregas_tiempo: int
+    total_meritos_proyecto: int
+    total_medallas_desbloqueadas: int
+    cronica_ia: str
+    ranking: List[IntegrantePulseResponse] = Field(default_factory=list)
+    meritos_recientes: List[ReconocimientoItemResponse] = Field(default_factory=list)
+
+
+class EnviarReconocimientoRequest(BaseModel):
+    id_destinatario: int
+    insignia: str = Field(default="Compa├▒erismo Excepcional", min_length=2, max_length=80)
+    mensaje: str = Field(min_length=2, max_length=280)
+    publicar_en_chat: bool = True
+
+
+class CronicaPulseRequest(BaseModel):
+    publicar_en_chat: bool = True
+
+
+class CronicaPulseResponse(BaseModel):
+    cronica_ia: str
+    publicada_en_chat: bool = False
+
+
+# ============================================================
+# IA RESUMEN CHAT (ALE-CHATS)
+# ============================================================
+
 class MensajeSimple(BaseModel):
     autor: str
     contenido: str
     fecha: Optional[str] = None
 
+
 class AIResumenChatRequest(BaseModel):
     id_proyecto: Optional[int] = None
     mensajes: List[MensajeSimple]
+
 
 class AIResumenChatResponse(BaseModel):
     resumen_general: str

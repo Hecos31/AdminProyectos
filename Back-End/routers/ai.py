@@ -40,7 +40,7 @@ load_dotenv()
 
 logger = logging.getLogger(__name__)
 
-API_KEY = "GEMINI_API_KEY"
+API_KEY = os.getenv("GEMINI_API_KEY")
 client = genai.Client(api_key=API_KEY) if API_KEY else None
 # Definimos una lista de modelos en orden de prioridad (Fallback automático)
 # Si el primero falla por saturación o no existe, probará con el siguiente.

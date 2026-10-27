@@ -20,12 +20,17 @@ origins = [
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
-    allow_origin_regex=r"https://.*\.netlify\.app",
+    allow_origin_regex=r"https://.*(\.netlify\.app|\.onrender\.com)",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
     expose_headers=["*"],
 )
+
+# Endpoint de salud para Render / Monitoreo
+@app.get("/health", tags=["Health"])
+def health_check():
+    return {"status": "ok", "app": "Órbita API", "service": "online"}
 
 # 4. Registrar las rutas (Endpoints)
 app.include_router(usuarios.router)
