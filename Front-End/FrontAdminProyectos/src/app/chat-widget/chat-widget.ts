@@ -16,6 +16,8 @@ import {
   ChatMensaje,
   ChatService
 } from '../Servicios/chats';
+import { ApiServicio } from '../Servicios/api.servicio';
+import { environment } from '../../environments/environment';
 
 
 interface GrupoMensajes {
@@ -32,6 +34,7 @@ interface GrupoMensajes {
 })
 export class ChatWidget implements OnInit, OnDestroy {
   private chatService = inject(ChatService);
+  private apiService = inject(ApiServicio);
   private cdr = inject(ChangeDetectorRef);
   private ngZone = inject(NgZone);
   private router = inject(Router);
@@ -64,9 +67,19 @@ export class ChatWidget implements OnInit, OnDestroy {
   conexionActiva = false;
 
   ngOnInit(): void {
-    if (!this.cargarUsuarioActual()) {
-      return;
-    }
+    this.subscriptions.add(
+      this.apiService.usuarioActual$.subscribe((usuario) => {
+        this.miUsuario = usuario;
+        if (usuario) {
+          this.chatService.iniciar();
+          this.cargarConversaciones();
+        } else {
+          this.cerrarChat();
+        }
+      })
+    );
+
+    this.cargarUsuarioActual();
 
     this.subscriptions.add(
       this.chatService.conversaciones$.subscribe((conversaciones) => {
@@ -381,7 +394,7 @@ export class ChatWidget implements OnInit, OnDestroy {
       }))
     };
 
-    this.http.post<any>('http://127.0.0.1:8000/ai/resumir-chat', payload).subscribe({
+    this.http.post<any>(`${environment.apiUrl}/ai/resumir-chat`, payload).subscribe({
       next: (res: any) => {
         this.resumenChatIA = res;
         this.cargandoResumenIA = false;

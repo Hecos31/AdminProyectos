@@ -36,6 +36,7 @@
     {
       "name": "api-cache",
       "urls": [
+        "https://orbita-backend-oykl.onrender.com/**",
         "https://adminproyectos.onrender.com/**"
       ],
       "cacheConfig": {

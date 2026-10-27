@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, HostListener } from '@angular/core';
 import { RouterOutlet, Router, NavigationEnd } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { filter } from 'rxjs/operators';
@@ -20,6 +20,7 @@ import {
 })
 export class App {
   showSidebar = false;
+  sidebarMobileOpen = false;
   title = 'Orbita';
 
   constructor(private router: Router, public themeService: ThemeService) {
@@ -31,6 +32,7 @@ export class App {
       .pipe(filter((event): event is NavigationEnd => event instanceof NavigationEnd))
       .subscribe((event: NavigationEnd) => {
         this.updateSidebarVisibility(event.urlAfterRedirects);
+        this.sidebarMobileOpen = false; // Cerrar sidebar al navegar en móvil
       });
   }
 
@@ -40,6 +42,14 @@ export class App {
 
   toggleTheme(): void {
     this.themeService.toggleTheme();
+  }
+
+  toggleSidebarMobile(): void {
+    this.sidebarMobileOpen = !this.sidebarMobileOpen;
+  }
+
+  cerrarSidebarMobile(): void {
+    this.sidebarMobileOpen = false;
   }
 
   private updateSidebarVisibility(url: string): void {

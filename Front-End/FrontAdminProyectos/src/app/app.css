@@ -154,13 +154,101 @@ app-chat-widget {
 
 
 /* =========================================================
+   BOTÓN HAMBURGUESA Y COMPORTAMIENTO MÓVIL
+========================================================= */
+
+.mobile-hamburger-btn {
+  display: none;
+  position: fixed;
+  bottom: 24px;
+  left: 20px;
+  z-index: 2500;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: var(--app-primary, #3b82f6);
+  color: #ffffff;
+  border: none;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.28);
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.2s;
+}
+
+.mobile-hamburger-btn:active {
+  transform: scale(0.92);
+}
+
+.sidebar-mobile-backdrop {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(2px);
+  z-index: 1990;
+  animation: backdropFade 0.25s ease-out;
+}
+
+@keyframes backdropFade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* =========================================================
+   RESPONSIVIDAD MÓVIL (<= 768px)
+========================================================= */
+
+@media (max-width: 768px) {
+  .mobile-hamburger-btn {
+    display: flex;
+  }
+
+  .sidebar-mobile-backdrop {
+    display: block;
+  }
+
+  .app-container.with-sidebar {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  .app-container.with-sidebar .app-main {
+    grid-column: 1 !important;
+  }
+
+  app-sidebar {
+    position: fixed !important;
+    top: 0;
+    left: 0;
+    height: 100vh !important;
+    height: 100dvh !important;
+    width: 280px !important;
+    max-width: 85vw !important;
+    z-index: 2000 !important;
+    transform: translateX(-105%);
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    box-shadow: 4px 0 24px rgba(0, 0, 0, 0.35);
+  }
+
+  .app-container.mobile-open app-sidebar {
+    transform: translateX(0) !important;
+  }
+}
+
+/* =========================================================
    ACCESIBILIDAD
 ========================================================= */
 
 @media (prefers-reduced-motion: reduce) {
   .app-container,
   .app-main,
-  .app-page {
-    transition: none;
+  .app-page,
+  app-sidebar,
+  .sidebar-mobile-backdrop {
+    transition: none !important;
   }
 }

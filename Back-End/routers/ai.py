@@ -41,14 +41,13 @@ load_dotenv()
 logger = logging.getLogger(__name__)
 
 API_KEY = os.getenv("GEMINI_API_KEY")
-client = genai.Client(api_key=API_KEY) if API_KEY else None
-# Definimos una lista de modelos en orden de prioridad (Fallback automático)
-# Si el primero falla por saturación o no existe, probará con el siguiente.
+
+# Modelos en orden de prioridad probados y activos
 MODELOS_IA = [
-    "gemini-3.8-flash",
-    "gemini-3.5-flash-lite",
     "gemini-3-flash-preview",
-    "gemini-flash-latest"
+    "gemini-3.5-flash-lite",
+    "gemini-flash-latest",
+    "gemini-3.8-flash"
 ]
 
 ZONA_HORARIA = ZoneInfo("America/Mexico_City")
