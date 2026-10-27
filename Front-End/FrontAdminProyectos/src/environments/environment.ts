@@ -1,6 +1,6 @@
 // src/environments/environment.ts
 export const environment = {
-  production: false,
-  apiUrl: 'http://127.0.0.1:8000',
-  wsUrl: 'ws://127.0.0.1:8000/ws'
+  production: true,
+  apiUrl: 'https://orbita-backend-oykl.onrender.com',
+  wsUrl: 'wss://orbita-backend-oykl.onrender.com/ws'
 };

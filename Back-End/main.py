@@ -27,6 +27,16 @@ app.add_middleware(
     expose_headers=["*"],
 )
 
+# Endpoint raíz
+@app.get("/", tags=["Root"])
+def root():
+    return {
+        "status": "ok",
+        "app": "Órbita API",
+        "service": "online",
+        "docs": "/docs"
+    }
+
 # Endpoint de salud para Render / Monitoreo
 @app.get("/health", tags=["Health"])
 def health_check():
