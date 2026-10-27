@@ -354,20 +354,42 @@ export class ChatWidget implements OnInit, OnDestroy {
 
     this.isMinimized = true;
 
-    const chat = this.chatActivo as any;
-    const idProyecto =
-      chat?.id_proyecto ??
-      chat?.proyecto_id ??
-      chat?.proyecto?.id_proyecto ??
-      localStorage.getItem('ultimo_proyecto_id') ??
-      localStorage.getItem('id_proyecto') ??
-      1;
+    // Detectar id de proyecto desde la URL actual, la conversación o la lista de proyectos
+    let idProyecto: any = null;
+    const urlMatches = this.router.url.match(/\/proyecto\/(\d+)/);
+    if (urlMatches && urlMatches[1]) {
+      idProyecto = Number(urlMatches[1]);
+    }
 
-    this.router.navigate(['/proyecto', idProyecto, 'crearactividades'], {
-      queryParams: {
-        tareaTexto: mensaje.contenido
-      }
-    });
+    if (!idProyecto) {
+      const chat = this.chatActivo as any;
+      idProyecto = chat?.id_proyecto ?? chat?.proyecto_id ?? chat?.proyecto?.id_proyecto;
+    }
+
+    if (!idProyecto) {
+      const guardado = localStorage.getItem('ultimo_proyecto_id') ?? localStorage.getItem('id_proyecto');
+      if (guardado) idProyecto = Number(guardado);
+    }
+
+    const navegar = (id: number) => {
+      this.router.navigate(['/proyecto', id, 'crearactividades'], {
+        queryParams: {
+          tareaTexto: mensaje.contenido
+        }
+      });
+    };
+
+    if (idProyecto) {
+      navegar(idProyecto);
+    } else {
+      this.apiService.obtenerProyectos().subscribe({
+        next: (proyectos) => {
+          const primer = proyectos && proyectos.length > 0 ? (proyectos[0].id_proyecto) : 1;
+          navegar(Number(primer));
+        },
+        error: () => navegar(1)
+      });
+    }
   }
 
   // =========================================================
