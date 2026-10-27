@@ -25,8 +25,9 @@ services:
   # ----------------------------------------------------
   # 2. Front-End Static Site (Angular PWA)
   # ----------------------------------------------------
-  - type: static
+  - type: web
     name: orbita-frontend
+    runtime: static
     rootDir: Front-End/FrontAdminProyectos
     buildCommand: "npm install && npm run build"
     staticPublishPath: dist/FrontAdminProyectos/browser
