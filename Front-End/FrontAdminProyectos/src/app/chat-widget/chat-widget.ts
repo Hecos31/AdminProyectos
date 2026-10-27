@@ -18,6 +18,7 @@ import {
 } from '../Servicios/chats';
 import { ApiServicio } from '../Servicios/api.servicio';
 import { environment } from '../../environments/environment';
+import { NotificacionesNativasService } from '../Servicios/notificaciones-nativas.service';
 
 
 interface GrupoMensajes {
@@ -39,6 +40,7 @@ export class ChatWidget implements OnInit, OnDestroy {
   private ngZone = inject(NgZone);
   private router = inject(Router);
   private http = inject(HttpClient);
+  private notificacionesNativas = inject(NotificacionesNativasService);
   private subscriptions = new Subscription();
 
   isOpen = false;
@@ -448,6 +450,19 @@ export class ChatWidget implements OnInit, OnDestroy {
         mensajeOriginal
       );
       return;
+    }
+
+    // Notificación nativa si el mensaje es de otro usuario y el widget está cerrado/minimizado o en otra conversación
+    if (!this.esMiMensaje(mensaje)) {
+      const nombreAutor = mensaje.remitente?.nombre || 'Nuevo mensaje';
+      const visible = this.isOpen && !this.isMinimized && this.chatActivo && String(this.chatActivo.id) === String(mensaje.id_conversacion);
+      if (!visible || document.hidden) {
+        this.notificacionesNativas.mostrarNotificacion(nombreAutor, {
+          body: mensaje.contenido || 'Te ha enviado un mensaje.',
+          tag: `chat-${mensaje.id_conversacion}`,
+          data: mensaje
+        });
+      }
     }
 
     const perteneceAlChatActivo =

@@ -25,6 +25,7 @@ import {
 import { ChatService } from '../Servicios/chats';
 import { ApiServicio } from '../Servicios/api.servicio';
 import { ThemeService } from '../Servicios/theme.service';
+import { NotificacionesNativasService } from '../Servicios/notificaciones-nativas.service';
 
 interface ProyectoSidebar {
   id: number;
@@ -48,6 +49,8 @@ export class SidebarComponente implements OnInit, OnDestroy {
   private chatService = inject(ChatService);
   private apiService = inject(ApiServicio);
   private themeService = inject(ThemeService);
+  private notificacionesNativas = inject(NotificacionesNativasService);
+  private idsNotificacionesVistas = new Set<number>();
   private cdr = inject(ChangeDetectorRef);
 
   private subscriptions = new Subscription();
@@ -95,6 +98,7 @@ export class SidebarComponente implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.aplicarAnchoGlobal();
+    this.notificacionesNativas.solicitarPermiso();
 
     this.themeService.initializeTheme();
     this.isDarkMode = this.themeService.isDarkTheme();
@@ -483,10 +487,31 @@ export class SidebarComponente implements OnInit, OnDestroy {
   private aplicarNotificaciones(data: any): void {
     const todas = Array.isArray(data) ? data : [];
 
-    this.notificaciones = todas.filter(
+    const anterioresVistas = this.idsNotificacionesVistas;
+    const nuevasSinLeer = todas.filter(
       (notificacion) => notificacion.leida === false
     );
 
+    // Disparar notificación nativa para elementos nuevos que no estaban en la vista
+    if (anterioresVistas.size > 0) {
+      for (const notif of nuevasSinLeer) {
+        if (!anterioresVistas.has(notif.id_notificacion)) {
+          this.notificacionesNativas.mostrarNotificacion(
+            notif.titulo || 'Nueva notificación en Órbita',
+            {
+              body: notif.mensaje || 'Tienes una nueva actualización en tu proyecto.',
+              tag: `notif-${notif.id_notificacion}`,
+              data: notif
+            }
+          );
+        }
+      }
+    }
+
+    // Actualizar conjunto de IDs conocidos
+    todas.forEach((n) => this.idsNotificacionesVistas.add(n.id_notificacion));
+
+    this.notificaciones = nuevasSinLeer;
     this.contadorNotificaciones = this.notificaciones.length;
 
     if (this.viendoHistorial) {
