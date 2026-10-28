@@ -749,25 +749,58 @@
       </div>
 
 
-      <span class="drag-help">
-        <svg
-          width="15"
-          height="15"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          aria-hidden="true"
-        >
-          <path d="M9 11V6a2 2 0 0 1 4 0v5"></path>
-          <path d="M13 10V5a2 2 0 0 1 4 0v7"></path>
-          <path d="M17 11V8a2 2 0 0 1 4 0v7a7 7 0 0 1-7 7h-1a7 7 0 0 1-6.4-4.2L4.2 12.5a2 2 0 0 1 3.6-1.7L9 13"></path>
-        </svg>
+      <div class="board-header-actions">
+        <!-- Indicador de sincronización en vivo del tablero -->
+        <span class="live-badge" [class.syncing]="estaSincronizandoKanban" title="Sincronización automática activa cada 8 segundos">
+          <span class="pulse-dot"></span>
+          <span>{{ estaSincronizandoKanban ? 'Sincronizando...' : 'En vivo' }}</span>
+        </span>
 
-        Arrastrar y soltar
-      </span>
+        <!-- Botón de notificaciones -->
+        <button
+          type="button"
+          class="btn-notificaciones-kanban"
+          [class.active]="permisoNotificaciones === 'granted'"
+          (click)="habilitarNotificaciones()"
+          [title]="permisoNotificaciones === 'granted' ? 'Notificaciones activas' : 'Activar alertas de actividades'"
+        >
+          <svg
+            width="15"
+            height="15"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+            <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+          </svg>
+          <span>{{ permisoNotificaciones === 'granted' ? 'Alertas activas' : 'Activar alertas' }}</span>
+        </button>
+
+        <span class="drag-help">
+          <svg
+            width="15"
+            height="15"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <path d="M9 11V6a2 2 0 0 1 4 0v5"></path>
+            <path d="M13 10V5a2 2 0 0 1 4 0v7"></path>
+            <path d="M17 11V8a2 2 0 0 1 4 0v7a7 7 0 0 1-7 7h-1a7 7 0 0 1-6.4-4.2L4.2 12.5a2 2 0 0 1 3.6-1.7L9 13"></path>
+          </svg>
+
+          Arrastrar y soltar
+        </span>
+      </div>
 
     </div>
 

@@ -46,6 +46,12 @@ import {
   ConfirmacionService
 } from '../Servicios/confirmacion.service';
 
+import {
+  NotificacionesNativasService
+} from '../Servicios/notificaciones-nativas.service';
+
+import { Subscription, interval } from 'rxjs';
+
 
 interface TarjetaBorradorVoz {
   id_temporal: number;
@@ -91,7 +97,15 @@ export class Crearactividades implements OnInit, OnDestroy {
   private router = inject(Router);
   private apiService = inject(ApiServicio);
   private confirmacionService = inject(ConfirmacionService);
+  private notificacionesNativas = inject(NotificacionesNativasService);
   private cdr = inject(ChangeDetectorRef);
+
+  // Sincronización automática y notificaciones del tablero
+  private suscripcionesKanban = new Subscription();
+  private mapaTareasPrevias = new Map<number, EstadoTareaApi>();
+  private inicializadoKanban = false;
+  estaSincronizandoKanban = false;
+  permisoNotificaciones: NotificationPermission = 'default';
 
 
   // =========================================================
@@ -195,6 +209,28 @@ export class Crearactividades implements OnInit, OnDestroy {
     this.verificarModoInicial();
     this.cargarDatosIniciales();
 
+    this.permisoNotificaciones = this.notificacionesNativas.permiso;
+    this.notificacionesNativas.solicitarPermiso().then(() => {
+      this.permisoNotificaciones = this.notificacionesNativas.permiso;
+      this.cdr.detectChanges();
+    });
+
+    // Escuchar eventos globales de cambios de tareas (ej. modal detalles, chat o acciones locales)
+    this.suscripcionesKanban.add(
+      this.apiService.notificacionesActualizadas$.subscribe(() => {
+        this.cargarTareasSilencioso();
+      })
+    );
+
+    // Sistema de Sincronización Automática en Segundo Plano (Polling cada 8 segundos)
+    this.suscripcionesKanban.add(
+      interval(8000).subscribe(() => {
+        if (!this.cargando && this.proyectoId) {
+          this.cargarTareasSilencioso();
+        }
+      })
+    );
+
     // =========================================================
     // ESCUCHAR PARÁMETROS DINÁMICAMENTE (REACTIVO)
     // =========================================================
@@ -277,8 +313,14 @@ export class Crearactividades implements OnInit, OnDestroy {
       .obtenerTareas(this.proyectoId)
       .subscribe({
         next: (data) => {
-          this.distribuirTareas(data ?? []);
+          const tareas = data ?? [];
+          if (this.inicializadoKanban) {
+            this.detectarCambiosYNotificar(tareas);
+          }
+          this.distribuirTareas(tareas);
           this.cargando = false;
+          this.estaSincronizandoKanban = false;
+          this.cdr.detectChanges();
         },
 
         error: (error) => {
@@ -288,6 +330,7 @@ export class Crearactividades implements OnInit, OnDestroy {
           );
 
           this.cargando = false;
+          this.estaSincronizandoKanban = false;
 
           this.mostrarToast(
             'No fue posible cargar las actividades.',
@@ -297,6 +340,64 @@ export class Crearactividades implements OnInit, OnDestroy {
       });
   }
 
+  cargarTareasSilencioso(): void {
+    this.estaSincronizandoKanban = true;
+    this.apiService
+      .obtenerTareas(this.proyectoId)
+      .subscribe({
+        next: (data) => {
+          const tareas = data ?? [];
+          if (this.inicializadoKanban) {
+            this.detectarCambiosYNotificar(tareas);
+          }
+          this.distribuirTareas(tareas);
+          this.estaSincronizandoKanban = false;
+          this.cdr.detectChanges();
+        },
+        error: () => {
+          this.estaSincronizandoKanban = false;
+        }
+      });
+  }
+
+  private detectarCambiosYNotificar(nuevasTareas: TareaApi[]): void {
+    nuevasTareas.forEach((tarea) => {
+      const estadoPrevio = this.mapaTareasPrevias.get(tarea.id_tarea);
+      const estadoActual = tarea.estado as EstadoTareaApi;
+
+      if (estadoPrevio && estadoPrevio !== estadoActual) {
+        if (estadoActual === 'Concluida') {
+          const resp = tarea.usuario_asignado?.nombre || 'El equipo';
+          const msg = `La actividad "${tarea.titulo}" ha sido concluida exitosamente por ${resp}.`;
+          this.mostrarToast(`¡Actividad Completada! 🎉 ${tarea.titulo}`, 'exito');
+          this.notificacionesNativas.mostrarNotificacion('Actividad Completada ✔️', {
+            body: msg,
+            tag: `kanban-completada-${tarea.id_tarea}`,
+            data: { id_tarea: tarea.id_tarea, estado: estadoActual }
+          });
+        } else if (estadoActual === 'En progreso') {
+          const msg = `La actividad "${tarea.titulo}" pasó a En progreso.`;
+          this.notificacionesNativas.mostrarNotificacion('Actividad en progreso', {
+            body: msg,
+            tag: `kanban-progreso-${tarea.id_tarea}`
+          });
+        }
+      }
+    });
+  }
+
+  async habilitarNotificaciones(): Promise<void> {
+    const concedido = await this.notificacionesNativas.solicitarPermiso();
+    this.permisoNotificaciones = this.notificacionesNativas.permiso;
+    if (concedido) {
+      this.mostrarToast('Notificaciones del Tablero activadas', 'exito');
+      this.notificacionesNativas.mostrarNotificacion('Órbita - Tablero del Proyecto', {
+        body: 'Alertas automáticas activadas. Se informará cuando las actividades cambien de estado.',
+        tag: 'kanban-alerta-activada'
+      });
+    }
+    this.cdr.detectChanges();
+  }
 
   private distribuirTareas(
     tareas: TareaApi[]
@@ -305,6 +406,7 @@ export class Crearactividades implements OnInit, OnDestroy {
       this.columnas[estado] = [];
     });
 
+    const nuevoMapa = new Map<number, EstadoTareaApi>();
     tareas.forEach((tarea) => {
       const estado =
         tarea.estado as EstadoTareaApi;
@@ -312,7 +414,11 @@ export class Crearactividades implements OnInit, OnDestroy {
       if (this.columnas[estado]) {
         this.columnas[estado].push(tarea);
       }
+      nuevoMapa.set(tarea.id_tarea, estado);
     });
+
+    this.mapaTareasPrevias = nuevoMapa;
+    this.inicializadoKanban = true;
   }
 
 
@@ -355,6 +461,18 @@ export class Crearactividades implements OnInit, OnDestroy {
       )
       .subscribe({
         next: () => {
+          if (estadoDestino === 'Concluida') {
+            const resp = tareaMovida.usuario_asignado?.nombre || 'El equipo';
+            const msg = `La actividad "${tareaMovida.titulo}" ha sido concluida exitosamente por ${resp}.`;
+            this.mostrarToast(`¡Actividad Completada! 🎉 ${tareaMovida.titulo}`, 'exito');
+            this.notificacionesNativas.mostrarNotificacion('Actividad Completada ✔️', {
+              body: msg,
+              tag: `kanban-completada-${tareaMovida.id_tarea}`
+            });
+          } else {
+            this.mostrarToast(`Actividad movida a ${estadoDestino}`, 'exito');
+          }
+
           if (
             estadoDestino === 'Pendiente por asignar' &&
             tareaMovida.usuario_asignado
@@ -807,6 +925,7 @@ export class Crearactividades implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.detenerGrabacionVoz();
+    this.suscripcionesKanban.unsubscribe();
   }
 
 
