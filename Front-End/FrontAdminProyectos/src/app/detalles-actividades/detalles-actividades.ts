@@ -30,6 +30,10 @@ import {
   ConfirmacionService
 } from '../Servicios/confirmacion.service';
 
+import {
+  NotificacionesNativasService
+} from '../Servicios/notificaciones-nativas.service';
+
 
 interface FormularioEdicionTarea {
   titulo: string;
@@ -53,6 +57,12 @@ export class DetallesActividades implements OnChanges {
 
   private confirmacionService =
   inject(ConfirmacionService);
+
+  private notificacionesNativas =
+  inject(NotificacionesNativasService);
+
+  toastExito = '';
+  private timerToast: any = null;
 
   @Input() tarea: TareaApi | null = null;
 
@@ -469,6 +479,12 @@ export class DetallesActividades implements OnChanges {
         next: (comentario) => {
           this.detalle?.comentarios.push(comentario);
           this.nuevoComentario = '';
+          this.mostrarToastExito('Comentario publicado correctamente.');
+          this.apiServicio.notificarCambio();
+          this.notificacionesNativas.mostrarNotificacion('Nuevo comentario en actividad', {
+            body: `Se publicó un comentario en "${this.detalle?.tarea.titulo}".`,
+            tag: `comentario-${comentario.id_comentario}`
+          });
         },
         error: (error) => {
           this.errorMessage = this.obtenerMensajeError(
@@ -681,6 +697,12 @@ export class DetallesActividades implements OnChanges {
         next: (evidencia) => {
           this.detalle?.evidencias.unshift(evidencia);
           this.limpiarFormularioEvidencia();
+          this.mostrarToastExito(`Archivo "${evidencia.nombre}" subido con éxito.`);
+          this.apiServicio.notificarCambio();
+          this.notificacionesNativas.mostrarNotificacion('Archivo de evidencia subido ✔️', {
+            body: `Se adjuntó "${evidencia.nombre}" en la tarea "${this.detalle?.tarea.titulo}".`,
+            tag: `evidencia-archivo-${evidencia.id_evidencia}`
+          });
         },
         error: (error) => {
           this.errorMessage = this.obtenerMensajeError(error, 'No fue posible subir el archivo.');
@@ -727,6 +749,12 @@ export class DetallesActividades implements OnChanges {
         next: (evidencia) => {
           this.detalle?.evidencias.unshift(evidencia);
           this.limpiarFormularioEvidencia();
+          this.mostrarToastExito(`Enlace "${evidencia.nombre}" agregado con éxito.`);
+          this.apiServicio.notificarCambio();
+          this.notificacionesNativas.mostrarNotificacion('Enlace de evidencia agregado 🔗', {
+            body: `Se agregó "${evidencia.nombre}" en la tarea "${this.detalle?.tarea.titulo}".`,
+            tag: `evidencia-enlace-${evidencia.id_evidencia}`
+          });
         },
         error: (error) => {
           this.errorMessage = this.obtenerMensajeError(error, 'No fue posible agregar el enlace.');
@@ -1223,5 +1251,15 @@ export class DetallesActividades implements OnChanges {
 
   trackColaborador(index: number, usuario: UsuarioTarea): number {
     return usuario.id_usuario;
+  }
+
+  mostrarToastExito(mensaje: string): void {
+    this.toastExito = mensaje;
+    if (this.timerToast) {
+      clearTimeout(this.timerToast);
+    }
+    this.timerToast = setTimeout(() => {
+      this.toastExito = '';
+    }, 4500);
   }
 }

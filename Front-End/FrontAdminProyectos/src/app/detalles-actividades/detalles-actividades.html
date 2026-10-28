@@ -38,7 +38,20 @@
 
     <!-- CONTENIDO CON SCROLL INTERNO -->
     <div class="modal-scroll">
-      <!-- ALERTAS -->
+      <!-- TOAST DE ÉXITO -->
+      <div *ngIf="toastExito" class="alert alert-success" role="status">
+        <span>{{ toastExito }}</span>
+        <button
+          type="button"
+          class="alert-close"
+          (click)="toastExito = ''"
+          aria-label="Cerrar notificación"
+        >
+          &times;
+        </button>
+      </div>
+
+      <!-- ALERTAS DE ERROR -->
       <div *ngIf="errorMessage" class="alert alert-error" role="alert">
         <span>{{ errorMessage }}</span>
 
