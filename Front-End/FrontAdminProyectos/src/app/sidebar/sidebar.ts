@@ -51,6 +51,7 @@ export class SidebarComponente implements OnInit, OnDestroy {
   private themeService = inject(ThemeService);
   private notificacionesNativas = inject(NotificacionesNativasService);
   private idsNotificacionesVistas = new Set<number>();
+  private inicializadoNotificaciones = false;
   private cdr = inject(ChangeDetectorRef);
 
   private subscriptions = new Subscription();
@@ -493,11 +494,12 @@ export class SidebarComponente implements OnInit, OnDestroy {
     );
 
     // Disparar notificación nativa para elementos nuevos que no estaban en la vista
-    if (anterioresVistas.size > 0) {
+    if (this.inicializadoNotificaciones) {
       for (const notif of nuevasSinLeer) {
         if (!anterioresVistas.has(notif.id_notificacion)) {
-          this.notificacionesNativas.mostrarNotificacion(
-            notif.titulo || 'Nueva notificación en Órbita',
+          const tituloNotif = this.obtenerTituloPorTipo(notif.tipo, notif.titulo);
+          void this.notificacionesNativas.mostrarNotificacion(
+            tituloNotif,
             {
               body: notif.mensaje || 'Tienes una nueva actualización en tu proyecto.',
               tag: `notif-${notif.id_notificacion}`,
@@ -507,6 +509,8 @@ export class SidebarComponente implements OnInit, OnDestroy {
         }
       }
     }
+
+    this.inicializadoNotificaciones = true;
 
     // Actualizar conjunto de IDs conocidos
     todas.forEach((n) => this.idsNotificacionesVistas.add(n.id_notificacion));
@@ -521,6 +525,31 @@ export class SidebarComponente implements OnInit, OnDestroy {
     this.cdr.detectChanges();
   }
 
+  private obtenerTituloPorTipo(tipo?: string, tituloExplicito?: string): string {
+    if (tituloExplicito && tituloExplicito.trim()) {
+      return tituloExplicito.trim();
+    }
+    switch (String(tipo || '').toUpperCase()) {
+      case 'PUNTOS_ENTREGA':
+        return '🏆 ¡Puntos de Experiencia por Entrega!';
+      case 'RECONOCIMIENTO_RECIBIDO':
+        return '🏆 ¡Has recibido Puntos de Mérito!';
+      case 'CRONICA_IA_GENERADA':
+        return '✨ Nueva Crónica de Reconocimientos IA';
+      case 'NUEVA_TAREA':
+      case 'NUEVA_TAREA_VOZ':
+      case 'TAREA_ASIGNADA':
+        return '📋 Nueva Actividad Asignada en Órbita';
+      case 'CAMBIO_ESTADO_TAREA':
+      case 'ESTADO_TAREA_CAMBIADO':
+        return '🔄 Actualización de Estado de Actividad';
+      case 'NUEVO_COMENTARIO':
+        return '💬 Nuevo Comentario en Actividad';
+      default:
+        return '🔔 Notificación de Órbita';
+    }
+  }
+
   private aplicarAnchoGlobal(): void {
     document.documentElement.style.setProperty(
       '--app-sidebar-width',

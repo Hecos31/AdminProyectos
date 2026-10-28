@@ -861,6 +861,29 @@ async def cambiar_estado_tarea(
                 db=db
             )
 
+        # 7. NOTIFICACIÓN DE PUNTOS POR ENTREGA (GAMIFICACIÓN TEAM PULSE)
+        if str(nuevo_estado).lower() == "concluida":
+            prio_str = (tarea.prioridad or "Media").lower()
+            xp_base = 100 if prio_str == "alta" else (70 if prio_str == "media" else 45)
+            bonus_t = 20
+            if tarea.fecha_limite:
+                if datetime.utcnow().date() <= tarea.fecha_limite.date():
+                    bonus_t = 30
+                else:
+                    bonus_t = 0
+            xp_ganado = xp_base + bonus_t
+            id_receptor_xp = asignacion.id_usuario if asignacion else id_usuario_actual
+            await disparar_notificacion(
+                usuario_id=id_receptor_xp,
+                tipo="PUNTOS_ENTREGA",
+                mensaje=(
+                    f"🏆 ¡Has ganado +{xp_ganado} XP en Team Pulse por concluir la actividad "
+                    f"'{tarea.titulo}' ({xp_base} XP por prioridad {tarea.prioridad}"
+                    f"{f' + {bonus_t} XP por entrega puntual' if bonus_t > 0 else ''})!"
+                ),
+                db=db,
+            )
+
         return {
             "mensaje": "Estado actualizado.",
             "nuevo_estado": tarea.estado,

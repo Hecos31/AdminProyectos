@@ -21,6 +21,7 @@ import {
 import {
   DetallesActividades
 } from '../detalles-actividades/detalles-actividades';
+import { NotificacionesNativasService } from '../Servicios/notificaciones-nativas.service';
 
 
 @Component({
@@ -42,6 +43,7 @@ export class Actividadesusuario implements OnInit {
 
   private route = inject(ActivatedRoute);
   private apiService = inject(ApiServicio);
+  private notificacionesNativas = inject(NotificacionesNativasService);
 
 
   // =========================================================
@@ -255,7 +257,10 @@ export class Actividadesusuario implements OnInit {
       )
       .subscribe({
         next: () => {
-          // La tarea ya fue actualizada localmente.
+          if (nuevoEstado === 'Concluida' && estadoAnterior !== 'Concluida') {
+            void this.notificacionesNativas.notificarPuntosPorEntrega(tarea);
+          }
+          this.apiService.notificarCambio();
         },
 
         error: (error) => {

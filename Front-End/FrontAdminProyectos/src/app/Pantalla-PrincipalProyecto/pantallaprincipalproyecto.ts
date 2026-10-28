@@ -75,6 +75,7 @@ import {
   DetallesActividades
 
 } from '../detalles-actividades/detalles-actividades';
+import { NotificacionesNativasService } from '../Servicios/notificaciones-nativas.service';
 
 
 
@@ -145,6 +146,7 @@ export class PantallaPrincipalProyectoComponente
   private apiService =
 
     inject(ApiServicio);
+  private notificacionesNativas = inject(NotificacionesNativasService);
 
 
 
@@ -2142,6 +2144,15 @@ export class PantallaPrincipalProyectoComponente
 
         );
 
+        void this.notificacionesNativas.mostrarNotificacion(
+          '🏆 ¡Puntos de Mérito Otorgados (+25 XP)!',
+          {
+            body: `Se acreditaron +25 XP a ${nuevoMerito.nombre_destinatario} por "${nuevoMerito.insignia}": ${nuevoMerito.mensaje}`,
+            tag: `merito-${Date.now()}`,
+            vibrate: [100, 50, 120]
+          }
+        );
+
         this.apiService.notificarCambio();
 
         this.cargarDatosTeamPulse();
@@ -2210,11 +2221,20 @@ export class PantallaPrincipalProyectoComponente
 
         }
 
+        if (res?.cronica_ia) {
+          void this.notificacionesNativas.notificarCronicaReconocimientosIA(
+            this.proyecto?.nombre || 'Órbita',
+            res.cronica_ia
+          );
+        }
+
         this.mostrarAvisoPulse(
 
           '✨ Crónica Motivacional generada con IA y compartida con el equipo.'
 
         );
+
+        this.apiService.notificarCambio();
 
       });
 

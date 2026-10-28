@@ -1145,7 +1145,7 @@ async def enviar_reconocimiento_integrante(
     except Exception:
         pass
 
-    if req.id_destinatario != id_usuario_actual:
+    if req.id_destinatario:
         try:
             await disparar_notificacion(
                 usuario_id=req.id_destinatario,
@@ -1246,6 +1246,26 @@ async def generar_cronica_motivacional_ia(
                 publicada = True
         except Exception:
             publicada = False
+
+    # Disparar notificación a todos los integrantes del proyecto cuando se genera una crónica con IA
+    try:
+        integrantes_proy = (
+            db.query(ProyectoUsuarioDB)
+            .filter(ProyectoUsuarioDB.id_proyecto == id_proyecto)
+            .all()
+        )
+        for integ in integrantes_proy:
+            await disparar_notificacion(
+                usuario_id=integ.id_usuario,
+                tipo="CRONICA_IA_GENERADA",
+                mensaje=(
+                    f"✨ Nueva Crónica de Reconocimientos con IA en '{pulse['nombre_proyecto']}': "
+                    f"{cronica_generada[:160]}{'...' if len(cronica_generada) > 160 else ''}"
+                ),
+                db=db,
+            )
+    except Exception:
+        pass
 
     return CronicaPulseResponse(
         cronica_ia=cronica_generada,

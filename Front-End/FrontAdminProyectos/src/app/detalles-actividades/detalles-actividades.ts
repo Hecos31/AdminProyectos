@@ -29,6 +29,7 @@ import {
 import {
   ConfirmacionService
 } from '../Servicios/confirmacion.service';
+import { NotificacionesNativasService } from '../Servicios/notificaciones-nativas.service';
 
 
 interface FormularioEdicionTarea {
@@ -50,6 +51,7 @@ interface FormularioEdicionTarea {
 })
 export class DetallesActividades implements OnChanges {
   private apiServicio = inject(ApiServicio);
+  private notificacionesNativas = inject(NotificacionesNativasService);
 
   private confirmacionService =
   inject(ConfirmacionService);
@@ -331,6 +333,15 @@ export class DetallesActividades implements OnChanges {
 
     solicitud.subscribe({
       next: () => {
+        if (cambioEstado && this.formularioEdicion.estado === 'Concluida') {
+          void this.notificacionesNativas.notificarPuntosPorEntrega({
+            id_tarea: idTarea,
+            titulo,
+            prioridad: this.formularioEdicion.prioridad,
+            fecha_limite: fechaLimite
+          });
+        }
+
         this.formularioOriginal = null;
         this.modoEdicion = false;
         this.successMessage = 'La actividad fue actualizada correctamente.';

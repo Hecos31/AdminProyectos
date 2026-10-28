@@ -45,6 +45,7 @@ import {
 import {
   ConfirmacionService
 } from '../Servicios/confirmacion.service';
+import { NotificacionesNativasService } from '../Servicios/notificaciones-nativas.service';
 
 
 interface TarjetaBorradorVoz {
@@ -91,6 +92,7 @@ export class Crearactividades implements OnInit, OnDestroy {
   private router = inject(Router);
   private apiService = inject(ApiServicio);
   private confirmacionService = inject(ConfirmacionService);
+  private notificacionesNativas = inject(NotificacionesNativasService);
   private cdr = inject(ChangeDetectorRef);
 
 
@@ -381,6 +383,13 @@ export class Crearactividades implements OnInit, OnDestroy {
               });
 
             return;
+          }
+
+          if (estadoDestino === 'Concluida' && estadoAnterior !== 'Concluida') {
+            const nombreResp = tareaMovida.usuario_asignado
+              ? `${tareaMovida.usuario_asignado.nombre || ''} ${tareaMovida.usuario_asignado.apellido || ''}`.trim()
+              : undefined;
+            void this.notificacionesNativas.notificarPuntosPorEntrega(tareaMovida, nombreResp);
           }
 
           this.apiService.notificarCambio();
