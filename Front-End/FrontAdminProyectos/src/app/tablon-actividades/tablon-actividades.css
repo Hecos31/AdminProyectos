@@ -907,3 +907,218 @@
     animation-duration: 1.5s;
   }
 }
+
+/* =========================================================
+   ELEMENTOS DE NOTIFICACIONES Y ESTADO EN VIVO KANBAN
+========================================================= */
+
+.k-header-side {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.live-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  border-radius: 9999px;
+  background: rgba(16, 185, 129, 0.1);
+  color: #10b981;
+  border: 1px solid rgba(16, 185, 129, 0.25);
+  transition: all 0.25s ease;
+}
+
+.live-badge.syncing {
+  background: rgba(59, 130, 246, 0.1);
+  color: #3b82f6;
+  border-color: rgba(59, 130, 246, 0.25);
+}
+
+.pulse-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: currentColor;
+  box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+  animation: pulse-ring 2s infinite cubic-bezier(0.66, 0, 0, 1);
+}
+
+.live-badge.syncing .pulse-dot {
+  animation: pulse-ring-blue 1s infinite linear;
+}
+
+@keyframes pulse-ring {
+  0% {
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 8px rgba(16, 185, 129, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+  }
+}
+
+@keyframes pulse-ring-blue {
+  0% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.4;
+  }
+}
+
+.btn-notificaciones-kanban {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  border-radius: 9999px;
+  background: var(--app-surface, #ffffff);
+  color: var(--app-text, #1e293b);
+  border: 1px solid var(--app-border, #cbd5e1);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-notificaciones-kanban:hover {
+  background: var(--app-hover, #f1f5f9);
+  border-color: #3b82f6;
+  color: #3b82f6;
+}
+
+.btn-notificaciones-kanban.active {
+  background: rgba(59, 130, 246, 0.1);
+  color: #2563eb;
+  border-color: rgba(59, 130, 246, 0.3);
+}
+
+/* =========================================================
+   CONTENEDOR DE TOASTS FLOTANTES
+========================================================= */
+
+.kanban-toast-container {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 99999;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-width: 380px;
+  width: calc(100vw - 32px);
+  pointer-events: none;
+}
+
+.kanban-toast {
+  pointer-events: auto;
+  display: flex;
+  align-items: stretch;
+  background: var(--app-surface, #ffffff);
+  color: var(--app-text, #0f172a);
+  border-radius: 12px;
+  border: 1px solid var(--app-border, #e2e8f0);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  animation: slide-in-toast 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes slide-in-toast {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.toast-indicator {
+  width: 6px;
+  background: #3b82f6;
+  flex-shrink: 0;
+}
+
+.kanban-toast[data-tipo="completada"] .toast-indicator {
+  background: #10b981;
+}
+
+.kanban-toast[data-tipo="progreso"] .toast-indicator {
+  background: #3b82f6;
+}
+
+.kanban-toast[data-tipo="asignada"] .toast-indicator {
+  background: #8b5cf6;
+}
+
+.kanban-toast[data-tipo="nueva"] .toast-indicator {
+  background: #0ea5e9;
+}
+
+.toast-body {
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex-grow: 1;
+}
+
+.toast-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.toast-title {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--app-text, #0f172a);
+}
+
+.toast-close-btn {
+  background: transparent;
+  border: none;
+  font-size: 1.25rem;
+  line-height: 1;
+  color: var(--app-text-muted, #94a3b8);
+  cursor: pointer;
+  padding: 0 4px;
+}
+
+.toast-close-btn:hover {
+  color: var(--app-text, #0f172a);
+}
+
+.toast-msg {
+  font-size: 0.8125rem;
+  line-height: 1.35;
+  color: var(--app-text-muted, #64748b);
+  margin: 0;
+}
+
+.toast-time {
+  font-size: 0.6875rem;
+  color: var(--app-text-muted, #94a3b8);
+  align-self: flex-end;
+}
+
+@media (max-width: 640px) {
+  .kanban-toast-container {
+    bottom: 16px;
+    right: 16px;
+    left: 16px;
+    max-width: 100%;
+  }
+}
